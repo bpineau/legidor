@@ -63,7 +63,10 @@ func ParseGrades(s string, expected map[string]int) (GradeSet, error) {
 
 // GradeAnswers judges answers without arm/model labels. Rubrics never enter
 // evaluated conversations. Grader traces and usage are stored separately.
-func GradeAnswers(ctx context.Context, root, corpusPath, model string, timeout time.Duration) error {
+func GradeAnswers(ctx context.Context, root, corpusPath, agent, model string, timeout time.Duration) error {
+	if agent != "claude" && agent != "codex" {
+		return fmt.Errorf("unknown grading agent %q", agent)
+	}
 	if err := verifyGradingCorpus(root, corpusPath); err != nil {
 		return err
 	}
@@ -93,7 +96,7 @@ func GradeAnswers(ctx context.Context, root, corpusPath, model string, timeout t
 		b, _ := json.Marshal(s)
 		answers[id] = digest(b)
 	}
-	if err = EnsureManifest(filepath.Join(grading, "manifest.json"), map[string]any{"protocol": 1, "corpus": ch, "runner": rh, "model": model, "answers": answers}); err != nil {
+	if err = EnsureManifest(filepath.Join(grading, "manifest.json"), map[string]any{"protocol": 1, "corpus": ch, "runner": rh, "agent": agent, "model": model, "answers": answers}); err != nil {
 		return err
 	}
 	for _, c := range corpus.Cases {
@@ -140,7 +143,7 @@ Return ONLY JSON: {"grades":[{"sample":"answer-1","criteria":[{"index":0,"pass":
 		}
 		fmt.Fprintf(os.Stderr, "grade case %d (%d answers)\n", c.ID, len(mapping))
 		start := time.Now()
-		m, runErr := Invoke(ctx, Invocation{Agent: "claude", Model: model, Effort: "medium", Work: work, Output: attempt, Prompt: prompt, Timeout: timeout, Grader: true})
+		m, runErr := Invoke(ctx, Invocation{Agent: agent, Model: model, Effort: "medium", Work: work, Output: attempt, Prompt: prompt, Timeout: timeout, Grader: true})
 		os.RemoveAll(work)
 		if err = writeJSON(filepath.Join(attempt, "usage.json"), GradeUsage{Measurement: m, DurationMS: time.Since(start).Milliseconds()}); err != nil {
 			return err

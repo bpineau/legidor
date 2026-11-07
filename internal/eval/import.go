@@ -56,11 +56,21 @@ func ImportPaperasse(repo, dest string) error {
 			c.Assertions[0] = "L'économie immédiate est calculée sur le montant déductible : 7 200 EUR x 30 % = 2 160 EUR, et non 8 000 EUR x 30 %."
 			c.Assertions[3] = "Le plafond disponible de 7 200 EUR est respecté (référence aux revenus professionnels de l'année précédente), donc 800 EUR du versement ne sont pas déductibles."
 			c.Amendments = append(c.Amendments, "Clarify the available prior-year ceiling and deductible amount in criteria 0 and 3.")
+			c.Assertions = append(c.Assertions[:4], c.Assertions[5:]...)
+			c.Amendments = append(c.Amendments, "Remove the employer-matching advice criterion: the question asks about a personal PER contribution, with no matching arrangement to assess.")
 		}
 		if c.ID == 6 {
 			c.Assertions[0] = "Aucun impôt sur le gain d'acquisition du plan qualifiant au seul vesting en 2025, sans cession ; la cession déclenche l'imposition."
 			c.Assertions[3] = "La réponse ne confond pas le régime du plan qualifiant précisé avec celui d'un salaire ordinaire ou de la fraction de gain excédant 300 000 EUR. Elle n'a pas à développer un plan non qualifiant hors scénario."
 			c.Amendments = append(c.Amendments, "Criteria 0 and 3 follow the explicitly qualified plan; do not require an irrelevant non-qualified-plan digression.")
+		}
+		if c.ID == 11 {
+			c.Assertions = c.Assertions[:4]
+			c.Amendments = append(c.Amendments, "Remove the optional smoothing discussion criterion: the scenario explicitly excludes smoothing.")
+		}
+		if c.ID == 13 {
+			c.Assertions = c.Assertions[:5]
+			c.Amendments = append(c.Amendments, "Remove the pre-2026 gains caveat criterion: all gains in this synthetic scenario were earned in 2026.")
 		}
 		corpus.Cases = append(corpus.Cases, c)
 	}

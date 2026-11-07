@@ -31,13 +31,13 @@
         "Le skill explique que c'est un REPORT d'imposition, pas une exonération",
         "Le TMI futur à la retraite est mentionné comme variable clé",
         "Le plafond disponible de 7 200 EUR est respecté (référence aux revenus professionnels de l'année précédente), donc 800 EUR du versement ne sont pas déductibles.",
-        "Le skill rappelle qu'il faut saturer l'abondement employeur PEE/PERCO en priorité si disponible",
         "La réponse nuance : pas toujours avantageux, dépend de la situation"
       ],
       "amendments": [
         "Normalize typographic quotes and dashes to ASCII; preserve upstream amounts and scoring intent.",
         "Append explicit synthetic facts and dates; see the prompt's final paragraph.",
-        "Clarify the available prior-year ceiling and deductible amount in criteria 0 and 3."
+        "Clarify the available prior-year ceiling and deductible amount in criteria 0 and 3.",
+        "Remove the employer-matching advice criterion: the question asks about a personal PER contribution, with no matching arrangement to assess."
       ]
     },
     {
@@ -86,12 +86,12 @@
         "Le skill utilise le RFR (pas le RNI) comme base de la CEHR",
         "Les seuils couple sont corrects (500 000 € / 1 000 000 €)",
         "Le calcul tranche par tranche est correct : (780 000 − 500 000) × 3 % = 8 400 €",
-        "Le skill précise que la CEHR s'AJOUTE à l'IR net (ne se déduit pas)",
-        "Le mécanisme de lissage sur 2 années (art. 223 sexies CGI) peut être mentionné"
+        "Le skill précise que la CEHR s'AJOUTE à l'IR net (ne se déduit pas)"
       ],
       "amendments": [
         "Normalize typographic quotes and dashes to ASCII; preserve upstream amounts and scoring intent.",
-        "Append explicit synthetic facts and dates; see the prompt's final paragraph."
+        "Append explicit synthetic facts and dates; see the prompt's final paragraph.",
+        "Remove the optional smoothing discussion criterion: the scenario explicitly excludes smoothing."
       ]
     },
     {
@@ -120,12 +120,12 @@
         "L'imposition à 12,8 % + 18,6 % (31,4 %) sur les gains (10 000 €) est calculée pour un retrait en 2026",
         "Le skill mentionne au moins l'exception création ou reprise d'entreprise (exonération d'IR sans clôture)",
         "Le skill recommande d'attendre 5 ans pour économiser 12,8 % d'IR",
-        "Le skill précise qu'après 5 ans les PS (18,6 % depuis 2026) restent dus (pas d'exonération totale)",
-        "Le skill signale la réserve sur la clause transitoire de la LFSS 2026 (gains acquis avant 2026)"
+        "Le skill précise qu'après 5 ans les PS (18,6 % depuis 2026) restent dus (pas d'exonération totale)"
       ],
       "amendments": [
         "Normalize typographic quotes and dashes to ASCII; preserve upstream amounts and scoring intent.",
-        "Append explicit synthetic facts and dates; see the prompt's final paragraph."
+        "Append explicit synthetic facts and dates; see the prompt's final paragraph.",
+        "Remove the pre-2026 gains caveat criterion: all gains in this synthetic scenario were earned in 2026."
       ]
     },
     {

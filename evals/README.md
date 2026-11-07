@@ -12,12 +12,33 @@ not its runner or executable scripts.
 
 ## Run
 
+For development, start with two Sol samples and an explicit size limit:
+
+```sh
+make build build-eval
+bin/legidor-eval run -agents codex -codex-model gpt-6.1-sol \
+  -cases 3,13 -arms legidor -max-samples 2 -workers 1 \
+  -legidor "$PWD/bin/legidor" -out /tmp/legidor-sol-smoke
+bin/legidor-eval grade -out /tmp/legidor-sol-smoke \
+  -agent codex -model gpt-6.1-sol
+```
+
+The default stops scheduling new samples after the first failure, including quota
+errors. Already running samples finish and retain their measurements. Opt into
+`-continue-on-error` only deliberately. `-max-samples N` rejects a larger matrix
+before launching any agents; zero (the default) leaves the size unrestricted.
+It counts conversations, not provider tokens or money. Grading makes separate
+model calls, one per case with successful answers.
+
+For a full comparison (64 samples with the default two models):
+
 ```sh
 make build
 make build-eval
 bin/legidor-eval run \
   -paperasse /path/to/paperasse/fiscaliste \
   -legidor "$PWD/bin/legidor" \
+  -max-samples 64 \
   -out /tmp/legidor-pilot
 bin/legidor-eval grade -out /tmp/legidor-pilot
 bin/legidor-eval report -out /tmp/legidor-pilot
@@ -64,6 +85,7 @@ Or run all four models in one matrix with a global concurrency limit:
 bin/legidor-eval run \
   -claude-models claude-opus-5-5,claude-sonnet-5-5 \
   -codex-models gpt-6.1-sol,gpt-6-astra -workers 4 \
+  -max-samples 128 \
   -paperasse /path/to/paperasse/fiscaliste -legidor "$PWD/bin/legidor" \
   -out /tmp/legidor-four-models
 ```
@@ -131,7 +153,10 @@ rebuild that executable while its samples are running.
 
 ## Grading and interpretation
 
-`grade` uses Opus with no tools, no evaluated skill and no configuration labels.
+`grade` defaults to Opus with no tools, no evaluated skill and no configuration labels.
+Select another judge explicitly with `-agent codex -model gpt-6-astra`, for
+example when Claude quota is unavailable. The grading manifest pins this choice;
+use the same judge for every comparison in a report and disclose family bias.
 It grades fiscal assertions separately from evidence and temporal scores (0..2).
 Expected answers never enter the evaluated conversation. Every verdict includes a
 reason; raw grader output and usage remain available for audit.
@@ -139,7 +164,7 @@ reason; raw grader output and usage remain available for audit.
 The evidence score measures what the answer demonstrates in text. It does not
 independently verify every URL, legal quotation or conclusion. Review material
 failures and disputed criteria against primary sources before using results to
-change Legidor. An LLM judge is fallible, and using Opus to grade Opus and Sol can
+change Legidor. An LLM judge is fallible, and using a model to grade its own family can
 introduce model-family bias. Report this and manually inspect close comparisons.
 
 Eight cases with one repetition are a diagnostic pilot, not a statistical proof.
@@ -162,6 +187,13 @@ RSU plan is explicitly qualified, and the PEA gains are all earned in the stated
 year. These are adaptations, not an unchanged reproduction of Paperasse's published
 scores. Typography is normalized to ASCII quotes/dashes. Amounts are public
 fictional fixtures, never a private dossier.
+
+The current rubric has 48 criteria. Three optional or out-of-scenario criteria
+were removed after the initial engineering pilot: employer matching for the
+personal PER question, CEHR smoothing explicitly excluded by the facts, and
+pre-2026 gains in a PEA scenario containing only 2026 gains. Their removals are
+recorded as amendments. Earlier runs retain their original 51-criterion corpus;
+do not regrade them with the revised rubric or silently compare the scores.
 
 To regenerate from the pinned public checkout:
 

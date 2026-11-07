@@ -72,6 +72,7 @@ func run() error {
 	case "grade":
 		out := f.String("out", "", "run directory")
 		corpus := f.String("corpus", "evals/pilot.json", "corpus")
+		agent := f.String("agent", "claude", "judge CLI: claude or codex")
 		model := f.String("model", "claude-opus-5-5", "judge model")
 		timeout := f.Duration("timeout", 10*time.Minute, "per-case timeout")
 		if e := f.Parse(os.Args[2:]); e != nil {
@@ -84,7 +85,7 @@ func run() error {
 		if e != nil {
 			return e
 		}
-		return bench.GradeAnswers(ctx, abs, *corpus, *model, *timeout)
+		return bench.GradeAnswers(ctx, abs, *corpus, *agent, *model, *timeout)
 	case "run":
 		var o bench.Options
 		f.StringVar(&o.Corpus, "corpus", "evals/pilot.json", "corpus JSON")
@@ -100,6 +101,8 @@ func run() error {
 		f.StringVar(&o.CacheMode, "cache", "cold", "cold (per-sample), shared (run-local), or fresh")
 		f.IntVar(&o.Repetitions, "repetitions", 1, "fresh conversations per cell")
 		f.IntVar(&o.Workers, "workers", 1, "maximum concurrent agent conversations (1..16)")
+		f.IntVar(&o.MaxSamples, "max-samples", 0, "reject a larger matrix before model calls (0 = unlimited)")
+		f.BoolVar(&o.ContinueOnError, "continue-on-error", false, "continue scheduling after failed samples (default stops)")
 		f.Int64Var(&o.Seed, "seed", 42, "schedule shuffle seed")
 		f.DurationVar(&o.Timeout, "timeout", 8*time.Minute, "per-sample deadline")
 		agents := f.String("agents", "claude,codex", "comma-separated agents")

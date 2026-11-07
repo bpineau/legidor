@@ -249,3 +249,84 @@ func TestInterruptedCodexKeepsRequestedModel(t *testing.T) {
 		}
 	}
 }
+
+func TestParallelStopsSchedulingAfterFailure(t *testing.T) {
+	var calls int
+	err := parallel(context.Background(), 100, 1, func(_ int) error {
+		calls++
+		return context.DeadlineExceeded
+	})
+	if err == nil || calls != 1 {
+		t.Fatalf("calls=%d err=%v", calls, err)
+	}
+}
+
+func TestGradeRejectsUnknownAgentBeforeInvocation(t *testing.T) {
+	err := GradeAnswers(context.Background(), t.TempDir(), "missing.json", "unknown", "model", time.Minute)
+	if err == nil || !strings.Contains(err.Error(), "unknown grading agent") {
+		t.Fatal(err)
+	}
+}
+
+func TestSampleBudgetRejectsMatrixBeforeSetup(t *testing.T) {
+	root := t.TempDir()
+	corpus := filepath.Join(root, "corpus.json")
+	if err := writeJSON(corpus, Corpus{AsOf: "2026-11-07", Cases: []Case{
+		{ID: 1, Name: "one", Prompt: "question", Assertions: []string{"criterion"}},
+		{ID: 2, Name: "two", Prompt: "question", Assertions: []string{"criterion"}},
+	}}); err != nil {
+		t.Fatal(err)
+	}
+	out := filepath.Join(root, "output")
+	err := Run(context.Background(), Options{Corpus: corpus, Output: out,
+		Agents: []string{"codex"}, CodexModels: []string{"model-a", "model-b"},
+		Arms:      []string{"none", "paperasse", "legidor", "both"},
+		CacheMode: "cold", Repetitions: 1, Timeout: time.Minute, MaxSamples: 8})
+	if err == nil || !strings.Contains(err.Error(), "matrix has 16 samples") {
+		t.Fatalf("wrong preflight error: %v", err)
+	}
+	if _, err := os.Stat(out); !os.IsNotExist(err) {
+		t.Fatalf("budget rejection created output: %v", err)
+	}
+}
+
+func TestRunRetainsFailureAndStopsByDefault(t *testing.T) {
+	root := t.TempDir()
+	// Stand in for a native CLI that rejects work, without invoking any model.
+	stub := "#!/bin/sh\nif [ \"$1\" = \"--version\" ]; then echo fake-cli; exit 0; fi\nprintf '%s\\n' '{\"type\":\"turn.failed\"}'\nexit 1\n"
+	if err := os.WriteFile(filepath.Join(root, "codex"), []byte(stub), 0755); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("PATH", root+string(os.PathListSeparator)+os.Getenv("PATH"))
+	corpus := filepath.Join(root, "corpus.json")
+	if err := writeJSON(corpus, Corpus{AsOf: "2026-11-07", Cases: []Case{
+		{ID: 1, Name: "one", Prompt: "question", Assertions: []string{"criterion"}},
+		{ID: 2, Name: "two", Prompt: "question", Assertions: []string{"criterion"}},
+	}}); err != nil {
+		t.Fatal(err)
+	}
+	for _, keepGoing := range []bool{false, true} {
+		name := "stop"
+		want := 1
+		if keepGoing {
+			name, want = "continue", 2
+		}
+		out := filepath.Join(root, name)
+		err := Run(context.Background(), Options{Corpus: corpus, Output: out,
+			Agents: []string{"codex"}, CodexModel: "fake-model", Arms: []string{"none"},
+			CacheMode: "cold", Repetitions: 1, Workers: 1, Timeout: time.Minute,
+			MaxSamples: 2, ContinueOnError: keepGoing})
+		if err == nil {
+			t.Fatal("CLI failure was ignored")
+		}
+		samples, err := Samples(out)
+		if err != nil || len(samples) != want {
+			t.Fatalf("%s: samples=%d want=%d err=%v", name, len(samples), want, err)
+		}
+		for _, sample := range samples {
+			if sample.Status != "failed" || sample.Error == "" {
+				t.Fatalf("failure was not preserved: %+v", sample)
+			}
+		}
+	}
+}

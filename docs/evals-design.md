@@ -1,7 +1,8 @@
 # Reproducible agent evaluations
 
 Measure the incremental benefit of Legidor within each agent, separating fiscal
-correctness, source evidence, and resource use. Compare Claude Opus and Codex Sol
+correctness, source evidence, and resource use. Compare Claude Opus 5.5, Sonnet 5.5,
+Codex Sol 6.1 and Astra 6
 with no skill, Paperasse fiscaliste, Legidor, and both. Cross-agent differences
 also include their native web tools and system prompts.
 
@@ -34,7 +35,7 @@ Python runtime, Paperasse runner, or calculator script is used.
 - Grade blinded answers against the same criteria. Keep grading usage separate.
   Include failures and missing grades in denominators. Source citations alone do
   not establish that a source supports the claim. Review dubious grades manually.
-- Start with one repetition of eight cases across eight configurations. Use the
+- Start with one repetition of eight cases across sixteen configurations. Use the
   pilot to diagnose defects; repeat selected cases after fixes. Do not claim
   statistical significance from one sample or selectively publish winners.
 

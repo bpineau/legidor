@@ -27,6 +27,8 @@ type Options struct {
 	ClaudeModels, CodexModels                  []string
 	Repetitions                                int
 	Workers                                    int
+	MaxSamples                                 int
+	ContinueOnError                            bool
 	Seed                                       int64
 	Timeout                                    time.Duration
 }
@@ -73,6 +75,9 @@ func contains(ss []string, s string) bool {
 	return false
 }
 func (o Options) validate() error {
+	if o.MaxSamples < 0 {
+		return errors.New("max-samples must be nonnegative")
+	}
 	if o.Output == "" || o.Corpus == "" || o.Repetitions < 1 || o.Timeout <= 0 || len(o.Agents) == 0 || len(o.Arms) == 0 {
 		return errors.New("corpus, output, agents, arms, positive repetitions and timeout are required")
 	}
@@ -115,6 +120,44 @@ func Run(ctx context.Context, o Options) error {
 	corpus, err := LoadCorpus(o.Corpus)
 	if err != nil {
 		return err
+	}
+	type job struct {
+		c                 Case
+		agent, model, arm string
+		rep               int
+	}
+	var jobs []job
+	for rep := 1; rep <= o.Repetitions; rep++ {
+		for _, c := range corpus.Cases {
+			if len(o.IDs) > 0 && !contains(o.IDs, strconv.Itoa(c.ID)) {
+				continue
+			}
+			for _, agent := range o.Agents {
+				models := o.ClaudeModels
+				fallback := o.ClaudeModel
+				if agent == "codex" {
+					models = o.CodexModels
+					fallback = o.CodexModel
+				}
+				if len(models) == 0 {
+					models = []string{fallback}
+				}
+				for _, model := range models {
+					if model == "" {
+						return fmt.Errorf("empty model for %s", agent)
+					}
+					for _, arm := range o.Arms {
+						jobs = append(jobs, job{c, agent, model, arm, rep})
+					}
+				}
+			}
+		}
+	}
+	if len(jobs) == 0 {
+		return errors.New("no matching cases")
+	}
+	if o.MaxSamples > 0 && len(jobs) > o.MaxSamples {
+		return fmt.Errorf("matrix has %d samples, exceeding -max-samples %d; narrow cases, models or arms", len(jobs), o.MaxSamples)
 	}
 	o.Output, err = filepath.Abs(o.Output)
 	if err != nil {
@@ -174,6 +217,8 @@ func Run(ctx context.Context, o Options) error {
 	}
 	manifest := map[string]any{"protocol": 1, "corpus_sha256": corpusHash, "resources_sha256": resourceHash, "runner_sha256": runnerHash, "legidor_sha256": binHash, "cli_versions": versions, "claude_model": o.ClaudeModel, "codex_model": o.CodexModel, "effort": o.Effort, "cache_mode": o.CacheMode, "repetitions": o.Repetitions, "seed": o.Seed, "timeout_seconds": o.Timeout.Seconds(), "agents": o.Agents, "arms": o.Arms, "ids": o.IDs, "as_of": corpus.AsOf}
 	manifest["workers"] = o.Workers
+	manifest["max_samples"] = o.MaxSamples
+	manifest["continue_on_error"] = o.ContinueOnError
 	manifest["claude_models"] = o.ClaudeModels
 	manifest["codex_models"] = o.CodexModels
 	if err = EnsureManifest(filepath.Join(o.Output, "manifest.json"), manifest); err != nil {
@@ -186,41 +231,6 @@ func Run(ctx context.Context, o Options) error {
 	if err = os.WriteFile(filepath.Join(o.Output, "corpus.json"), corpusBytes, 0600); err != nil {
 		return err
 	}
-	type job struct {
-		c                 Case
-		agent, model, arm string
-		rep               int
-	}
-	var jobs []job
-	for rep := 1; rep <= o.Repetitions; rep++ {
-		for _, c := range corpus.Cases {
-			if len(o.IDs) > 0 && !contains(o.IDs, strconv.Itoa(c.ID)) {
-				continue
-			}
-			for _, agent := range o.Agents {
-				models := o.ClaudeModels
-				fallback := o.ClaudeModel
-				if agent == "codex" {
-					models = o.CodexModels
-					fallback = o.CodexModel
-				}
-				if len(models) == 0 {
-					models = []string{fallback}
-				}
-				for _, model := range models {
-					if model == "" {
-						return fmt.Errorf("empty model for %s", agent)
-					}
-					for _, arm := range o.Arms {
-						jobs = append(jobs, job{c, agent, model, arm, rep})
-					}
-				}
-			}
-		}
-	}
-	if len(jobs) == 0 {
-		return errors.New("no matching cases")
-	}
 	rng := rand.New(rand.NewSource(o.Seed))
 	rng.Shuffle(len(jobs), func(i, j int) { jobs[i], jobs[j] = jobs[j], jobs[i] })
 	var failures atomic.Int64
@@ -228,6 +238,7 @@ func Run(ctx context.Context, o Options) error {
 	err = parallel(ctx, len(jobs), o.Workers, func(i int) error {
 		j := jobs[i]
 		var err error
+		var sampleErr error
 		if err = ctx.Err(); err != nil {
 			return err
 		}
@@ -246,6 +257,9 @@ func Run(ctx context.Context, o Options) error {
 			}
 			if previous.Status != "ok" {
 				failures.Add(1)
+				if !o.ContinueOnError {
+					return fmt.Errorf("retained failed sample %s; use a new run to retry", id)
+				}
 			}
 			fmt.Fprintf(os.Stderr, "[%d/%d] resume %s\n", i+1, len(jobs), id)
 			return nil
@@ -262,6 +276,9 @@ func Run(ctx context.Context, o Options) error {
 			}
 			failures.Add(1)
 			fmt.Fprintf(os.Stderr, "[%d/%d] retained interrupted sample %s\n", i+1, len(jobs), id)
+			if !o.ContinueOnError {
+				return fmt.Errorf("retained interrupted sample %s", id)
+			}
 			return nil
 		} else if !os.IsNotExist(err) {
 			return err
@@ -326,6 +343,7 @@ func Run(ctx context.Context, o Options) error {
 				sample.Status = "failed"
 				sample.Error = err.Error()
 				failures.Add(1)
+				sampleErr = fmt.Errorf("sample %s failed: %w", id, err)
 			}
 			if err := writeJSON(filepath.Join(dir, "result.json"), sample); err != nil {
 				return err
@@ -339,6 +357,9 @@ func Run(ctx context.Context, o Options) error {
 		defer reportMu.Unlock()
 		if err = Report(o.Output); err != nil {
 			return err
+		}
+		if !o.ContinueOnError {
+			return sampleErr
 		}
 		return nil
 	})

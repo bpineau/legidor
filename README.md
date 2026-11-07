@@ -217,7 +217,11 @@ No anti-bot bypass is attempted. A result absent from a corpus does not establis
 
 ### Agent evaluations
 
-The [Go evaluation runner](evals/README.md) compares Claude Opus and Codex Sol
+The [engineering pilot report](docs/evals-pilot-2026-11-07.md) records readiness,
+defects corrected and the limits of the interrupted initial comparison.
+
+The [Go evaluation runner](evals/README.md) compares Claude Opus 5.5, Sonnet 5.5,
+Codex Sol 6.1 and Astra 6
 with no skill, Paperasse fiscaliste, Legidor, or both. It reuses eight public
 Paperasse scenarios with explicit provenance and amendments, and records fiscal
 correctness, evidence, dates, tokens, cache usage and elapsed time. No JavaScript
