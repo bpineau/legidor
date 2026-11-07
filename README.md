@@ -28,7 +28,7 @@ PISTE setup has three separate parts: a user account, consent to each API's term
 
 ### 1. Create and activate your account
 
-Open [piste.gouv.fr](https://piste.gouv.fr/) and choose the account creation option. Complete the [registration form](https://piste.gouv.fr/component/apiportal/registration), accept the PISTE platform terms (CGU, "Conditions générales d'utilisation"), then activate the account through the email link and sign in. The organization code field is optional; an individual user can leave it empty.
+Open [piste.gouv.fr](https://piste.gouv.fr/) and choose the account creation option. Complete the [registration form](https://piste.gouv.fr/registration), accept the PISTE platform terms (CGU, "Conditions générales d'utilisation"), then activate the account through the email link and sign in. The organization code field is optional; an individual user can leave it empty.
 
 The steps below use French menu labels. Labels may vary with the portal language or interface version.
 
@@ -36,15 +36,21 @@ The steps below use French menu labels. Labels may vary with the portal language
 
 Open **API > Consentement CGU API**. Find **Légifrance** and **Judilibre**, read their respective terms and record your consent for production. If you also want sandbox access, accept the terms for those entries too. Platform registration consent does not replace these API-specific consents. See the official [Legifrance access FAQ](https://www.legifrance.gouv.fr/contenu/pied-de-page/foire-aux-questions-api) and [Judilibre onboarding guide](https://www.courdecassation.fr/acces-rapide-judilibre/donnees-ouvertes-open-data-et-api).
 
+Accept these terms before selecting APIs in the application: an API whose terms have not been accepted cannot be selected there.
+
 ### 3. Create the production application and enable the APIs
 
 Open **Applications > Créer une application** and create a production application, using `legidor` or another available name. PISTE automatically creates a sandbox application at registration; create the production application separately for legidor's default environment.
 
 In the application's API selection, enable **both Légifrance and Judilibre**, then save. For an existing application, open **Modifier l'application**, select the APIs near the bottom of the form, and apply the changes. Reopen the application and verify that both APIs appear as selected/subscribed. Accepting terms and attaching APIs to the application are separate actions. The [PISTE application guide](https://portail.chorus-pro.gouv.fr/aife_documentation?id=kb_article_view&sysparm_article=KB0012883) illustrates these controls; its PPF-specific organization instructions do not apply to legidor.
 
+Select the production entries for the stable **Légifrance** API (not **Légifrance Beta**) and **JUDILIBRE**, then click **Appliquer les modifications**. One application can subscribe to both APIs.
+
 ### 4. Copy the application's OAuth credentials
 
-Open the application's authentication/OAuth credentials section and obtain its **Client ID** and **Client Secret**. These belong to the application, not your PISTE login. If creating an OAuth credential explicitly, use a confidential client: legidor authenticates with `client_credentials` and a client secret, without a browser callback.
+Open **Authentification > Identifiants Oauth**, distinct from the **API Keys** section. If no OAuth credentials are listed, click **Générer**, choose **Confidentiel**, and leave the callback URL and X.509 certificate empty. Legidor uses `client_credentials` with scope `openid`, without a browser callback or certificate.
+
+Copy the **Client ID** from the OAuth row and its **Client Secret** through **Consulter le client secret** on the same row. These belong to the application, not your PISTE login. Keep the fields in their respective positions; do not mix them with API Keys credentials.
 
 Use the pair from the **production** application. Legidor obtains and renews access tokens automatically; no manually generated bearer token is needed. A KeyId/API key shown elsewhere in PISTE is not a substitute for this OAuth pair.
 
@@ -80,6 +86,8 @@ legidor search 'bail' --in judilibre --limit 1 --fresh
 `auth status` checks OAuth authentication only. The next two commands exercise Legifrance and Judilibre independently; `--fresh` ensures an existing response cache cannot hide a missing API permission.
 
 If authentication succeeds but an API request fails with access denied, return to PISTE and check that its terms were accepted and that the API was enabled on the same application whose credentials you copied. If authentication itself fails, check the credential pair and environment. Also check for exported `PISTE_CLIENT_ID` or `PISTE_CLIENT_SECRET` variables overriding the file, without printing their values.
+
+For `invalid_client` reported by PISTE, check for sandbox credentials used against production, swapped Client ID/Client Secret fields, API Keys copied instead of OAuth credentials, or credentials that were revoked or replaced. An API HTTP 403 calls for checking production subscriptions and accepted API terms. These are diagnostic checks, not an exhaustive mapping of error codes to causes.
 
 For sandbox use, repeat the consent and API-selection steps on the sandbox application, store its own OAuth pair in `piste-sandbox.env` with mode 0600, and pass `--env sandbox` to every command. Production and sandbox have distinct credentials, endpoints and caches; a sandbox token cannot authenticate to production.
 
