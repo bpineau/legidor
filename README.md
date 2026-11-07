@@ -203,6 +203,17 @@ No anti-bot bypass is attempted. A result absent from a corpus does not establis
 
 ## Development and validation
 
+### Agent evaluations
+
+The [Go evaluation runner](evals/README.md) compares Claude Opus and Codex Sol
+with no skill, Paperasse fiscaliste, Legidor, or both. It reuses eight public
+Paperasse scenarios with explicit provenance and amendments, and records fiscal
+correctness, evidence, dates, tokens, cache usage and elapsed time. No JavaScript
+or Python tooling is required. Live model evaluations are opt-in and separate
+from ordinary Go tests.
+
+### Tests
+
 ```sh
 make test
 make vet

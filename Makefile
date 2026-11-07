@@ -1,6 +1,8 @@
-.PHONY: build test vet install install-skill
+.PHONY: build build-eval test vet install install-skill
 build:
 	go build -trimpath -o bin/legidor ./cmd/legidor
+build-eval:
+	go build -trimpath -o bin/legidor-eval ./cmd/legidor-eval
 test:
 	go test -race ./...
 vet:
