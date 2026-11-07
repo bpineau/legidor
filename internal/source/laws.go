@@ -75,6 +75,9 @@ func (c *Client) law(ctx context.Context, r reference.Reference) (model.Document
 		if e != nil {
 			return model.Document{}, e
 		}
+		if r.Kind == "named_law" {
+			s = namedLawCandidates(s, r)
+		}
 		h, e := unique(s)
 		if e != nil {
 			return model.Document{}, e
@@ -138,7 +141,7 @@ func (c *Client) law(ctx context.Context, r reference.Reference) (model.Document
 		if original.Nature == "LFSS" {
 			phrase = "financement de la sécurité sociale pour " + original.Number
 		}
-		if !sameNature("loi", str(raw, "nature"), d.Title) || !strings.Contains(strings.ToLower(d.Title), phrase) {
+		if !sameNature("loi", str(raw, "nature"), d.Title) || !strings.Contains(strings.ToLower(d.Title), phrase) || !namedLawTitle(d.Title, original) {
 			return d, model.Err("IDENTITY_MISMATCH", 1, "named law title differs")
 		}
 	}

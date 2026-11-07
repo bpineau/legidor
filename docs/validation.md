@@ -45,7 +45,7 @@ The workflow used `refs --diff`, a manually reviewed 23-entry manifest, `check`,
 
 The exercise exposed two defects, now covered by regression tests: extraction missed code-last references such as `art. L. 169 LPF`, and parsing treated the final letters in `1649 bis C` and `199 decies EA` as subdivisions. After correction, extraction on PR 126 found 10 occurrences instead of two (including context lines); this is not an exhaustive-recall metric. Twenty of the 23 initial manifest entries then completed without errors. Follow-up consultations selected the original 2026 finance law from explicit candidates and read an older version of article 199 decies F (marked PERIME by the source); neither was silently substituted for the original request.
 
-BOI-BAREME-000044 contains tables and remained explicitly incomplete. Its thresholds were checked in the official web publication, while article 50-0 and the textual BOFiP paragraphs were available through the CLI. Table rendering, inferred references without a code name, historical BOFiP and tax-form box verification remain coverage limits. This exercise measured functionality, not comparative token savings or agent-provider performance.
+At the time of that review, BOI-BAREME-000044 contained unsupported tables and remained explicitly incomplete. Its thresholds were checked in the official web publication, while article 50-0 and the textual BOFiP paragraphs were available through the CLI. Rectangular table rendering is now supported; complex tables, inferred references without a code name, historical BOFiP and tax-form box verification remain coverage limits. This exercise measured functionality, not comparative token savings or agent-provider performance.
 
 ## Calculation-review exercise
 
@@ -57,4 +57,10 @@ This exercise also exposed a source-maintenance caveat rather than a retrieval d
 
 ## Explicit limits
 
-Unsupported tables, images and embedded content are not flattened into supposedly complete legal text. Historical BOFiP, notices/forms, PDF-only text, bulk mirrors and legal-applicability inference remain outside this version. A missing historical interval, ambiguous publication (including rectifications), absent subdivision or network failure is explicit. BOFiP is current administrative doctrine; it does not establish historical law.
+Merged/nested tables other than supported full-width notes, images and unsupported embedded content are not flattened into supposedly complete legal text. Historical BOFiP, notices/forms, PDF-only text, bulk mirrors and legal-applicability inference remain outside this version. A missing historical interval, ambiguous publication (including rectifications), absent subdivision or network failure is explicit. BOFiP is current administrative doctrine; it does not establish historical law.
+
+## Source reading regression checks
+
+Synthetic tests cover rectangular tables, full-width notes, formulas with exponents and indices, rejection of complex tables, omitted introductions, scoped completeness, compound subdivisions, dotted lowercase labels, explicit citation lists and ambiguous-list diagnostics. Batch output retains temporal evidence in both output modes. Source-link tests cover official hosts, credential-bearing URLs, actual href attributes and parent-preserving continuation cursors.
+
+Bounded live checks passed for CGI 219 I b, CGI 1609 nonies G, BOI-RFPI-TPVIE-20 paragraph 70, BOI-IR-CDHR-10 paragraph 250 and CIBS L213-82 at its requested date. The current table renderer also retains malformed wording already present in source HTML; it does not guess repairs. Named-law filtering reduced the LFI 2026 candidates to the original publication and its rectification, preserving that ambiguity. These checks establish retrieval behavior, not legal applicability or comparative token savings.

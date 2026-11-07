@@ -92,6 +92,8 @@ legidor get 'CSS L136-8' --date 2025-12-31 --parts
 legidor get 'CSS L136-8 IV' --date 2025-12-31 --json
 legidor get 'CGI 150-0 D, 11' --date 2025-12-31
 legidor get 'BOI-RFPI-DECLA-10 §60'
+legidor get 'CGI 219' --part 'I b'
+legidor get 'CGI 261' --links --json
 legidor get 'LFI 2024 art. 110'
 legidor get 'CPCE R322-39..R322-42' --date 2025-12-31
 legidor get 'Cass. 3e civ. 2023-10-19 n° 22-15.536' --json
@@ -104,9 +106,13 @@ Quote references containing spaces. Options may appear before or after the refer
 
 `--date` means the text version in force on that calendar date. It is not the law applicable to income earned during that year: publication, version validity and applicability are different facts. Read NOTA, modifying provisions and transitional rules separately.
 
-Direct identifiers select their specific version. A date that contradicts that version is an error. Official article URLs preserve their date. Article and code numbers are never silently corrected. Recognized aliases include CGI and annexes I-IV, LPF, CSS, CMF/CoMoFi, civil, construction, insurance, labor, enforcement, consumer, commercial, local-government, public-health and urban-planning codes.
+Direct identifiers select their specific version. A date that contradicts that version is an error. Official article URLs preserve their date. Article and code numbers are never silently corrected. Recognized aliases include CGI and annexes I-IV, CIBS, LPF, CSS, CMF/CoMoFi, civil, construction, insurance, labor, enforcement, consumer, commercial, local-government, public-health and urban-planning codes.
 
 Numbered laws without a date resolve their JORF publication; with a date they resolve consolidated LODA. Rectifications can create several candidates. Use a returned text identifier with `art. NUMBER` to select an article. Named LFI/LFSS references use verified entries where available, otherwise a title search with identity checks. LFR requires a specific law number because several rectifying laws can exist in one year.
+
+Named-law searches exclude implementing texts that merely mention the law; original publications and rectifications remain distinct candidates. `get --links` provides a paginated index of explicit links in the source HTML to supported official sources, without fetching or validating the targets. It cannot be combined with text selection.
+
+The [agent skill](skills/legidor/SKILL.md) covers dated citations and source limitations. Its [audit workflow](skills/legidor/references/audits.md) connects assertions, primary sources, assumptions and the calculations that consume them, including complements such as official tax notices and social-security instructions.
 
 ## Verify citations
 
@@ -132,6 +138,8 @@ git diff | legidor refs - --diff > changes.jsonl
 
 Extraction happens locally and proposes detected references, not an exhaustive audit. Review and complete the manifest. Diff entries retain added/removed/context labels; `check` checks every supplied entry, so filter removed lines if they are outside the audit scope. Files, quotes and `where` values are not sent to source APIs. Free-text search queries are sent, so avoid including personal facts in them.
 
+Explicit plural article lists and BOFiP paragraph lists are expanded. Ambiguous numeric lists produce a diagnostic and exit 3 while other citations are still emitted. Resolve them with explicit plural wording or the manifest's `part` field. Batch output retains NOTA, modifier links and warnings in both JSON and text modes.
+
 ## Output and reliability
 
 Text is compact by default; `--json` uses the stable `legidor/1` contract described in [docs/contract.md](docs/contract.md). Source URLs, retrieval time, environment and cache/offline status accompany documents.
@@ -145,7 +153,9 @@ Text is compact by default; `--json` uses the stable `legidor/1` contract descri
 
 Batch precedence is 3, then 2, then 1. Diagnostics go to stderr. JSON stdout contains results or structured errors only.
 
-The supported structural subset includes Roman numerals, uppercase letters, numbered clauses, degree clauses, lowercase letters and common suffixes. Ancestor introductory text is retained. `--parts` shows recognized labels; ambiguous labels fail. `alinéa N` is a rendered paragraph position, not an authoritative legal numbering. Complex HTML, tables, images and embedded objects are reported as unsupported; no flattened approximation is represented as complete source text.
+The supported structural subset includes Roman numerals, uppercase letters, numbered clauses, compound degree clauses, dotted or parenthesized lowercase letters and common suffixes. Ancestor introductory text is retained. `--parts` shows recognized labels; ambiguous labels fail. `alinéa N` is a rendered paragraph position, not an authoritative legal numbering.
+
+Rectangular HTML tables preserve captions, headers, rows, cells and formulas. Full-width notes after regular rows are labeled `Table-wide:`. Exponents and indices use `^(...)` and `_(...)` notation. Other merged/nested tables, images and unsupported embedded content remain explicit omission markers. A selection can be complete when omissions occur elsewhere: `source_complete`, when present, preserves the original document's status. Omissions in retained introductions still block verification. Completeness describes rendering, not legal applicability or the absence of relevant exceptions in other provisions.
 
 Whole laws return their table of contents. Text output normally stops at 20000 characters with `complete=false`, omitted size and a continuation cursor that checks content identity. `--full` lifts this output cap. Requested subdivisions are never truncated. Collections use official order, include intercalated articles and are bounded at 200 articles.
 

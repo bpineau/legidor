@@ -10,19 +10,20 @@ import (
 	"unicode/utf8"
 
 	"github.com/bpineau/legidor/internal/model"
+	"github.com/bpineau/legidor/internal/reference"
 )
 
 var tagRE = regexp.MustCompile(`(?s)<[^>]*>`)
 var blockRE = regexp.MustCompile(`(?i)</(?:p|div|h[1-6]|li)>|<br\s*/?>`)
-var unsafeRE = regexp.MustCompile(`(?is)<(table|script|style|svg|object|iframe)\b[^>]*>.*?</(?:table|script|style|svg|object|iframe)\s*>`)
-var unsupportedRE = regexp.MustCompile(`(?i)<(?:table|img|svg|object|iframe|embed)\b`)
+var unsafeRE = regexp.MustCompile(`(?is)<(?:script|style)\b[^>]*>.*?</(?:script|style)\s*>`)
+var unsupportedBlockRE = regexp.MustCompile(`(?is)<(svg|object|iframe)\b[^>]*>.*?</(?:svg|object|iframe)\s*>`)
+var unsupportedRE = regexp.MustCompile(`(?i)<(img|svg|object|iframe|embed)\b[^>]*>`)
 
 func HTML(s string) (string, []string) {
-	var unsupported []string
-	for _, v := range unsupportedRE.FindAllString(s, -1) {
-		unsupported = append(unsupported, strings.ToLower(strings.TrimPrefix(v, "<")))
-	}
 	s = unsafeRE.ReplaceAllString(s, "")
+	s = tables(s)
+	s = unsupportedBlockRE.ReplaceAllStringFunc(s, func(v string) string { return omitted(strings.ToLower(unsupportedBlockRE.FindStringSubmatch(v)[1])) })
+	s = unsupportedRE.ReplaceAllStringFunc(s, func(v string) string { return omitted(strings.ToLower(unsupportedRE.FindStringSubmatch(v)[1])) })
 	s = blockRE.ReplaceAllString(s, "\n")
 	s = tagRE.ReplaceAllString(s, "")
 	s = html.UnescapeString(s)
@@ -33,10 +34,11 @@ func HTML(s string) (string, []string) {
 			lines = append(lines, line)
 		}
 	}
-	return strings.Join(lines, "\n"), unsupported
+	result := strings.Join(lines, "\n")
+	return result, Omissions(result)
 }
 
-var labelRE = regexp.MustCompile(`^((?:[IVX]+|[A-Z])(?:\s+(?:bis|ter|quater|quinquies|sexies|septies|octies|nonies|decies|undecies|duodecies|terdecies|quaterdecies|quindecies|sexdecies|septdecies|octodecies|novodecies|vicies|unvicies|duovicies|tervicies|quatervicies|quinvicies|sexvicies|septvicies|octovicies|novovicies|tricies)\b)?)[.\s]*[-.]\s*|^(\d+°(?:\s+(?:bis|ter|quater|quinquies|sexies|septies|octies|nonies|decies|undecies|duodecies|terdecies|quaterdecies|quindecies|sexdecies|septdecies|octodecies|novodecies|vicies|unvicies|duovicies|tervicies|quatervicies|quinvicies|sexvicies|septvicies|octovicies|novovicies|tricies)\b)?)\s*|^(\d+(?:\s+(?:bis|ter|quater|quinquies|sexies|septies|octies|nonies|decies|undecies|duodecies|terdecies|quaterdecies|quindecies|sexdecies|septdecies|octodecies|novodecies|vicies|unvicies|duovicies|tervicies|quatervicies|quinvicies|sexvicies|septvicies|octovicies|novovicies|tricies)\b)?)[.)]\s*|^([a-z])\)\s*`)
+var labelRE = regexp.MustCompile(`^((?:[IVX]+|[A-Z])(?:\s+` + reference.LatinSuffixPattern + `\b)?)[.\s]*[-.]\s*|^(\d+°(?:-\d+)?(?:\s+` + reference.LatinSuffixPattern + `\b)?)\s*|^(\d+(?:\s+` + reference.LatinSuffixPattern + `\b)?)[.)]\s*|^([a-z])[.)]\s*`)
 
 func Parts(s string) []model.Part {
 	var ps []model.Part
@@ -158,6 +160,9 @@ func Select(s string, ps []model.Part, label string) (string, error) {
 		ancestors = append(ancestors, parent)
 	}
 	var out []string
+	if len(ps) > 0 && ps[0].Start > 0 {
+		out = append(out, strings.TrimSpace(s[:ps[0].Start]))
+	}
 	for i := len(ancestors) - 1; i >= 0; i-- {
 		a := ps[ancestors[i]]
 		end := a.End

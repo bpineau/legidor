@@ -60,6 +60,8 @@ legidor check citations.jsonl --json
 
 `refs` only proposes detected references. Review and complete the manifest, including dates and subdivisions. With `refs --diff`, distinguish added, removed and context entries; filter as appropriate before checking. Never claim extraction was exhaustive. Only references go to the sources; keep personal facts out of free-text search queries.
 
+For a document or repository review, also inspect decision-relevant assertions without citations and the calculations that use them. Follow the [dossier audit workflow](references/audits.md); a citation check cannot detect a stale input or a missing deduction in a calculation.
+
 Read each row's independent statuses:
 
 | Field | Meaning |
@@ -97,12 +99,14 @@ Use the returned dated permalink. A missing paragraph is not evidence that the u
 
 `--json` uses schema `legidor/1`; `check` emits JSONL. Exit 0 means complete processing, not a globally valid legal conclusion. Exit 1 is an established check failure, 2 is invalid input, 3 is incomplete or indeterminate. Inspect stdout even on nonzero exit.
 
-For `complete=false`, follow the returned continuation command or choose a subdivision. Cursors pin content and must not be edited. Requested subdivisions are returned whole; `--full` lifts the normal length cap. Tables, images, annexes and unavailable formats can remain unsupported even with `--full`. Use the official link and state the limitation.
+For `complete=false`, follow the returned continuation command or choose a subdivision. Cursors pin content and must not be edited. Requested subdivisions are returned whole; `--full` lifts the normal length cap. Rectangular tables preserve rows, cells and formulas, with full-width notes labeled `Table-wide:`. Other merged/nested tables, images and unavailable formats remain explicit omissions. Exponents and indices in table cells use `^(...)` and `_(...)` notation. Source wording is not repaired; use the official source to verify formatted quotations or suspicious formulas.
+
+On a selection, `complete` describes the returned text including retained introductions. When present, `source_complete` describes the original document: a complete excerpt does not make the entire document complete. An omission in retained context still blocks verification. Read NOTA and modifier links even when `check` succeeds: one subdivision may have a different commencement or repeal date from the article's overall version.
 
 Cite the human reference and subdivision, version interval or decision date, official URL and retrieval date. For example: `CGI, article 32, 2 c, version in force on [date], [returned official URL], retrieved [date].` Label BOFiP as doctrine and judgments as case law. Quote only verified wording; separate quotations from interpretation.
 
 Do not replace an API failure with remembered text or a search-engine snippet. Do not guess identifiers, bypass anti-bot controls, read credential files, or print secrets. Run `legidor auth status` for authentication diagnostics.
 
-Coverage excludes tax forms/notices, BOSS, URSSAF, Unedic, HCSF, historical BOFiP and PDF-only materials. Preparing a return or benefit claim can require those additional primary sources.
+Coverage excludes tax forms/notices, BOSS, URSSAF, Unedic, HCSF, historical BOFiP and PDF-only materials. Preparing a return or benefit claim can require those additional primary sources; the [audit workflow](references/audits.md) explains how to record these complements.
 
 For searches, ranges, laws, decisions and offline use, read [advanced recipes](references/advanced.md). For authentication, quota or cache failures, read [troubleshooting](references/troubleshooting.md).

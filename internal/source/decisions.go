@@ -102,7 +102,8 @@ func (c *Client) decision(ctx context.Context, r reference.Reference) (model.Doc
 	d.Title = str(a, "titre")
 	d.Number = str(a, "num")
 	d.Publication = date(a["dateTexte"])
-	d.Text, d.Unsupported = legaltext.HTML(str(a, "texteHtml"))
+	d.HTML = str(a, "texteHtml")
+	d.Text, d.Unsupported = legaltext.HTML(d.HTML)
 	if d.Text == "" {
 		d.Text = str(a, "texte")
 	}

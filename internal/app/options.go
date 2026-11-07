@@ -11,12 +11,12 @@ import (
 )
 
 type options struct {
-	json, help, fresh, offline, full, parts, parseOnly, diff bool
-	date, part, grep, from, to, since, corpus, cursor, env   string
-	limit                                                    int
-	maxAge                                                   time.Duration
-	args                                                     []string
-	supplied                                                 map[string]bool
+	json, help, fresh, offline, full, parts, parseOnly, diff, links bool
+	date, part, grep, from, to, since, corpus, cursor, env          string
+	limit                                                           int
+	maxAge                                                          time.Duration
+	args                                                            []string
+	supplied                                                        map[string]bool
 }
 
 func parseOptions(args []string) (options, error) {
@@ -31,6 +31,7 @@ func parseOptions(args []string) (options, error) {
 	fs.BoolVar(&o.offline, "offline", false, "")
 	fs.BoolVar(&o.full, "full", false, "")
 	fs.BoolVar(&o.parts, "parts", false, "")
+	fs.BoolVar(&o.links, "links", false, "")
 	fs.BoolVar(&o.parseOnly, "parse-only", false, "")
 	fs.BoolVar(&o.diff, "diff", false, "")
 	fs.StringVar(&o.date, "date", "", "")

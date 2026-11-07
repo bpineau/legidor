@@ -27,7 +27,7 @@ func TestQuote(t *testing.T) {
 	}
 }
 func TestHTML(t *testing.T) {
-	s, u := HTML(`<p>I.- A &amp; B</p><p>2° Case</p><table><tr><td>Complex</td></tr></table>`)
+	s, u := HTML(`<p>I.- A &amp; B</p><p>2° Case</p><table><tr><td colspan="2">Complex</td></tr></table>`)
 	if !strings.Contains(s, "A & B") || len(u) == 0 {
 		t.Fatal(s, u)
 	}
@@ -86,5 +86,89 @@ func TestLongLatinSubdivisionSuffix(t *testing.T) {
 	got, err := Select(s, parts, "I 1° quaterdecies")
 	if err != nil || !strings.Contains(got, "First case.") || strings.Contains(got, "Other case.") {
 		t.Fatalf("%q %v %+v", got, err, parts)
+	}
+}
+
+func TestSimpleTablesPreserveCellsAndNotes(t *testing.T) {
+	raw := `<table><caption>Example schedule</caption><thead><tr><th>Band</th><th>Amount</th></tr></thead><tbody><tr><td>10 &lt; x &lt; 20</td><td>3 % x - (20 - x) / 4</td></tr><tr><td>A | B</td><td><p>First</p><p>Second</p></td></tr></tbody></table><p>Note: invented values.</p>`
+	s, u := HTML(raw)
+	for _, want := range []string{"Example schedule", "| Band | Amount |", "| 10 < x < 20 | 3 % x - (20 - x) / 4 |", `A \| B`, "First Second", "Note: invented values."} {
+		if !strings.Contains(s, want) {
+			t.Errorf("missing %q in %q", want, s)
+		}
+	}
+	if len(u) != 0 {
+		t.Fatal(u)
+	}
+}
+
+func TestUnsupportedTablesRemainVisible(t *testing.T) {
+	for _, raw := range []string{
+		`<table><tr><td colspan="2">Merged</td></tr></table>`,
+		`<table><tr><td><table><tr><td>Nested</td></tr></table></td></tr></table>`,
+		`<table><tr><td>A</td><td>B</td></tr><tr><td>C</td></tr></table>`,
+		`<table><tr><td>Unclosed`,
+	} {
+		s, u := HTML("<p>Before.</p>" + raw + "<p>After.</p>")
+		if len(u) == 0 || !strings.Contains(s, "omitted:table") {
+			t.Fatalf("%q: %q %v", raw, s, u)
+		}
+	}
+}
+
+func TestDottedLettersAndCompoundDegrees(t *testing.T) {
+	s := "I.- Introduction\na. First group\n1° First case\n2° Second case\nb. Target group\n2°-0 ter Target case\n3° Next case\nII.- Other group"
+	ps := Parts(s)
+	got, err := Select(s, ps, "I b 2°-0 ter")
+	if err != nil || !strings.Contains(got, "Target case") || strings.Contains(got, "Next case") || strings.Contains(got, "First case") {
+		t.Fatalf("%q %v %+v", got, err, ps)
+	}
+	ms := Grep(s, "b. Target", ps)
+	if len(ms) != 1 || ms[0].Part != "I b" {
+		t.Fatal(ms)
+	}
+}
+
+func TestSourceLinks(t *testing.T) {
+	raw := `<a href="/codes/article_lc/LEGIARTI000000000001?dateVersion=20300101&amp;x=1">Article <b>example</b></a><a href="javascript:bad()">Bad</a><a href="https://example.net/">External</a><a href="https://user:secret@www.legifrance.gouv.fr/">Credentials</a>`
+	links := Links(raw, "https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000000000001")
+	if len(links) != 1 || links[0].ID != "LEGIARTI000000000001" || links[0].Title != "Article example" || !strings.Contains(links[0].URL, "&x=1") {
+		t.Fatal(links)
+	}
+}
+
+func TestTableExponentsAndIndices(t *testing.T) {
+	s, u := HTML(`<table><tr><td>x<sup>2</sup> + y<sub>n</sub></td></tr></table>`)
+	if len(u) != 0 || !strings.Contains(s, "x^(2) + y_(n)") {
+		t.Fatalf("%q %v", s, u)
+	}
+}
+
+func TestSelectionRetainsOmittedIntroductions(t *testing.T) {
+	s, ps, _ := BOI(`<img src="context.png"><p class="numero-de-paragraphe-western">10</p><p>Selected.</p>`)
+	got, err := Select(s, ps, "10")
+	if err != nil || len(Omissions(got)) != 1 {
+		t.Fatalf("%q %v", got, err)
+	}
+}
+
+func TestSourceLinksIgnoreDataAttributes(t *testing.T) {
+	raw := `<a data-href="https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000000000001" href="javascript:void(0)">Example</a>`
+	if links := Links(raw, "https://www.legifrance.gouv.fr/"); len(links) != 0 {
+		t.Fatal(links)
+	}
+}
+
+func TestSourceLinksPreferTargetOverParent(t *testing.T) {
+	links := Links(`<a href="https://www.legifrance.gouv.fr/affichCodeArticle.do?cidTexte=LEGITEXT000000000001&amp;idArticle=LEGIARTI000000000002">Article</a>`, "https://www.legifrance.gouv.fr/")
+	if len(links) != 1 || links[0].ID != "LEGIARTI000000000002" {
+		t.Fatalf("wrong link target: %+v", links)
+	}
+}
+
+func TestTableFullWidthNote(t *testing.T) {
+	s, u := HTML(`<table><tr><th>Band</th><th>Formula</th></tr><tr><td>A</td><td>x + 1</td></tr><tr><td colspan="2">x is the base.</td></tr></table>`)
+	if len(u) != 0 || !strings.Contains(s, "| A | x + 1 |") || !strings.Contains(s, "Table-wide: x is the base.") {
+		t.Fatalf("%q %v", s, u)
 	}
 }

@@ -81,3 +81,42 @@ func TestPaginationPinsContentAndDoesNotRepeat(t *testing.T) {
 		t.Fatal("changed content accepted")
 	}
 }
+
+func TestSelectedEvidenceAndSourceLinksOffline(t *testing.T) {
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	root := t.TempDir()
+	t.Setenv("XDG_CACHE_HOME", root)
+	disk := cache.New(filepath.Join(root, "legidor/production"))
+	raw := `{"article":{"id":"LEGIARTI000000000001","num":"1","dateDebut":1735689600000,"dateFin":1767225600000,"nota":"An exception has a separate commencement date.","texteHtml":"<p>I.- Shared introduction.</p><p>1° Usable provision. <a href=\"https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000000000002\">Related article</a></p><p>2° See illustration.</p><img src=\"example.png\">","textTitles":[{"id":"LEGITEXT000000000001","titreLong":"Code civil"}]}}`
+	seedResponse(t, disk, "/consult/getArticle", map[string]string{"id": "LEGIARTI000000000001"}, raw)
+	var out, diag bytes.Buffer
+	manifest := `{"ref":"LEGIARTI000000000001","date":"2025-06-01","part":"I 1°","quote":"Usable provision."}` + "\n" + `{"ref":"LEGIARTI000000000001","date":"2025-06-01","part":"I 2°"}`
+	code := Run(context.Background(), []string{"check", "-", "--offline", "--json"}, strings.NewReader(manifest), &out, &diag)
+	if code != 3 {
+		t.Fatalf("%d %s %s", code, &out, &diag)
+	}
+	dec := json.NewDecoder(&out)
+	var first, second model.Check
+	if err := dec.Decode(&first); err != nil {
+		t.Fatal(err)
+	}
+	if err := dec.Decode(&second); err != nil {
+		t.Fatal(err)
+	}
+	if first.Error != nil || first.QuoteStatus != "exact" || first.Document.Nota == "" || first.Document.SourceComplete == nil || *first.Document.SourceComplete {
+		t.Fatalf("%+v", first)
+	}
+	if second.Error == nil || second.Error.Code != "UNSUPPORTED_CONTENT" {
+		t.Fatalf("%+v", second)
+	}
+	out.Reset()
+	diag.Reset()
+	code = Run(context.Background(), []string{"get", "LEGIARTI000000000001", "--date", "2025-06-01", "--links", "--offline", "--json"}, strings.NewReader(""), &out, &diag)
+	var d model.Document
+	if err := json.Unmarshal(out.Bytes(), &d); err != nil {
+		t.Fatal(err)
+	}
+	if code != 3 || len(d.Items) != 1 || d.Items[0].ID != "LEGIARTI000000000002" || d.Text != "" || d.ContentKind != "source_references" {
+		t.Fatalf("%d %+v %s", code, d, &diag)
+	}
+}

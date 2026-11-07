@@ -4,7 +4,15 @@ Every JSON result contains `schema: "legidor/1"`. Errors contain `error.code`, `
 
 Document results contain identity (source, id, title, code, number, parent), version dates, provenance (official URL, retrieval time, environment, cache/offline flags), content, recognized parts, NOTA and modification links. `complete` describes the rendered content, not a legal conclusion. Unsupported or truncated content is always explicit.
 
+Rectangular HTML tables are rendered as rows with cell separators and headers when supplied. Full-width notes after a regular row establishes the width are labeled `Table-wide:` in their original sequence. Other merged/nested or unsupported tables remain `[[legidor:omitted:table]]` markers. Other unsupported embedded content is marked similarly at its original location. Superscripts and subscripts in cells use `^(...)` and `_(...)`; this is a rendering convention, not original typography.
+
+Selection can be complete even when unsupported content exists elsewhere. In this case `source_complete` preserves the original completeness and `unsupported_content` describes the selected text. Introductions and their omissions are retained. Other upstream incompleteness is not cleared by selection. Completeness does not establish that the selected provision has no relevant external exceptions.
+
+`get --links` returns `content_kind: "source_references"` and `items` containing explicit HTML links to supported official sources. These are candidates, not consulted targets. The index is document-wide, paginated and incompatible with `--part`, `--parts` or `--grep`. Source incompleteness remains visible. No HTML representation produces `UNSUPPORTED_CONTENT`.
+
 Check emits one JSON object per input line in input order. Each includes separate `identity`, `version`, `part`, `quote`, `changed_since`, and `applicability` fields. `applicability` is always `not_evaluated`. Operational failures leave unestablished checks `not_evaluated` and include an error, rather than fabricating a negative finding.
+
+Batch documents retain NOTA, modification links and warnings, also shown in text mode. The article interval alone does not establish the effective period of every subdivision. `refs` is assisted extraction: ambiguous numeric lists produce diagnostics on stderr and exit 3, while independently recognized citations are still emitted. Explicit plural article lists and BOFiP paragraph lists are expanded.
 
 Exit codes: 0 complete processing; 1 established verification failure; 2 invalid input; 3 indeterminate or incomplete result. In a mixed batch, 3 takes priority over 2, which takes priority over 1.
 

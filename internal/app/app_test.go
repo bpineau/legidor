@@ -8,6 +8,8 @@ import (
 	"testing"
 
 	"github.com/bpineau/legidor/internal/model"
+	"github.com/bpineau/legidor/internal/reference"
+	legaltext "github.com/bpineau/legidor/internal/text"
 )
 
 func TestCLIParseAndUsage(t *testing.T) {
@@ -82,5 +84,47 @@ func TestTOCPagination(t *testing.T) {
 	}
 	if count != 400 {
 		t.Fatalf("lost or repeated items: %d", count)
+	}
+}
+
+func TestSelectedCompletenessIsLocal(t *testing.T) {
+	raw := `<p class="numero-de-paragraphe-western">10</p><p>Usable text.</p><p class="numero-de-paragraphe-western">20</p><img src="unsupported.png">`
+	s, ps, u := legaltext.BOI(raw)
+	d := model.Document{HTML: raw, Text: s, Parts: ps, Unsupported: u, Complete: false}
+	selected, err := selectPart(d, "10")
+	if err != nil || !selected.Complete || len(selected.Unsupported) != 0 {
+		t.Fatalf("%+v %v", selected, err)
+	}
+	selected, err = selectPart(d, "20")
+	if err != nil || selected.Complete || len(selected.Unsupported) == 0 {
+		t.Fatalf("%+v %v", selected, err)
+	}
+}
+
+func TestLinkCursorPreservesLawParent(t *testing.T) {
+	r, _ := reference.Parse("JORFTEXT000000000001 art. 1")
+	d := model.Document{ID: "JORFARTI000000000001", ContentKind: "source_references", Complete: true}
+	for i := 0; i < 200; i++ {
+		d.Items = append(d.Items, model.Link{ID: "LEGIARTI000000000002", Title: strings.Repeat("x", 200)})
+	}
+	page, err := paginate(d, r, r.Raw, options{links: true, env: "production"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	cur, err := decodeCursor(page.Cursor)
+	if err != nil || cur.Reference.ID != r.ID || !strings.Contains(page.Next, "--links") {
+		t.Fatalf("%+v %v", cur, err)
+	}
+}
+
+func TestTextCheckRetainsTemporalEvidence(t *testing.T) {
+	complete := false
+	r := model.Check{Document: &model.Document{Nota: "A different commencement applies.", Warnings: []string{"Dates need review."}, SourceComplete: &complete, Modifications: []model.Link{{Title: "Modifier", URL: "https://www.legifrance.gouv.fr/jorf/id/JORFARTI000000000001"}}}}
+	var out bytes.Buffer
+	emitCheck(&out, false, r)
+	for _, want := range []string{"A different commencement applies.", "Dates need review.", "source_complete: false", "Modifier"} {
+		if !strings.Contains(out.String(), want) {
+			t.Errorf("missing %q: %s", want, &out)
+		}
 	}
 }

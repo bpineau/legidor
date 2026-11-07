@@ -61,3 +61,43 @@ func TestLive(t *testing.T) {
 		}
 	})
 }
+
+func TestLiveSourceReading(t *testing.T) {
+	if os.Getenv("LEGIDOR_LIVE") != "1" {
+		t.Skip("set LEGIDOR_LIVE=1 to call official APIs")
+	}
+	cfg, err := source.LoadConfig("production")
+	if err != nil {
+		t.Fatal(err)
+	}
+	c := source.NewClient(cfg, cache.New(cfg.CacheDir))
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	defer cancel()
+	for _, tc := range []struct{ ref, date, part string }{
+		{"CGI 219", "2026-11-07", "I b"},
+		{"CGI 1609 nonies G", "2026-11-07", ""},
+		{"BOI-RFPI-TPVIE-20", "", "70"},
+		{"BOI-IR-CDHR-10", "", "250"},
+		{"CIBS L213-82", "2027-01-01", ""},
+	} {
+		t.Run(tc.ref, func(t *testing.T) {
+			r, err := reference.Parse(tc.ref)
+			if err != nil {
+				t.Fatal(err)
+			}
+			r.Date = tc.date
+			d, err := c.Get(ctx, r)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !d.Complete {
+				t.Fatalf("incomplete: %v", d.Unsupported)
+			}
+			if tc.part != "" {
+				if _, err := legaltext.Select(d.Text, d.Parts, tc.part); err != nil {
+					t.Fatal(err)
+				}
+			}
+		})
+	}
+}

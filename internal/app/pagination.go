@@ -30,7 +30,7 @@ func decodeCursor(s string) (pageCursor, error) {
 	return c, nil
 }
 func paginate(d model.Document, r reference.Reference, raw string, o options) (model.Document, error) {
-	if d.ContentKind == "table_of_contents" {
+	if d.ContentKind == "table_of_contents" || d.ContentKind == "source_references" {
 		return paginateItems(d, r, raw, o)
 	}
 	rr := []rune(d.Text)
@@ -74,6 +74,9 @@ func continuation(raw, cursor string, o options) string {
 	next := fmt.Sprintf("legidor get %q --cursor %s --env %s", raw, cursor, o.env)
 	if o.json {
 		next += " --json"
+	}
+	if o.links {
+		next += " --links"
 	}
 	if o.offline {
 		next += " --offline"
@@ -119,7 +122,9 @@ func paginateItems(d model.Document, r reference.Reference, raw string, o option
 		d.Complete = false
 		d.OmittedItems = len(d.Items) - end
 		pin := r
-		pin.ID = d.ID
+		if d.ContentKind != "source_references" || r.Kind == "article" {
+			pin.ID = d.ID
+		}
 		pin.Date = d.Date
 		b, _ := json.Marshal(pageCursor{raw, pin, hash, end, o.env})
 		d.Cursor = base64.RawURLEncoding.EncodeToString(b)

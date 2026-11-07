@@ -11,9 +11,11 @@ legidor search 'revenus fonciers' --in bofip --limit 5 --json
 
 Parse-only validates grammar, not existence. Search returns identifiers and bounded excerpts. Re-read the chosen identifier with `get`, checking identity independently. Never select a result solely because it ranks first. Pagination is not a stable database snapshot; repeat the query, corpus, date and page size with the returned cursor.
 
-Aliases include CGI and annexes, LPF, CSS, CMF/CoMoFi, C. civ., CCH, C. assur., C. trav., CPCE, C. conso., C. com., CGCT, CSP and C. urb. A suffix such as the I in CGI 990 I belongs to the article number. Use commas to separate uncertain subdivisions and inspect `resolve --parse-only`.
+Aliases include CGI and annexes, CIBS, LPF, CSS, CMF/CoMoFi, C. civ., CCH, C. assur., C. trav., CPCE, C. conso., C. com., CGCT, CSP and C. urb. A suffix such as the I in CGI 990 I belongs to the article number. Use commas to separate uncertain subdivisions and inspect `resolve --parse-only`.
 
 Mixed suffixes are part of the article number: `CGI 1649 bis C` and `CGI 199 decies EA`. To select a subdivision of the shorter article instead, use a comma (`CGI 1649 bis, C`) or `--part C`. `refs` recognizes explicit code names before or after the number, including `art. R* 196-1, a LPF`; it does not infer the code of a nearby bare citation.
+
+Compound subdivisions such as `2°-0 ter` and dotted lowercase labels such as `I b` are supported. `refs` expands explicit `articles ...` lists and BOFiP paragraph lists joined by commas or `et`. Ambiguous singular numeric lists are reported on stderr with exit 3; use explicit plural wording or separate manifest entries with `part` rather than silently treating an article number as a subdivision.
 
 ## Laws and official URLs
 
@@ -23,6 +25,8 @@ legidor resolve 'LFI 2024' --json
 ```
 
 A numbered law without `--date` searches its published JORF version. Rectifications can create several candidates: use the returned identifiers and titles to identify the intended publication. A dated law requests the consolidated LODA version, which can differ from the original publication. A fixed JORF identifier does not support consolidated date selection.
+
+Named-law searches filter by the law's principal title, excluding implementing orders and texts that merely mention it. Original publications and rectifications remain distinct candidates. An incomplete search never establishes uniqueness.
 
 Whole texts return an article table of contents. Read an article by its returned identifier, or append `art. NUMBER` to a text identifier. A table of contents cannot verify a substantive quotation. Official URLs retain their date and nature; mismatches with explicit options are rejected.
 
@@ -75,4 +79,4 @@ legidor check citations.jsonl --json > results.jsonl
 jq '{ref:.input.ref,where:.input.where,identity,version,part,quote,changed_since,applicability,error}' results.jsonl
 ```
 
-Preserve the check command's exit status. Read source details for failed or legally material entries; a projected status row does not replace the underlying text.
+Preserve the check command's exit status. Batch documents retain NOTA, modification links, warnings and source completeness. Read those fields for legally material entries; a projected status row does not replace the underlying text or temporal caveats.

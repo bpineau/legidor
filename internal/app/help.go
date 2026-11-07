@@ -19,11 +19,14 @@ Examples:
 Use legidor COMMAND --help for command help.
 `
 	texts := map[string]string{
-		"get": `Usage: legidor get REF [--date YYYY-MM-DD] [--part LABEL | --parts] [--grep LITERAL] [--full] [--cursor TOKEN]
+		"get": `Usage: legidor get REF [--date YYYY-MM-DD] [--part LABEL | --parts | --links] [--grep LITERAL] [--full] [--cursor TOKEN]
 Read a code article, BOI paragraph, law table/article, decision, range or section.
 Default: today for named articles, the supplied version for direct identifiers, 20000 characters.
 Requested subdivisions are never truncated. Ancestor introductory text is retained.
 --parts lists recognized labels. --grep is literal and case-sensitive.
+--links lists explicit document-wide official source links without fetching targets.
+Rectangular tables preserve cells; complex tables and images remain explicit omissions.
+On selections, source_complete (when present) distinguishes the original document from the excerpt.
 Long output returns complete=false, exit 3 and a version-pinned continuation cursor.
 Examples:
   legidor get 'CMF L224-4' --part 'I 2°' --date 2025-12-31
@@ -65,6 +68,8 @@ Defaults: plain text/Markdown/JSON input; no network; one result per detected re
 Examples:
   legidor refs notes.md > citations.jsonl
   git diff | legidor refs - --diff > changes.jsonl
+Explicit plural article lists and BOFiP paragraph lists are expanded.
+Ambiguous numeric lists produce stderr diagnostics and exit 3; other references are still emitted.
 Errors: INPUT; review false positives and missed references manually.
 `,
 		"versions": `Usage: legidor versions REF [--since YYYY-MM-DD]

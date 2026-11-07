@@ -204,6 +204,27 @@ func Run(ctx context.Context, args []string, in io.Reader, out, errout io.Writer
 			}
 			return 0
 		}
+		if o.links && r.Part != "" {
+			return fail(out, errout, o.json, model.Err("CONFLICT", 2, "--links lists document references; use an unselected reference"))
+		}
+		if o.links {
+			if d.HTML == "" {
+				return fail(out, errout, o.json, model.Err("UNSUPPORTED_CONTENT", 3, "source does not supply HTML links"))
+			}
+			d.Items = legaltext.Links(d.HTML, d.Provenance.URL)
+			d.ContentKind = "source_references"
+			d.Text = ""
+			d.Parts = nil
+			d, e = paginate(d, r, arg, o)
+			if e != nil {
+				return fail(out, errout, o.json, e)
+			}
+			renderDocument(out, o.json, d)
+			if !d.Complete {
+				return 3
+			}
+			return 0
+		}
 		if r.Part != "" {
 			d, e = selectPart(d, r.Part)
 			if e != nil {
@@ -262,19 +283,8 @@ func renderDocument(out io.Writer, jsonMode bool, d model.Document) {
 	}
 	fmt.Fprintf(out, "%s | %s -> %s | %s\nnature: %s | retrieved_at: %s | complete: %t\nsource: %s | environment: %s | cached: %t | offline: %t\n", d.Title, d.Start, d.End, d.ID, d.Nature, d.Provenance.RetrievedAt, d.Complete, d.Provenance.Source, d.Provenance.Environment, d.Provenance.Cached, d.Provenance.Offline)
 	renderResolution(out, d)
-	for _, l := range d.Modifications {
-		fmt.Fprintf(out, "modified by: %s | %s | %s\n", l.Title, l.Date, l.URL)
-	}
-	if d.Nota != "" {
-		fmt.Fprintln(out, "nota:", d.Nota)
-	}
+	renderCaveats(out, d)
 	fmt.Fprintln(out, d.Provenance.URL)
-	for _, w := range d.Warnings {
-		fmt.Fprintln(out, "warning:", w)
-	}
-	if len(d.Unsupported) > 0 {
-		fmt.Fprintln(out, "unsupported_content:", strings.Join(d.Unsupported, ", "))
-	}
 	fmt.Fprintln(out, "---")
 	fmt.Fprintln(out, d.Text)
 	if d.Text == "" || d.Omitted > 0 {
@@ -289,6 +299,24 @@ func renderDocument(out io.Writer, jsonMode bool, d model.Document) {
 	}
 	if d.Next != "" {
 		fmt.Fprintln(out, "next:", d.Next)
+	}
+}
+
+func renderCaveats(out io.Writer, d model.Document) {
+	if d.SourceComplete != nil {
+		fmt.Fprintf(out, "source_complete: %t\n", *d.SourceComplete)
+	}
+	for _, l := range d.Modifications {
+		fmt.Fprintf(out, "modified by: %s | %s | %s\n", l.Title, l.Date, l.URL)
+	}
+	if d.Nota != "" {
+		fmt.Fprintln(out, "nota:", d.Nota)
+	}
+	for _, w := range d.Warnings {
+		fmt.Fprintln(out, "warning:", w)
+	}
+	if len(d.Unsupported) > 0 {
+		fmt.Fprintln(out, "unsupported_content:", strings.Join(d.Unsupported, ", "))
 	}
 }
 func renderResolution(out io.Writer, d model.Document) {
@@ -308,13 +336,21 @@ func selectPart(d model.Document, label string) (model.Document, error) {
 	if e != nil {
 		return d, e
 	}
+	// Only omissions represented in the source text can be scoped. Missing
+	// source zones, truncation and other upstream incompleteness stay failures.
+	if d.HTML != "" && len(d.Unsupported) > 0 && len(legaltext.Omissions(d.Text)) == len(d.Unsupported) && d.Omitted == 0 {
+		complete := d.Complete
+		d.SourceComplete = &complete
+		d.Unsupported = legaltext.Omissions(s)
+		d.Complete = len(d.Unsupported) == 0 && strings.TrimSpace(s) != ""
+	}
 	d.Text = s
 	d.Parts = []model.Part{{Label: label, Start: 0, End: len(d.Text), Parent: -1}}
 	return d, nil
 }
 func validateCommandOptions(cmd string, o options) error {
 	allowed := map[string]string{
-		"get": "date part parts grep full cursor", "resolve": "date parse-only",
+		"get": "date part parts grep full cursor links", "resolve": "date parse-only",
 		"search": "date in limit cursor", "check": "", "refs": "diff", "versions": "since",
 		"diff": "from to part full", "auth": "", "cache": "",
 	}
@@ -332,6 +368,9 @@ func validateCommandOptions(cmd string, o options) error {
 	}
 	if o.parts && (o.part != "" || o.grep != "") {
 		return model.Err("CONFLICT", 2, "--parts cannot be combined with --part or --grep")
+	}
+	if o.links && (o.part != "" || o.parts || o.grep != "") {
+		return model.Err("CONFLICT", 2, "--links cannot be combined with text selection")
 	}
 	if o.cursor != "" && (o.part != "" || o.parts || o.grep != "") {
 		return model.Err("CONFLICT", 2, "content cursor cannot be combined with selection")

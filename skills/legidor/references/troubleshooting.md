@@ -14,4 +14,6 @@
 | `UNSUPPORTED_CONTENT`, `RESULT_TOO_LARGE` | Use a narrower article/subdivision or consult the official source. `--full` only removes output truncation, not format limitations. |
 | `CURSOR_CHANGED` | Restart the consultation; do not concatenate pages from different content revisions. |
 
+`refs` can also exit 3 with an ambiguous-list diagnostic on stderr while emitting other citations. Review the reported source line and complete the manifest. For `--links`, follow the returned continuation command including `--links`; an absent HTML representation cannot be replaced with inferred links.
+
 Installation is described in the application's README. The binary must be on PATH. Credentials belong in the user's private configuration, never in a skill, repository, manifest or diagnostic attachment. Production and sandbox use different configurations and caches.

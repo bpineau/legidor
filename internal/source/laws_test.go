@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/bpineau/legidor/internal/cache"
+	"github.com/bpineau/legidor/internal/model"
 	"github.com/bpineau/legidor/internal/reference"
 )
 
@@ -60,5 +61,46 @@ func TestMissingArticleIntervalIsIndeterminate(t *testing.T) {
 	_, e := c.Get(context.Background(), r)
 	if e == nil || !strings.Contains(e.Error(), "NO_VERSION_AT_DATE") {
 		t.Fatalf("%v", e)
+	}
+}
+
+func TestNamedLawCandidateFiltering(t *testing.T) {
+	r := reference.Reference{Kind: "named_law", Nature: "LFI", Number: "2031"}
+	s := model.Search{Total: 3, Complete: true, Hits: []model.Hit{
+		{ID: "law", Title: "LOI n° 2031-123 du 3 janvier 2031 de finances pour 2031 (1)"},
+		{ID: "order", Title: "Arrêté relatif à la loi de finances pour 2031"},
+		{ID: "amendment", Title: "LOI n° 2031-456 du 4 mars 2031 modifiant la loi de finances pour 2031"},
+	}}
+	filtered := namedLawCandidates(s, r)
+	if len(filtered.Hits) != 1 || filtered.Total != 1 || filtered.Hits[0].ID != "law" {
+		t.Fatal(filtered)
+	}
+	s.Hits = append(s.Hits, model.Hit{ID: "correction", Title: "LOI n° 2031-123 du 3 janvier 2031 de finances pour 2031 (rectificatif)"})
+	s.Total++
+	if _, err := unique(namedLawCandidates(s, r)); err == nil {
+		t.Fatal("rectification ambiguity hidden")
+	}
+	s.Total = 101
+	if _, err := unique(namedLawCandidates(s, r)); err == nil {
+		t.Fatal("unseen candidates ignored")
+	}
+}
+
+func TestDecisionRetainsHTMLLinks(t *testing.T) {
+	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		if r.URL.Path == "/token" {
+			w.Write([]byte(`{"access_token":"fake","expires_in":3600}`))
+			return
+		}
+		w.Write([]byte(`{"text":{"id":"JURITEXT000000000001","titre":"Invented decision","texteHtml":"<p>Reasons.</p><a href=\"https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000000000001\">Article</a>"}}`))
+	}))
+	defer s.Close()
+	c := NewClient(Config{ClientID: "fake", ClientSecret: "fake", Environment: "test"}, cache.New(t.TempDir()))
+	c.LFURL = s.URL
+	c.TokenURL = s.URL + "/token"
+	d, err := c.Get(context.Background(), reference.Reference{Kind: "decision", ID: "JURITEXT000000000001"})
+	if err != nil || d.HTML == "" || !strings.Contains(d.HTML, "href=") {
+		t.Fatalf("%+v %v", d, err)
 	}
 }

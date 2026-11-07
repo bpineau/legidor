@@ -37,6 +37,7 @@ var Codes = []Code{
 	{"CGI-IV", "Code général des impôts, annexe IV", []string{"CGI ann. IV", "CGI annexe IV", "CGI-IV"}},
 	{"CGI-I", "Code général des impôts, annexe I", []string{"CGI ann. I", "CGI annexe I", "CGI-I"}},
 	{"CGI", "Code général des impôts", []string{"CGI"}}, {"LPF", "Livre des procédures fiscales", []string{"LPF"}},
+	{"CIBS", "Code des impositions sur les biens et services", []string{"CIBS"}},
 	{"CSS", "Code de la sécurité sociale", []string{"CSS"}}, {"CMF", "Code monétaire et financier", []string{"CMF", "CoMoFi"}},
 	{"CIV", "Code civil", []string{"C. civ.", "C civ", "CIV"}}, {"CCH", "Code de la construction et de l'habitation", []string{"CCH"}},
 	{"ASSUR", "Code des assurances", []string{"C. assur.", "ASSUR"}}, {"TRAV", "Code du travail", []string{"C. trav.", "TRAV"}},
@@ -67,16 +68,19 @@ func CodeKey(name string) string {
 	return ""
 }
 
+// LatinSuffixPattern matches complete Latin numbering suffixes.
+const LatinSuffixPattern = `(?:bis|ter|quater|quinquies|sexies|septies|octies|nonies|decies|undecies|duodecies|terdecies|quaterdecies|quindecies|sexdecies|septdecies|octodecies|novodecies|vicies|unvicies|duovicies|tervicies|quatervicies|quinvicies|sexvicies|septvicies|octovicies|novovicies|tricies)`
+
 // ArticleNumberPattern recognizes a complete article number, including mixed
 // Latin and letter suffixes. A comma separates an ambiguous subdivision.
-const ArticleNumberPattern = `[LRDA]?\*?\s*\.?\s*\d+(?:-\d+)*(?:\s+[A-Z]{1,3}\b)?(?:\s+(?:bis|ter|quater|quinquies|sexies|septies|octies|nonies|decies|undecies|duodecies|terdecies|quaterdecies|quindecies|sexdecies|septdecies|octodecies|novodecies|vicies|unvicies|duovicies|tervicies|quatervicies|quinvicies|sexvicies|septvicies|octovicies|novovicies|tricies)\b(?:\s+[A-Z]{1,3}\b)?)?`
+const ArticleNumberPattern = `[LRDA]?\*?\s*\.?\s*\d+(?:-\d+)*(?:\s+[A-Z]{1,3}\b)?(?:\s+` + LatinSuffixPattern + `\b(?:\s+[A-Z]{1,3}\b)?)?`
 
 var articleRE = regexp.MustCompile(`^(` + ArticleNumberPattern + `)(.*)$`)
 var idRE = regexp.MustCompile(`^(LEGIARTI|JORFARTI|KALIARTI|LEGITEXT|JORFTEXT|KALITEXT|LEGISCTA|KALISCTA|CETATEXT|JURITEXT|CONSTEXT)\d{12}$`)
 var boiRE = regexp.MustCompile(`^(BOI-[A-Z0-9]+(?:-[A-Z0-9]+)*?)(?:\s*§\s*(\d+))?$`)
 var lawRE = regexp.MustCompile(`(?i)^(loi|décret|decret|ordonnance|arrêté|arrete)\s+(?:n[°o]\s*)?(\d{4}-\d+)(?:\s+art(?:icle)?\.?\s+([\w.-]+))?$`)
 var decisionRE = regexp.MustCompile(`(?i)^(CE|CAA|TA|Cass\.(?:\s+[a-z0-9èé]+\.?)*)\s+(\d{4}-\d{2}-\d{2})\s+n[°o]\s*([\d.-]+)$`)
-var partRE = regexp.MustCompile(`^(?:(?:[IVX]+|[A-Z]|\d+°?|[a-z])(?:\s+(?:bis|ter|quater|quinquies|sexies|septies|octies|nonies|decies|undecies|duodecies|terdecies|quaterdecies|quindecies|sexdecies|septdecies|octodecies|novodecies|vicies|unvicies|duovicies|tervicies|quatervicies|quinvicies|sexvicies|septvicies|octovicies|novovicies|tricies)\b)?|alinéa\s+\d+)(?:\s+(?:(?:[IVX]+|[A-Z]|\d+°?|[a-z])(?:\s+(?:bis|ter|quater|quinquies|sexies|septies|octies|nonies|decies|undecies|duodecies|terdecies|quaterdecies|quindecies|sexdecies|septdecies|octodecies|novodecies|vicies|unvicies|duovicies|tervicies|quatervicies|quinvicies|sexvicies|septvicies|octovicies|novovicies|tricies)\b)?))*$`)
+var partRE = regexp.MustCompile(`^(?:(?:[IVX]+|[A-Z]|\d+(?:°(?:-\d+)?)?|[a-z])(?:\s+` + LatinSuffixPattern + `\b)?|alinéa\s+\d+)(?:\s+(?:(?:[IVX]+|[A-Z]|\d+(?:°(?:-\d+)?)?|[a-z])(?:\s+` + LatinSuffixPattern + `\b)?))*$`)
 
 func NormalizeNumber(s string) string {
 	s = strings.TrimSpace(s)

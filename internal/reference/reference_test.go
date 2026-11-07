@@ -100,3 +100,16 @@ func TestLatinSuffixPrefixDoesNotTruncateArticle(t *testing.T) {
 		}
 	}
 }
+
+func TestCompoundSubdivisionAndCIBS(t *testing.T) {
+	for _, tc := range []struct{ raw, code, number, part string }{
+		{"art. 83, 2°-0 ter CGI", "CGI", "83", "2°-0 ter"},
+		{"CIBS L213-82", "CIBS", "L213-82", ""},
+		{"Code des impositions sur les biens et services L213-82", "CIBS", "L213-82", ""},
+	} {
+		r, err := Parse(tc.raw)
+		if err != nil || r.Code != tc.code || r.Number != tc.number || r.Part != tc.part {
+			t.Fatalf("%s: %+v %v", tc.raw, r, err)
+		}
+	}
+}

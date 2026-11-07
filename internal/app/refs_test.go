@@ -61,3 +61,52 @@ func TestExtractRequiresWholeCodeAlias(t *testing.T) {
 		t.Fatal(out.String())
 	}
 }
+
+func TestExtractCompoundPartsAndLists(t *testing.T) {
+	for _, tc := range []struct {
+		input string
+		want  []string
+		exit  int
+	}{
+		{"art. 83, 2°-0 ter CGI", []string{"CGI|83|2°-0 ter"}, 0},
+		{"CGI 83, 2°-0 ter", []string{"CGI|83|2°-0 ter"}, 0},
+		{"CGI 83, 2° quinquies", []string{"CGI|83|2° quinquies"}, 0},
+		{"CGI articles 10, 20 et 30", []string{"CGI|10|", "CGI|20|", "CGI|30|"}, 0},
+		{"CGI 10, 20 et 30", nil, 3},
+		{"BOI-EXAMPLE-10 § 40 et 70", []string{"|BOI-EXAMPLE-10|40", "|BOI-EXAMPLE-10|70"}, 0},
+		{"articles 219, 1426 et 1427 C. civ.", []string{"CIV|219|", "CIV|1426|", "CIV|1427|"}, 0},
+		{"art. 219, 1426 C. civ.", nil, 3},
+		{"CIBS L213-82", []string{"CIBS|L213-82|"}, 0},
+	} {
+		var out, diag bytes.Buffer
+		code := refs("-", options{}, strings.NewReader(tc.input), &out, &diag)
+		if code != tc.exit {
+			t.Errorf("%s: code %d, %s", tc.input, code, diag.String())
+		}
+		var got []string
+		dec := json.NewDecoder(&out)
+		for dec.More() {
+			var row model.Citation
+			if err := dec.Decode(&row); err != nil {
+				t.Fatal(err)
+			}
+			r, err := reference.Parse(row.Ref)
+			if err != nil {
+				t.Fatal(err)
+			}
+			got = append(got, r.Code+"|"+r.Number+"|"+r.Part)
+		}
+		if strings.Join(got, ";") != strings.Join(tc.want, ";") {
+			t.Errorf("%s: %v want %v", tc.input, got, tc.want)
+		}
+	}
+}
+
+func TestExtractDoesNotDropLeadingList(t *testing.T) {
+	for _, input := range []string{"art. 10, 20 et 30 CGI", "art. 10 et 30 CGI"} {
+		var out, diag bytes.Buffer
+		if code := refs("-", options{}, strings.NewReader(input), &out, &diag); code != 3 || out.Len() != 0 {
+			t.Fatalf("%q: %d %s %s", input, code, &out, &diag)
+		}
+	}
+}

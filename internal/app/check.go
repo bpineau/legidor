@@ -145,9 +145,6 @@ func check(ctx context.Context, c *source.Client, name string, o options, in io.
 		d.HTML = ""
 		d.Parts = nil
 		d.Versions = nil
-		d.Nota = ""
-		d.Modifications = nil
-		d.Warnings = nil
 		d.Items = nil
 		if d.ID != "" {
 			result.Document = &d
@@ -173,6 +170,8 @@ func emitCheck(out io.Writer, jsonMode bool, r model.Check) {
 	}
 	if r.Document != nil {
 		renderResolution(out, *r.Document)
+		renderCaveats(out, *r.Document)
+		fmt.Fprintf(out, "source: %s | version: %s -> %s | retrieved_at: %s | complete: %t\n", r.Document.Provenance.Source, r.Document.Start, r.Document.End, r.Document.Provenance.RetrievedAt, r.Document.Complete)
 		fmt.Fprintln(out, r.Document.Provenance.URL)
 	}
 }
