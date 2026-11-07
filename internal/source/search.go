@@ -23,7 +23,7 @@ func (c *Client) Search(ctx context.Context, query, corpus, date, cursor string,
 		return model.Search{}, model.Err("USAGE", 2, "limit must be 1..50")
 	}
 	if date == "" && (corpus == "loda" || strings.HasPrefix(corpus, "code:")) {
-		date = today()
+		date = c.today()
 	}
 	keyBytes := sha256.Sum256([]byte(query + "\x00" + corpus + "\x00" + date + "\x00" + c.Config.Environment + "\x00" + strconv.Itoa(limit)))
 	key := hex.EncodeToString(keyBytes[:])
@@ -67,7 +67,7 @@ func (c *Client) Search(ctx context.Context, query, corpus, date, cursor string,
 		}
 		if fond == "CODE_DATE" || fond == "LODA_DATE" {
 			if date == "" {
-				date = today()
+				date = c.today()
 			}
 			filters = append(filters, dateFilter(date))
 		} else if date != "" {

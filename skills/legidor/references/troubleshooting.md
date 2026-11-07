@@ -5,7 +5,7 @@
 | `AUTH`, `AUTH_CONFIG` | Run `legidor auth status`. The operator checks credentials, private file permissions, PISTE subscriptions and accepted API terms. Do not inspect or display secret values. |
 | `QUOTA` | Respect the server delay and retry later. The CLI already bounds retries; do not create a tight retry loop. |
 | `NETWORK`, `UPSTREAM`, `UPSTREAM_FORMAT` | Report retrieval as unverified. Try an existing fresh cache with `--offline`, or retry the official API later. HTML is not accepted as legal API content. |
-| `OFFLINE_MISS` | Retry without `--offline` when network access is available. Do not treat an absent/expired cache entry as a legal absence. |
+| `OFFLINE_MISS` | Retry without `--offline` when network access is available, retaining any required `--max-age`. Expiry follows that override or the default 30/90-day budget. Do not treat an absent/expired cache entry as a legal absence. |
 | `AMBIGUOUS_REFERENCE` | Inspect candidates. Refine code, number, date or use a returned identifier; never guess one. |
 | `IDENTITY_MISMATCH` | Stop using that result. Check the supplied reference and report the mismatch. |
 | `VERSION_CONFLICT`, `CONFLICT` | Reconcile reference, URL, cursor and options. Resolve a human reference at the desired date rather than forcing another date onto a fixed version. |

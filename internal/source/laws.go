@@ -9,7 +9,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/bpineau/legidor/internal/model"
 	"github.com/bpineau/legidor/internal/reference"
@@ -88,7 +87,7 @@ func (c *Client) law(ctx context.Context, r reference.Reference) (model.Document
 		endpoint = "/consult/legiPart"
 		d := r.Date
 		if d == "" {
-			d = today()
+			d = c.today()
 		}
 		payload = object{"textId": r.ID, "date": millis(d)}
 		r.Date = d
@@ -97,7 +96,7 @@ func (c *Client) law(ctx context.Context, r reference.Reference) (model.Document
 		endpoint = "/consult/kaliText"
 		payload = object{"id": r.ID}
 	}
-	b, p, e := c.JSON(ctx, "POST", c.LFURL+endpoint, payload, true, 24*time.Hour)
+	b, p, e := c.JSON(ctx, "POST", c.LFURL+endpoint, payload, true, c.datedTTL(r.Date))
 	d := model.Document{Schema: model.Schema, Nature: "legislation", Date: r.Date, Provenance: p, Complete: true}
 	d.Provenance.Source = "legifrance"
 	if e != nil {
@@ -242,7 +241,7 @@ func orderedArticles(root object) []object {
 }
 func (c *Client) collection(ctx context.Context, r reference.Reference) (model.Document, error) {
 	if r.Date == "" {
-		r.Date = today()
+		r.Date = c.today()
 	}
 	var parent string
 	if r.Kind == "range" {
@@ -272,7 +271,7 @@ func (c *Client) collection(ctx context.Context, r reference.Reference) (model.D
 			parent = h.ID
 		}
 	}
-	b, p, e := c.JSON(ctx, "POST", c.LFURL+"/consult/legi/tableMatieres", object{"textId": parent, "nature": "CODE", "date": r.Date}, true, 24*time.Hour)
+	b, p, e := c.JSON(ctx, "POST", c.LFURL+"/consult/legi/tableMatieres", object{"textId": parent, "nature": "CODE", "date": r.Date}, true, c.datedTTL(r.Date))
 	d := model.Document{Schema: model.Schema, ID: parent, Title: reference.CodeName(r.Code), Code: r.Code, Nature: "legislation", Date: r.Date, Provenance: p, Complete: true}
 	d.Provenance.Source = "legifrance"
 	d.Provenance.URL = officialURL(parent, r.Date)

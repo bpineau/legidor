@@ -109,12 +109,20 @@ Whole laws return their table of contents. Text output normally stops at 20000 c
 
 Private token and response caches live under `~/.cache/legidor/ENVIRONMENT` or `$XDG_CACHE_HOME/legidor/ENVIRONMENT`, with atomic writes. Validated source JSON is cached; normalization and identity checks run again on reads. Errors and HTML error pages are not stored as legal content.
 
-Dated historical articles expire after 30 days. Current consultations, resolution, search and BOFiP expire after 24 hours. Decision consultations expire after 30 days. `--fresh` re-fetches; `--offline` requires an unexpired cache entry. There is no silent stale-cache fallback. A cached article's end date, state and links can change upstream even if its wording does not.
+Current consultations, resolution, search and BOFiP use a 30-day cache. Dated historical consultations and searches, direct article versions and decision consultations use 90 days. These are reuse budgets, not guarantees that the source has remained unchanged. A cached article's end date, state and links can change upstream even if its wording does not.
+
+`--max-age 24h` overrides the response cache age for a command (Go duration syntax: h, m, s). Older entries are fetched again. `--fresh` bypasses all response caches, even entries younger than 24 hours; it cannot be combined with `--max-age` or `--offline`. OAuth expiry always follows the server. `--offline` requires entries within the selected age budget and never falls back to expired entries.
+
+Named code articles without an explicit date reuse their current-version resolution across calendar days. `date` remains the requested day; `provenance.resolution_date` and `resolution_retrieved_at` preserve the original search date and retrieval time. A known version end forces a new resolution. Explicit dates, general searches and tables of contents retain separate dated keys. Cached evidence must not be described as checked against the source today.
 
 ```sh
 legidor cache stats --json
+legidor get 'CIV 1240' --max-age 24h
+legidor get 'CIV 1240' --fresh
 legidor cache clear
 ```
+
+To warm a bounded topic collection, keep a local JSONL manifest of references and optional dates, then run `legidor check topics.jsonl --json > results.jsonl`. Inspect per-row errors and completeness, then verify with `legidor check topics.jsonl --offline --json`. Repeating the first command fetches only missing or expired entries; add `--max-age 24h` or `--fresh` when needed. Keep personal manifests and reports outside public repositories. Warming caches source responses, not generated legal conclusions, and does not make unsupported content complete.
 
 ## Coverage and limits
 

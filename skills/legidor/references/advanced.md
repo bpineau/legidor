@@ -56,6 +56,10 @@ Grep is case-sensitive literal matching; a missing match returns exit 1. A match
 
 Cached output retains its original retrieval time. Offline mode accepts only unexpired entries and does not contact sources. Missing/expired entries fail; they never silently become evidence. Sandbox data is marked and cached separately, and should not support a production legal assertion.
 
+The default age budget is 30 days for current sources and 90 days for historical consultations, direct article versions and decisions. `--max-age 24h` overrides that budget for all response reads, including article resolution; `--max-age 1h` is stricter. `--fresh` bypasses response caches entirely and cannot be combined with `--max-age` or `--offline`. `--offline --max-age 24h` accepts only recent local evidence. OAuth token expiry is independent.
+
+Warm a small topic collection with `legidor check topics.jsonl --json > results.jsonl`, then verify availability with `legidor check topics.jsonl --offline --json`. Inspect every row, including incomplete content. Re-running respects cache age; it does not fetch whole codes. Keep personal manifests and reports outside public repositories and out of agent context unless their content is needed. Cached source text is not a cached legal conclusion.
+
 ## Modifier placeholders
 
 A consolidated modifying article can contain only "A modifie..." substitution placeholders. That is not the original amending wording. Use its returned JORF parent, then read the same article number in the original publication. Check exactly which amendment a transitional provision targets; do not transfer a rule about one numbered amendment to another.

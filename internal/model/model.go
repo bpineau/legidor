@@ -19,13 +19,17 @@ func Err(code string, exit int, format string, args ...any) *Error {
 }
 
 type Provenance struct {
-	Source      string `json:"source"`
-	URL         string `json:"url"`
-	RetrievedAt string `json:"retrieved_at"`
-	UpdatedAt   string `json:"source_updated_at,omitempty"`
-	Environment string `json:"environment"`
-	Cached      bool   `json:"cached"`
-	Offline     bool   `json:"offline"`
+	MaxAgeSeconds         int64  `json:"max_age_seconds"`
+	ResolutionDate        string `json:"resolution_date,omitempty"`
+	ResolutionRetrievedAt string `json:"resolution_retrieved_at,omitempty"`
+	ResolutionCached      bool   `json:"resolution_cached,omitempty"`
+	Source                string `json:"source"`
+	URL                   string `json:"url"`
+	RetrievedAt           string `json:"retrieved_at"`
+	UpdatedAt             string `json:"source_updated_at,omitempty"`
+	Environment           string `json:"environment"`
+	Cached                bool   `json:"cached"`
+	Offline               bool   `json:"offline"`
 }
 type Link struct {
 	ID    string `json:"id"`

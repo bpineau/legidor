@@ -172,6 +172,7 @@ func emitCheck(out io.Writer, jsonMode bool, r model.Check) {
 		fmt.Fprintln(out, r.Error.Error())
 	}
 	if r.Document != nil {
+		renderResolution(out, *r.Document)
 		fmt.Fprintln(out, r.Document.Provenance.URL)
 	}
 }

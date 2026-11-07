@@ -7,7 +7,7 @@ func help(cmd string) string {
 
 Usage: legidor COMMAND ARG [OPTIONS]
 Commands: get, resolve, search, check, refs, versions, diff, auth, cache
-Global options: --json, --fresh, --offline, --env production|sandbox
+Global options: --json, --fresh, --max-age DURATION, --offline, --env production|sandbox
 Defaults: production, compact text, fresh cache allowed, today's version for named code articles.
 Exit codes: 0 complete, 1 established verification failure, 2 invalid usage, 3 incomplete/indeterminate.
 --date means version in force, never legal applicability to income or an operation.
@@ -97,7 +97,9 @@ Errors: AUTH_CONFIG (permissions), AUTH (credentials, subscription, environment)
 		"cache": `Usage: legidor cache stats|clear
 Report or clear the current environment's private token and response cache.
 Default: $XDG_CACHE_HOME/legidor/production (or ~/.cache/legidor/production).
-TTL: 30 days for dated historical articles, 24 hours for current resolution/search/BOFiP.
+TTL: 30 days for current sources and BOFiP; 90 days for historical consultations and decisions.
+--max-age 24h overrides response age; --fresh bypasses even recent responses.
+Do not combine --max-age with --fresh. OAuth expiry follows the server.
 --offline requires an unexpired entry; --fresh refreshes without stale fallback.
 Examples:
   legidor cache stats --json
@@ -105,7 +107,7 @@ Examples:
 Errors: CACHE (unreadable or unwritable directory).
 `}
 	if s, ok := texts[cmd]; ok {
-		return s + "\nGlobal options: --json, --fresh, --offline, --env production|sandbox.\nExit codes: 0 complete, 1 verification failure, 2 usage, 3 incomplete/indeterminate.\n"
+		return s + "\nGlobal options: --json, --fresh, --max-age DURATION, --offline, --env production|sandbox.\nExit codes: 0 complete, 1 verification failure, 2 usage, 3 incomplete/indeterminate.\n"
 	}
 	return strings.TrimSpace(intro) + "\n"
 }

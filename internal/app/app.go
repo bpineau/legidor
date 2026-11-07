@@ -115,6 +115,7 @@ func Run(ctx context.Context, args []string, in io.Reader, out, errout io.Writer
 	disk := cache.New(cfg.CacheDir)
 	c := source.NewClient(cfg, disk)
 	c.Fresh = o.fresh
+	c.MaxAge = o.maxAge
 	c.Offline = o.offline
 	switch cmd {
 	case "auth":
@@ -260,6 +261,7 @@ func renderDocument(out io.Writer, jsonMode bool, d model.Document) {
 		return
 	}
 	fmt.Fprintf(out, "%s | %s -> %s | %s\nnature: %s | retrieved_at: %s | complete: %t\nsource: %s | environment: %s | cached: %t | offline: %t\n", d.Title, d.Start, d.End, d.ID, d.Nature, d.Provenance.RetrievedAt, d.Complete, d.Provenance.Source, d.Provenance.Environment, d.Provenance.Cached, d.Provenance.Offline)
+	renderResolution(out, d)
 	for _, l := range d.Modifications {
 		fmt.Fprintf(out, "modified by: %s | %s | %s\n", l.Title, l.Date, l.URL)
 	}
@@ -289,6 +291,11 @@ func renderDocument(out io.Writer, jsonMode bool, d model.Document) {
 		fmt.Fprintln(out, "next:", d.Next)
 	}
 }
+func renderResolution(out io.Writer, d model.Document) {
+	if d.Provenance.ResolutionDate != "" {
+		fmt.Fprintf(out, "requested_date: %s | resolution_date: %s | resolution_retrieved_at: %s | resolution_cached: %t\n", d.Date, d.Provenance.ResolutionDate, d.Provenance.ResolutionRetrievedAt, d.Provenance.ResolutionCached)
+	}
+}
 func selectPart(d model.Document, label string) (model.Document, error) {
 	for _, p := range d.Parts {
 		if p.Label == label && p.Text != "" {
@@ -312,7 +319,7 @@ func validateCommandOptions(cmd string, o options) error {
 		"diff": "from to part full", "auth": "", "cache": "",
 	}
 	for name := range o.supplied {
-		if strings.Contains(" json help h fresh offline env ", " "+name+" ") {
+		if strings.Contains(" json help h fresh offline env max-age ", " "+name+" ") {
 			continue
 		}
 		if !strings.Contains(" "+allowed[cmd]+" ", " "+name+" ") {

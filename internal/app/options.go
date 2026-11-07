@@ -4,6 +4,7 @@ import (
 	"flag"
 	"io"
 	"strings"
+	"time"
 
 	"github.com/bpineau/legidor/internal/model"
 	"github.com/bpineau/legidor/internal/reference"
@@ -13,6 +14,7 @@ type options struct {
 	json, help, fresh, offline, full, parts, parseOnly, diff bool
 	date, part, grep, from, to, since, corpus, cursor, env   string
 	limit                                                    int
+	maxAge                                                   time.Duration
 	args                                                     []string
 	supplied                                                 map[string]bool
 }
@@ -25,6 +27,7 @@ func parseOptions(args []string) (options, error) {
 	fs.BoolVar(&o.help, "help", false, "")
 	fs.BoolVar(&o.help, "h", false, "")
 	fs.BoolVar(&o.fresh, "fresh", false, "")
+	fs.DurationVar(&o.maxAge, "max-age", 0, "")
 	fs.BoolVar(&o.offline, "offline", false, "")
 	fs.BoolVar(&o.full, "full", false, "")
 	fs.BoolVar(&o.parts, "parts", false, "")
@@ -72,6 +75,9 @@ func parseOptions(args []string) (options, error) {
 		return o, model.Err("USAGE", 2, "invalid option value")
 	}
 	o.args = pos
+	if o.supplied["max-age"] && (o.maxAge <= 0 || o.fresh) {
+		return o, model.Err("USAGE", 2, "--max-age requires a positive duration and cannot be combined with --fresh")
+	}
 	if o.fresh && o.offline {
 		return o, model.Err("CONFLICT", 2, "--fresh and --offline cannot be combined")
 	}

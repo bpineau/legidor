@@ -21,6 +21,10 @@ Legidor assists with the first two. Establish the third separately, stating what
 
 Code articles default to today's version. A direct identifier selects that specific version; inspect its dates. Explicit dates conflicting with a fixed version or URL are errors. Search results are candidates, not confirmed identities.
 
+Use the default cache for ordinary research: 30 days for current sources including BOFiP, 90 days for historical consultations and fixed article versions or decisions. For a recent change or an explicit freshness requirement, use `--max-age 24h` (or `1h`); use `--fresh` to bypass response caches entirely. Do not refresh every read automatically. These flags affect retrieval freshness, never the legal date selected by `--date`.
+
+An implicit current article can reuse a resolution from a previous day. Read `provenance.resolution_date` and `resolution_retrieved_at` alongside `retrieved_at`: neither a later requested `date` nor a newly retrieved article proves that its current-version selection was rechecked today. A known version end triggers a new resolution. State the actual source-check dates when freshness matters.
+
 BOFiP is administrative doctrine, potentially opposable under conditions; it is not legislation. The dataset contains current doctrine and is updated weekly. A current BOI, even one with an old start date, does not establish the historical doctrine at a requested date. `--fresh` only refreshes the API response, not the underlying publication schedule.
 
 Decisions are case law. Read the reasons and operative part, check jurisdiction/date/number, and inspect completeness before using them. A partial or pseudonymized decision must be described accordingly.

@@ -11,3 +11,7 @@ Exit codes: 0 complete processing; 1 established verification failure; 2 invalid
 Quote normalization only collapses whitespace and maps typographic apostrophes and quotation marks to their ASCII equivalents. Case, digits and negation remain unchanged. Literal `[...]` separates ordered quote fragments.
 
 Date means the version in force on that calendar date, never applicability to income earned in that year. Validity intervals are start-inclusive and end-exclusive. Open-ended upstream dates are rendered as empty end dates.
+
+Provenance includes `max_age_seconds`, the selected response reuse budget. Current responses default to 30 days; historical consultations/searches, direct article versions and decision consultations default to 90 days. `--max-age` overrides this duration; `--fresh` bypasses response reads. Token expiry is independent.
+
+Named code article resolution adds `resolution_date` (the legal date used by the source search), `resolution_retrieved_at` (when that search response was retrieved), and `resolution_cached` (true when reused). Implicit-current resolutions may be reused across days within the age budget and known validity interval. The document's `date` remains the requested day, and its own `retrieved_at` describes the article response. Neither timestamp is rejuvenated by a cache hit. `version=in_force_at_date` is an assessment from this dated evidence, not a claim of live source verification. Explicit-date requests never use an implicit-current resolution alias.

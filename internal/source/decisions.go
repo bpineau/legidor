@@ -8,7 +8,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"time"
 	"unicode/utf16"
 
 	"github.com/bpineau/legidor/internal/model"
@@ -22,7 +21,7 @@ func (c *Client) judiSearch(ctx context.Context, query string, limit, page int, 
 		q.Set("date_start", decisionDate)
 		q.Set("date_end", decisionDate)
 	}
-	b, p, e := c.JSON(ctx, "GET", c.JudiURL+"/search?"+q.Encode(), nil, true, 24*time.Hour)
+	b, p, e := c.JSON(ctx, "GET", c.JudiURL+"/search?"+q.Encode(), nil, true, currentTTL)
 	s := model.Search{Schema: model.Schema, Hits: []model.Hit{}, Sort: "score desc", Stability: "Judilibre defaults to Cour de cassation; rankings can change as the corpus is updated.", Provenance: p, Complete: true}
 	s.Provenance.Source = "judilibre"
 	s.Provenance.URL = "https://www.courdecassation.fr/recherche-judilibre"
@@ -85,7 +84,7 @@ func (c *Client) decision(ctx context.Context, r reference.Reference) (model.Doc
 		r.ID = h.ID
 	}
 	endpoint := "/consult/juri"
-	b, p, e := c.JSON(ctx, "POST", c.LFURL+endpoint, object{"textId": r.ID}, true, 30*24*time.Hour)
+	b, p, e := c.JSON(ctx, "POST", c.LFURL+endpoint, object{"textId": r.ID}, true, historicalTTL)
 	d := model.Document{Schema: model.Schema, Nature: "case_law", Provenance: p, Complete: true}
 	d.Provenance.Source = "legifrance"
 	if e != nil {
@@ -147,7 +146,7 @@ func (c *Client) judi(ctx context.Context, r reference.Reference) (model.Documen
 		}
 		r.ID = strings.TrimPrefix(h.ID, "JUDI:")
 	}
-	b, p, e := c.JSON(ctx, "GET", c.JudiURL+"/decision?id="+url.QueryEscape(r.ID), nil, true, 30*24*time.Hour)
+	b, p, e := c.JSON(ctx, "GET", c.JudiURL+"/decision?id="+url.QueryEscape(r.ID), nil, true, historicalTTL)
 	d := model.Document{Schema: model.Schema, Nature: "case_law", Provenance: p, Complete: true}
 	d.Provenance.Source = "judilibre"
 	if e != nil {

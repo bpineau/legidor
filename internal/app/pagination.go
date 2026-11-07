@@ -78,6 +78,12 @@ func continuation(raw, cursor string, o options) string {
 	if o.offline {
 		next += " --offline"
 	}
+	if o.fresh {
+		next += " --fresh"
+	}
+	if o.maxAge > 0 {
+		next += " --max-age " + o.maxAge.String()
+	}
 	return next
 }
 

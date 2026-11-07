@@ -47,7 +47,6 @@ func date(v any) string {
 	}
 	return ""
 }
-func today() string                     { return time.Now().Format("2006-01-02") }
 func millis(d string) int64             { t, _ := time.Parse("2006-01-02", d); return t.UnixMilli() }
 func inForce(d, start, end string) bool { return start != "" && d >= start && (end == "" || d < end) }
 func officialURL(id, d string) string {
@@ -84,7 +83,15 @@ func (c *Client) lfSearch(ctx context.Context, fond string, fields, filters []ob
 		pagination = "ARTICLE"
 	}
 	body := object{"fond": fond, "recherche": object{"champs": fields, "filtres": filters, "pageNumber": page, "pageSize": limit, "operateur": "ET", "sort": "PERTINENCE", "typePagination": pagination}}
-	b, p, e := c.JSON(ctx, "POST", c.LFURL+"/search", body, true, 24*time.Hour)
+	ttl := currentTTL
+	for _, filter := range filters {
+		if filter["facette"] == "DATE_VERSION" {
+			if ms, ok := filter["singleDate"].(int64); ok {
+				ttl = c.datedTTL(time.UnixMilli(ms).UTC().Format("2006-01-02"))
+			}
+		}
+	}
+	b, p, e := c.JSON(ctx, "POST", c.LFURL+"/search", body, true, ttl)
 	s := model.Search{Schema: model.Schema, Hits: []model.Hit{}, Sort: "PERTINENCE", Stability: "Upstream ranking and pagination may change as the corpus is updated.", Provenance: p, Complete: true}
 	s.Provenance.Source = "legifrance"
 	s.Provenance.URL = "https://www.legifrance.gouv.fr/search/"
@@ -179,22 +186,7 @@ func (c *Client) Get(ctx context.Context, r reference.Reference) (model.Document
 		return c.decision(ctx, r)
 	case "article":
 		if r.ID == "" {
-			if r.Date == "" {
-				r.Date = today()
-			}
-			s, e := c.lfSearch(ctx, "CODE_DATE", []object{field("NUM_ARTICLE", r.Number, "EXACTE")}, []object{{"facette": "NOM_CODE", "valeurs": []string{reference.CodeName(r.Code)}}, dateFilter(r.Date)}, 1, 100, true)
-			if e != nil {
-				return model.Document{}, e
-			}
-			h, e := unique(s)
-			if e != nil {
-				return model.Document{}, e
-			}
-			if reference.NormalizeNumber(h.Number) != r.Number || strings.TrimSuffix(h.Title, ".") != reference.CodeName(r.Code) {
-				return model.Document{}, model.Err("IDENTITY_MISMATCH", 1, "search returned a different code or article")
-			}
-			r.ID = h.ID
-			return c.article(ctx, r, h.Parent)
+			return c.resolveArticle(ctx, r)
 		}
 		return c.article(ctx, r, "")
 	case "law", "named_law", "nor", "eli", "text":
@@ -205,9 +197,9 @@ func (c *Client) Get(ctx context.Context, r reference.Reference) (model.Document
 	return model.Document{}, model.Err("UNSUPPORTED_REFERENCE", 2, "unsupported reference kind")
 }
 func (c *Client) article(ctx context.Context, r reference.Reference, expectedParent string) (model.Document, error) {
-	ttl := 24 * time.Hour
-	if r.Date != "" && r.Date < today() {
-		ttl = 30 * 24 * time.Hour
+	ttl := c.datedTTL(r.Date)
+	if r.Date == "" {
+		ttl = historicalTTL
 	}
 	b, p, e := c.JSON(ctx, "POST", c.LFURL+"/consult/getArticle", object{"id": r.ID}, true, ttl)
 	d := model.Document{Schema: model.Schema, Provenance: p, Complete: true}

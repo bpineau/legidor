@@ -6,6 +6,8 @@ Run `go test -race ./...` and `go vet ./...`. Tests require no credentials or ex
 
 Coverage includes reference aliases, official URLs, numeric/Roman/Latin suffixes, conflicting options, code and parent identity mismatches, source nature, historical intervals, absent intervals, HTML errors, OAuth renewal after 401, quota handling, offline misses, cache expiry and concurrent writes. Text checks cover nested clauses and introductory text, ambiguous labels, doubled BOFiP attribute quotes, absent paragraphs, altered numbers/negation, ordered ellipses, numeric boundaries and word diffs. CLI checks exercise 30 manifest rows in input order, error precedence, table-of-contents quote refusal, complete preamble diffs, content-pinned pagination and bounded table output.
 
+Cache-policy regressions cover the 30/90-day boundaries, positive `--max-age` validation and conflicts, online refresh versus offline refusal, unchanged OAuth token reuse, and forced refresh of recent entries. A simulated next day verifies implicit-current resolution reuse without network calls, preserved source timestamps, explicit-date separation, and invalidation at a known version end. An old search with a newly retrieved article cannot bypass a stricter age budget or rejuvenate the resolution alias. Pagination retains the requested freshness flags.
+
 ## Live acceptance
 
 ```sh
@@ -24,6 +26,8 @@ The opt-in suite validates public-source identities and structure for:
 These 14 cases passed against production sources during implementation. Additional manual checks exercised QPC/CONSTIT and JURI consultations, KALI search/consultation, dated section URLs, NOR-based ELI, history and diffs. Repeated runs can use the normal fresh cache; this is not a cold-cache performance benchmark.
 
 Production probes established several non-obvious contracts: BOFiP HTML can have doubled attribute quotes; LODA search returns a consolidated identifier distinct from the original JORF CID; CONSTIT consultation uses the generic `/consult/juri` endpoint; some modifying LODA articles have sentinel validity dates even when their containing text has a dated version. These cases have explicit handling rather than fabricated metadata.
+
+The revised cache policy was also checked with a live `CIV 1240 --fresh` consultation followed by `--offline --max-age 24h`: the latter reused both response and resolution while preserving their retrieval times. The cache changes received a separate read-only code review with no material findings.
 
 ## Independent review and skill evaluation
 

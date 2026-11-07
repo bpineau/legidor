@@ -27,6 +27,8 @@ type Client struct {
 	Cache                             *cache.Cache
 	TokenURL, LFURL, JudiURL, BOFIURL string
 	Fresh, Offline                    bool
+	MaxAge                            time.Duration
+	now                               func() time.Time
 	mu                                sync.Mutex
 	token                             string
 	expires                           time.Time
@@ -99,7 +101,9 @@ func (c *Client) bearer(ctx context.Context, force bool) (string, error) {
 	return c.token, nil
 }
 func (c *Client) JSON(ctx context.Context, method, endpoint string, payload any, auth bool, ttl time.Duration) ([]byte, model.Provenance, error) {
+	ttl = c.cacheAge(ttl)
 	p := model.Provenance{Environment: c.Config.Environment, Offline: c.Offline}
+	p.MaxAgeSeconds = int64(ttl / time.Second)
 	var body []byte
 	var e error
 	if payload != nil {
