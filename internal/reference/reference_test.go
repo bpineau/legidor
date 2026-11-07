@@ -127,3 +127,21 @@ func TestCodeIndexReference(t *testing.T) {
 		t.Fatalf("%+v %v", r, err)
 	}
 }
+
+func TestTwoDigitYearLawNumbers(t *testing.T) {
+	for _, tc := range []struct{ input, number, article string }{
+		{"ordonnance 96-50 art. 19", "96-50", "19"},
+		{"Loi n° 78-17 article 1", "78-17", "1"},
+		{"décret 99-999", "99-999", ""},
+	} {
+		r, err := Parse(tc.input)
+		if err != nil || r.Kind != "law" || r.Number != tc.number || r.Article != tc.article {
+			t.Fatalf("%s: %+v %v", tc.input, r, err)
+		}
+	}
+	for _, input := range []string{"loi 9-50", "loi 996-50", "loi 19996-50"} {
+		if _, err := Parse(input); err == nil {
+			t.Fatalf("accepted malformed number %s", input)
+		}
+	}
+}

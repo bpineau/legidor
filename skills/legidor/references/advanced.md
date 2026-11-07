@@ -22,9 +22,16 @@ Compound subdivisions such as `2°-0 ter` and dotted lowercase labels such as `I
 ```sh
 legidor get 'LFI 2024 art. 110' --json
 legidor resolve 'LFI 2024' --json
+legidor get 'ordonnance 96-50 art. 19' --date 2026-01-01
 ```
 
 A numbered law without `--date` searches its published JORF version. Rectifications can create several candidates: use the returned identifiers and titles to identify the intended publication. A dated law requests the consolidated LODA version, which can differ from the original publication. A fixed JORF identifier does not support consolidated date selection.
+
+Use the short form `ordonnance 96-50 art. 19` or `loi 78-17 art. 1`, preserving
+the official number's two-digit year. Do not expand it to a four-digit year or
+append the publication date/title. `--date` selects the consolidated version;
+it is not the enactment date. For a returned text identifier, keep the explicit
+`art.` marker: `LEGITEXT... art. 19`, not `LEGITEXT... 19`.
 
 Named-law searches filter by the law's principal title, excluding implementing orders and texts that merely mention it. Original publications and rectifications remain distinct candidates. An incomplete search never establishes uniqueness.
 

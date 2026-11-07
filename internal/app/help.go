@@ -32,6 +32,7 @@ Long output returns complete=false, exit 3 and a version-pinned continuation cur
 Modifier lists show five recent entries and omitted_modifications; --full returns all entries.
 Examples:
   legidor get 'CMF L224-4' --part 'I 2°' --date 2025-12-31
+  legidor get 'ordonnance 96-50 art. 19' --date 2026-01-01
   legidor get 'BOI-RFPI-DECLA-10 §60' --json
 Errors: IDENTITY_MISMATCH, PART_NOT_FOUND, STRUCTURE_UNRECOGNIZED, VERSION_CONFLICT, AUTH.
 `,

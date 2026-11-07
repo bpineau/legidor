@@ -30,7 +30,7 @@ var extractionPatterns = []*regexp.Regexp{
 	regexp.MustCompile(`(?:LEGIARTI|JORFARTI|JORFTEXT|LEGITEXT|KALIARTI|CETATEXT|JURITEXT|CONSTEXT)\d{12}`),
 	regexp.MustCompile(`\b` + extractionCode + `\s+` + extractionArticle + extractionParts),
 	regexp.MustCompile(`\b` + extractionArticle + extractionParts + `\s+` + extractionCode),
-	regexp.MustCompile(`(?i)(?:loi|décret|ordonnance)\s+(?:n[°o]\s*)?\d{4}-\d+(?:\s+art\.\s+\d+)?`),
+	regexp.MustCompile(`(?i)(?:loi|décret|ordonnance)\s+(?:n[°o]\s*)?\d{2}(?:\d{2})?-\d+(?:\s+art\.\s+\d+)?`),
 	regexp.MustCompile(`(?:LFI|LFSS|LFR) \d{4}(?: art\. \d+)?`),
 	regexp.MustCompile(`(?:CE|Cass\. (?:com\.|[123]e civ\.)) \d{4}-\d{2}-\d{2} n° [\d.-]+`),
 }

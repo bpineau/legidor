@@ -118,3 +118,16 @@ func TestExtractExtendedReferences(t *testing.T) {
 		t.Fatalf("%d %s %s", code, &out, &diag)
 	}
 }
+
+func TestExtractTwoDigitYearLaw(t *testing.T) {
+	var out, diag bytes.Buffer
+	refs("-", options{}, strings.NewReader("Voir ordonnance n° 96-50 art. 19."), &out, &diag)
+	var row model.Citation
+	if err := json.Unmarshal(bytes.TrimSpace(out.Bytes()), &row); err != nil {
+		t.Fatalf("%s %v", out.String(), err)
+	}
+	r, err := reference.Parse(row.Ref)
+	if err != nil || r.Kind != "law" || r.Number != "96-50" || r.Article != "19" {
+		t.Fatalf("%+v %v", r, err)
+	}
+}

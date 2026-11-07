@@ -78,7 +78,7 @@ const ArticleNumberPattern = `[LRDA]?\*?\s*\.?\s*\d+(?:-\d+)*(?:\s+[A-Z]{1,3}\b)
 var articleRE = regexp.MustCompile(`^(` + ArticleNumberPattern + `)(.*)$`)
 var idRE = regexp.MustCompile(`^(LEGIARTI|JORFARTI|KALIARTI|LEGITEXT|JORFTEXT|KALITEXT|LEGISCTA|KALISCTA|CETATEXT|JURITEXT|CONSTEXT)\d{12}$`)
 var boiRE = regexp.MustCompile(`^(BOI-[A-Z0-9]+(?:-[A-Z0-9]+)*?)(?:\s*§\s*(\d+))?$`)
-var lawRE = regexp.MustCompile(`(?i)^(loi|décret|decret|ordonnance|arrêté|arrete)\s+(?:n[°o]\s*)?(\d{4}-\d+)(?:\s+art(?:icle)?\.?\s+([\w.-]+))?$`)
+var lawRE = regexp.MustCompile(`(?i)^(loi|décret|decret|ordonnance|arrêté|arrete)\s+(?:n[°o]\s*)?(\d{2}(?:\d{2})?-\d+)(?:\s+art(?:icle)?\.?\s+([\w.-]+))?$`)
 var decisionRE = regexp.MustCompile(`(?i)^(CE|CAA|TA|Cass\.(?:\s+[a-z0-9èé]+\.?)*)\s+(\d{4}-\d{2}-\d{2})\s+n[°o]\s*([\d.-]+)$`)
 var partRE = regexp.MustCompile(`^(?:(?:[IVX]+|[A-Z]|\d+(?:°(?:-\d+)?)?|[a-z])(?:\s+` + LatinSuffixPattern + `\b)?|alinéa\s+\d+)(?:\s+(?:(?:[IVX]+|[A-Z]|\d+(?:°(?:-\d+)?)?|[a-z])(?:\s+` + LatinSuffixPattern + `\b)?))*$`)
 
