@@ -146,6 +146,42 @@ func TestFutureArticleAndOverlappingHistory(t *testing.T) {
 	}
 }
 
+func TestHistoryIgnoresSameNumberInOtherCodes(t *testing.T) {
+	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		switch r.URL.Path {
+		case "/token":
+			fmt.Fprint(w, `{"access_token":"fake","expires_in":3600}`)
+		case "/search":
+			var req object
+			json.NewDecoder(r.Body).Decode(&req)
+			if str(req, "fond") == "CODE_DATE" {
+				fmt.Fprint(w, `{"totalResultNumber":0,"results":[]}`)
+				return
+			}
+			fmt.Fprint(w, `{"totalResultNumber":2,"results":[`+
+				`{"titles":[{"id":"LEGITEXT000000000009","title":"Code de l'éducation"}],"extracts":[{"id":"LEGIARTI000000000009","num":"L42-1","dateDebut":"2013-01-01"}]},`+
+				`{"titles":[{"id":"LEGITEXT000000000001","title":"Code civil"}],"extracts":[{"id":"LEGIARTI000000000001","num":"L42-1","dateDebut":"2031-01-01"}]}]}`)
+		default:
+			fmt.Fprint(w, `{"article":{"id":"LEGIARTI000000000001","num":"L42-1","dateDebut":"2031-01-01","dateFin":"2999-01-01","texteHtml":"<p>Future provision.</p>","textTitles":[{"id":"LEGITEXT000000000001","titreLong":"Code civil"}],"articleVersions":[{"id":"LEGIARTI000000000001","dateDebut":"2031-01-01","dateFin":"2999-01-01","etat":"VIGUEUR_DIFF"}]}}`)
+		}
+	}))
+	defer s.Close()
+	c := NewClient(Config{ClientID: "fake", ClientSecret: "fake", Environment: "test"}, cache.New(t.TempDir()))
+	c.LFURL = s.URL
+	c.TokenURL = s.URL + "/token"
+	r, _ := reference.Parse("CIV L42-1")
+	r.Date = "2030-01-01"
+	_, err := c.Get(context.Background(), r)
+	if err == nil || !strings.Contains(err.Error(), "NO_VERSION_AT_DATE") || !strings.Contains(err.Error(), "2031-01-01") {
+		t.Fatalf("%v", err)
+	}
+	vs, err := c.Versions(context.Background(), r, "")
+	if err != nil || len(vs) != 1 {
+		t.Fatalf("%+v %v", vs, err)
+	}
+}
+
 func TestAllStateSearchDoesNotConfuseCodeWithAnnex(t *testing.T) {
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")

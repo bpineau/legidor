@@ -103,11 +103,18 @@ func (c *Client) articleHistoryAnchor(ctx context.Context, r reference.Reference
 	if !searchExhausted(s) {
 		return model.Document{}, model.Err("AMBIGUOUS_REFERENCE", 3, "article history search is incomplete")
 	}
+	// The all-state search can disregard the code facet and return the same
+	// number in other codes. Those hits say nothing about the requested article.
+	hits := s.Hits[:0:0]
 	for _, h := range s.Hits {
-		if reference.NormalizeNumber(h.Number) != r.Number || strings.TrimSuffix(h.Title, ".") != reference.CodeName(r.Code) {
-			return model.Document{}, model.Err("IDENTITY_MISMATCH", 1, "history search returned a different code or number")
+		if reference.NormalizeNumber(h.Number) == r.Number && strings.TrimSuffix(h.Title, ".") == reference.CodeName(r.Code) {
+			hits = append(hits, h)
 		}
 	}
+	if len(hits) == 0 {
+		return model.Document{}, absentArticle("history search returned this number only in other codes")
+	}
+	s.Hits = hits
 	sort.SliceStable(s.Hits, func(i, j int) bool { return s.Hits[i].Start > s.Hits[j].Start })
 	r.Date = ""
 	var d model.Document
