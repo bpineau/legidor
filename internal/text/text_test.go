@@ -79,3 +79,12 @@ func TestQuoteNumericBoundaries(t *testing.T) {
 		}
 	}
 }
+
+func TestLongLatinSubdivisionSuffix(t *testing.T) {
+	s := "I.- Introduction\n1° quaterdecies First case.\n2° Other case."
+	parts := Parts(s)
+	got, err := Select(s, parts, "I 1° quaterdecies")
+	if err != nil || !strings.Contains(got, "First case.") || strings.Contains(got, "Other case.") {
+		t.Fatalf("%q %v %+v", got, err, parts)
+	}
+}

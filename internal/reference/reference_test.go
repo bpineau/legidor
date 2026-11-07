@@ -1,6 +1,9 @@
 package reference
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func TestParse(t *testing.T) {
 	cases := []struct{ in, kind, code, num, part string }{
@@ -71,5 +74,14 @@ func TestOfficialSectionURL(t *testing.T) {
 	r, e := Parse("https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000000000001/LEGISCTA000000000002/2025-12-31")
 	if e != nil || r.Kind != "section" || r.ID != "LEGISCTA000000000002" || r.Parent != "LEGITEXT000000000001" || r.Date != "2025-12-31" {
 		t.Fatalf("%+v %v", r, e)
+	}
+}
+
+func TestLatinSuffixPrefixDoesNotTruncateArticle(t *testing.T) {
+	for _, ref := range []string{"CGI 80 quaterdecies", "CGI 163 quatervicies", "CGI 163 terdecies"} {
+		got, err := Parse(ref)
+		if err != nil || got.Number != strings.TrimPrefix(ref, "CGI ") || got.Part != "" {
+			t.Fatalf("%s: %+v, %v", ref, got, err)
+		}
 	}
 }

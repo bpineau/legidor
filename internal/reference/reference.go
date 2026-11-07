@@ -67,12 +67,12 @@ func CodeKey(name string) string {
 	return ""
 }
 
-var articleRE = regexp.MustCompile(`^([LRDA]?\*?\s*\.?\s*\d+(?:-\d+)*(?:\s+[A-Z]{1,3})?(?:\s+(?:bis|ter|quater|quinquies|sexies|septies|octies|nonies|decies|undecies|duodecies|terdecies|quaterdecies|quindecies|sexdecies|septdecies|octodecies|novodecies|vicies|unvicies|duovicies|tervicies|quatervicies|quinvicies|sexvicies|septvicies|octovicies|novovicies|tricies))?)(.*)$`)
+var articleRE = regexp.MustCompile(`^([LRDA]?\*?\s*\.?\s*\d+(?:-\d+)*(?:\s+[A-Z]{1,3})?(?:\s+(?:bis|ter|quater|quinquies|sexies|septies|octies|nonies|decies|undecies|duodecies|terdecies|quaterdecies|quindecies|sexdecies|septdecies|octodecies|novodecies|vicies|unvicies|duovicies|tervicies|quatervicies|quinvicies|sexvicies|septvicies|octovicies|novovicies|tricies)\b)?)(.*)$`)
 var idRE = regexp.MustCompile(`^(LEGIARTI|JORFARTI|KALIARTI|LEGITEXT|JORFTEXT|KALITEXT|LEGISCTA|KALISCTA|CETATEXT|JURITEXT|CONSTEXT)\d{12}$`)
 var boiRE = regexp.MustCompile(`^(BOI-[A-Z0-9]+(?:-[A-Z0-9]+)*?)(?:\s*§\s*(\d+))?$`)
 var lawRE = regexp.MustCompile(`(?i)^(loi|décret|decret|ordonnance|arrêté|arrete)\s+(?:n[°o]\s*)?(\d{4}-\d+)(?:\s+art(?:icle)?\.?\s+([\w.-]+))?$`)
 var decisionRE = regexp.MustCompile(`(?i)^(CE|CAA|TA|Cass\.(?:\s+[a-z0-9èé]+\.?)*)\s+(\d{4}-\d{2}-\d{2})\s+n[°o]\s*([\d.-]+)$`)
-var partRE = regexp.MustCompile(`^(?:(?:[IVX]+|[A-Z]|\d+°?|[a-z])(?:\s+(?:bis|ter|quater|quinquies|sexies|septies|octies|nonies|decies|undecies|duodecies|terdecies|quaterdecies|quindecies|sexdecies|septdecies|octodecies|novodecies|vicies|unvicies|duovicies|tervicies|quatervicies|quinvicies|sexvicies|septvicies|octovicies|novovicies|tricies))?|alinéa\s+\d+)(?:\s+(?:(?:[IVX]+|[A-Z]|\d+°?|[a-z])(?:\s+(?:bis|ter|quater|quinquies|sexies|septies|octies|nonies|decies|undecies|duodecies|terdecies|quaterdecies|quindecies|sexdecies|septdecies|octodecies|novodecies|vicies|unvicies|duovicies|tervicies|quatervicies|quinvicies|sexvicies|septvicies|octovicies|novovicies|tricies))?))*$`)
+var partRE = regexp.MustCompile(`^(?:(?:[IVX]+|[A-Z]|\d+°?|[a-z])(?:\s+(?:bis|ter|quater|quinquies|sexies|septies|octies|nonies|decies|undecies|duodecies|terdecies|quaterdecies|quindecies|sexdecies|septdecies|octodecies|novodecies|vicies|unvicies|duovicies|tervicies|quatervicies|quinvicies|sexvicies|septvicies|octovicies|novovicies|tricies)\b)?|alinéa\s+\d+)(?:\s+(?:(?:[IVX]+|[A-Z]|\d+°?|[a-z])(?:\s+(?:bis|ter|quater|quinquies|sexies|septies|octies|nonies|decies|undecies|duodecies|terdecies|quaterdecies|quindecies|sexdecies|septdecies|octodecies|novodecies|vicies|unvicies|duovicies|tervicies|quatervicies|quinvicies|sexvicies|septvicies|octovicies|novovicies|tricies)\b)?))*$`)
 
 func NormalizeNumber(s string) string {
 	s = strings.TrimSpace(s)
