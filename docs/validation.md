@@ -47,6 +47,14 @@ The exercise exposed two defects, now covered by regression tests: extraction mi
 
 BOI-BAREME-000044 contains tables and remained explicitly incomplete. Its thresholds were checked in the official web publication, while article 50-0 and the textual BOFiP paragraphs were available through the CLI. Table rendering, inferred references without a code name, historical BOFiP and tax-form box verification remain coverage limits. This exercise measured functionality, not comparative token savings or agent-provider performance.
 
+## Calculation-review exercise
+
+Paperasse [PR 97](https://github.com/romainsimon/paperasse/pull/97) was reviewed at head `3e70c1f`, against base `4fd0a05`. The review covered the changed capital-income options, deductible CSG, furnished and unfurnished rental income, carried-forward property losses, net capital losses and reference-income adjustments. Its existing deterministic calculation suite passed in an isolated export of that commit; the user's working checkout was unchanged. No blocking issue was identified within the calculator's documented scope.
+
+A manually reviewed 16-entry manifest completed through `legidor check`, then again offline, with all identities confirmed and no incomplete content. Targeted consultations included commencement provisions: the article 200 C version available at the end of 2022 already described the crypto option, but its NOTA made it applicable only to disposals from 2023. The 2026 social-security finance law likewise distinguished income-year applicability from the commencement date for investment proceeds. The tool supplied the evidence; applicability remained a separate review step.
+
+This exercise also exposed a source-maintenance caveat rather than a retrieval defect: BOI-IR-BASE-20-20 is present in the current-doctrine dataset but its 2017 publication still quotes older CSG rates. The dated CGI and the [2026 official income-tax brochure](https://www.impots.gouv.fr/www2/fichiers/documentation/brochure/ir_2026/pdf_integral/Brochure-IR-2026.pdf) supported the review instead. The skill now explicitly distinguishes current-corpus membership from up-to-date legal content. The brochure and tax-form fields required a web/PDF fallback; they were not retrieved by legidor. No PR comment or approval was posted.
+
 ## Explicit limits
 
 Unsupported tables, images and embedded content are not flattened into supposedly complete legal text. Historical BOFiP, notices/forms, PDF-only text, bulk mirrors and legal-applicability inference remain outside this version. A missing historical interval, ambiguous publication (including rectifications), absent subdivision or network failure is explicit. BOFiP is current administrative doctrine; it does not establish historical law.

@@ -171,7 +171,7 @@ To warm a bounded topic collection, keep a local JSONL manifest of references an
 ## Coverage and limits
 
 - Legifrance: code articles and sections, ranges, LODA/JORF, targeted KALI, CETAT, JURI and CONSTIT. NOR and ELI URLs containing a NOR or numbered text are supported. Ambiguous publications return candidate identifiers.
-- BOFiP: current doctrine only, refreshed weekly by the publisher. It is administrative doctrine, potentially opposable under conditions, not legislation. Historical queries fail explicitly.
+- BOFiP: current doctrine only, refreshed weekly by the publisher. Individual BOIs may still quote superseded rates or statutes; check their publication dates against the relevant legislation. It is administrative doctrine, potentially opposable under conditions, not legislation. Historical queries fail explicitly.
 - Judilibre: decision lookup and source zones; search defaults to Cour de cassation. Direct identifiers can consult other covered jurisdictions. Partial decisions retain `complete=false`.
 - Out of scope: historical BOFiP, PDF-only material, unsupported complex tables/annexes, tax forms/notices, BOSS, URSSAF, Unedic, HCSF, bulk mirrors, evidence bundles and an MCP server.
 

@@ -27,6 +27,8 @@ An implicit current article can reuse a resolution from a previous day. Read `pr
 
 BOFiP is administrative doctrine, potentially opposable under conditions; it is not legislation. The dataset contains current doctrine and is updated weekly. A current BOI, even one with an old start date, does not establish the historical doctrine at a requested date. `--fresh` only refreshes the API response, not the underlying publication schedule.
 
+Presence in the current BOFiP corpus does not guarantee that every rate or statutory reference has been updated. Inspect the BOI's publication/version date. If its wording conflicts with newer legislation, compare the dated statute, its commencement provisions and recent official instructions; report the discrepancy. Never copy an old rate merely because retrieval succeeded or the response was refreshed.
+
 Decisions are case law. Read the reasons and operative part, check jurisdiction/date/number, and inspect completeness before using them. A partial or pseudonymized decision must be described accordingly.
 
 ## Four workflows
