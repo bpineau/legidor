@@ -1,0 +1,7 @@
+/bin/
+/.scratch/
+/.superpowers/
+*.env
+*.env.*
+coverage.out
+.DS_Store
