@@ -121,6 +121,17 @@ func Run(ctx context.Context, o Options) error {
 	if err != nil {
 		return err
 	}
+	available := map[string]bool{}
+	for _, c := range corpus.Cases {
+		available[strconv.Itoa(c.ID)] = true
+	}
+	selected := map[string]bool{}
+	for _, id := range o.IDs {
+		if !available[id] || selected[id] {
+			return fmt.Errorf("unknown or duplicate case ID %q", id)
+		}
+		selected[id] = true
+	}
 	type job struct {
 		c                 Case
 		agent, model, arm string
@@ -131,6 +142,9 @@ func Run(ctx context.Context, o Options) error {
 		for _, c := range corpus.Cases {
 			if len(o.IDs) > 0 && !contains(o.IDs, strconv.Itoa(c.ID)) {
 				continue
+			}
+			if len(c.Files) > 0 {
+				return fmt.Errorf("case %d: attachments are preserved in the corpus but not supported by this runner", c.ID)
 			}
 			for _, agent := range o.Agents {
 				models := o.ClaudeModels
@@ -159,6 +173,11 @@ func Run(ctx context.Context, o Options) error {
 	if o.MaxSamples > 0 && len(jobs) > o.MaxSamples {
 		return fmt.Errorf("matrix has %d samples, exceeding -max-samples %d; narrow cases, models or arms", len(jobs), o.MaxSamples)
 	}
+	selectedCount := len(corpus.Cases)
+	if len(o.IDs) > 0 {
+		selectedCount = len(o.IDs)
+	}
+	fmt.Fprintf(os.Stderr, "Selected %d/%d corpus cases; %d samples planned\n", selectedCount, len(corpus.Cases), len(jobs))
 	o.Output, err = filepath.Abs(o.Output)
 	if err != nil {
 		return err

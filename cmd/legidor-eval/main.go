@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 	"syscall"
+	"text/tabwriter"
 	"time"
 
 	bench "github.com/bpineau/legidor/internal/eval"
@@ -30,22 +31,67 @@ func list(s string) []string {
 }
 func run() error {
 	if len(os.Args) < 2 {
-		return fmt.Errorf("usage: legidor-eval run|grade|report|serve [options]")
+		return fmt.Errorf("usage: legidor-eval run|grade|report|list|convert|import-paperasse|export-anthropic|serve [options]")
 	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	f := flag.NewFlagSet(os.Args[1], flag.ContinueOnError)
 	switch os.Args[1] {
+	case "export-anthropic":
+		root := f.String("run", "", "completed Legidor run directory")
+		out := f.String("out", "", "new private export directory")
+		agent := f.String("agent", "", "agent CLI to export")
+		model := f.String("model", "", "exact recorded model to export")
+		with := f.String("with", "", "arm mapped to with_skill")
+		without := f.String("without", "", "arm mapped to without_skill")
+		if err := f.Parse(os.Args[2:]); err != nil {
+			return err
+		}
+		if *root == "" || *out == "" {
+			return fmt.Errorf("-run and -out are required")
+		}
+		return bench.ExportAnthropic(*root, *out, *agent, *model, *with, *without)
+	case "convert":
+		corpus := f.String("corpus", "", "source corpus (Anthropic or legacy Legidor JSON)")
+		out := f.String("out", "", "destination JSON file")
+		asOf := f.String("as-of", "", "research date YYYY-MM-DD (required when missing from source)")
+		if err := f.Parse(os.Args[2:]); err != nil {
+			return err
+		}
+		if *corpus == "" || *out == "" {
+			return fmt.Errorf("-corpus and -out are required")
+		}
+		return bench.ConvertCorpus(*corpus, *out, *asOf)
+	case "list":
+		corpus := f.String("corpus", "evals/pilot.json", "corpus JSON")
+		if err := f.Parse(os.Args[2:]); err != nil {
+			return err
+		}
+		c, err := bench.LoadCorpus(*corpus)
+		if err != nil {
+			return err
+		}
+		w := tabwriter.NewWriter(os.Stdout, 0, 4, 2, ' ', 0)
+		fmt.Fprintln(w, "ID\tSCENARIO\tCRITERIA\tFILES")
+		total := 0
+		for _, s := range c.Cases {
+			fmt.Fprintf(w, "%d\t%s\t%d\t%d\n", s.ID, s.Name, len(s.Assertions), len(s.Files))
+			total += len(s.Assertions)
+		}
+		fmt.Fprintf(w, "\n%d cases, %d criteria; research date %s\n", len(c.Cases), total, c.AsOf)
+		return w.Flush()
 	case "import-paperasse":
 		repo := f.String("repo", "", "public Paperasse checkout")
 		dest := f.String("out", "evals", "destination directory")
+		all := f.Bool("all", false, "import every upstream scenario unchanged into all.json")
+		asOf := f.String("as-of", "2026-11-07", "research date YYYY-MM-DD")
 		if e := f.Parse(os.Args[2:]); e != nil {
 			return e
 		}
 		if *repo == "" {
 			return fmt.Errorf("-repo is required")
 		}
-		return bench.ImportPaperasse(*repo, *dest)
+		return bench.ImportPaperasseCorpus(*repo, *dest, *all, *asOf)
 	case "serve":
 		p := f.String("config", "", "private broker configuration")
 		if e := f.Parse(os.Args[2:]); e != nil {

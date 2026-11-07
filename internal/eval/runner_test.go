@@ -65,6 +65,34 @@ func TestReportCountsFailuresAndMissingGrades(t *testing.T) {
 	}
 }
 
+func TestReportIncludesUnstartedPlannedCells(t *testing.T) {
+	root := t.TempDir()
+	writeJSON(filepath.Join(root, "corpus.json"), Corpus{AsOf: "2026-11-07", Cases: []Case{{ID: 1, Prompt: "one", Assertions: []string{"a"}}, {ID: 2, Prompt: "two", Assertions: []string{"b"}}}})
+	writeJSON(filepath.Join(root, "manifest.json"), map[string]any{"repetitions": 1, "agents": []string{"codex"}, "arms": []string{"none", "legidor"}, "codex_model": "test-sol"})
+	os.MkdirAll(filepath.Join(root, "one"), 0700)
+	writeJSON(filepath.Join(root, "one", "result.json"), Sample{CaseID: 1, Agent: "codex", RequestedModel: "test-sol", Arm: "none", Repetition: 1, Status: "ok", Measurement: Measurement{Model: "test-sol", UsageComplete: true}})
+	if err := Report(root); err != nil {
+		t.Fatal(err)
+	}
+	var rows []map[string]any
+	json.Unmarshal(mustRead(t, filepath.Join(root, "summary.json")), &rows)
+	if len(rows) != 2 {
+		t.Fatalf("unstarted arm hidden: %+v", rows)
+	}
+	for _, r := range rows {
+		if r["planned"] != float64(2) || r["criteria_expected"] != float64(2) {
+			t.Fatalf("incomplete denominator: %+v", r)
+		}
+		want := float64(2)
+		if r["arm"] == "none" {
+			want = 1
+		}
+		if r["not_started"] != want {
+			t.Fatalf("unstarted count: %+v", r)
+		}
+	}
+}
+
 func TestIsolatedCodexHomeOnlyLinksAuthentication(t *testing.T) {
 	source := t.TempDir()
 	os.WriteFile(filepath.Join(source, "auth.json"), []byte(`{"tokens":{}}`), 0600)

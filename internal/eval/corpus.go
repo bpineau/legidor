@@ -10,21 +10,29 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"time"
 )
 
 type Case struct {
-	ID         int      `json:"id"`
-	Name       string   `json:"name"`
-	Prompt     string   `json:"prompt"`
-	Assertions []string `json:"assertions"`
-	Amendments []string `json:"amendments,omitempty"`
+	ID             int      `json:"id"`
+	Name           string   `json:"name"`
+	Prompt         string   `json:"prompt"`
+	Assertions     []string `json:"assertions"`
+	Amendments     []string `json:"amendments,omitempty"`
+	ExpectedOutput string   `json:"expected_output"`
+	Files          []string `json:"files"`
+	extra          map[string]json.RawMessage
+	metadata       map[string]json.RawMessage
 }
 type Corpus struct {
+	SkillName    string `json:"skill_name"`
 	Source       string `json:"source"`
 	Commit       string `json:"commit"`
 	SourceSHA256 string `json:"source_sha256"`
 	AsOf         string `json:"as_of"`
 	Cases        []Case `json:"cases"`
+	extra        map[string]json.RawMessage
+	metadata     map[string]json.RawMessage
 }
 
 func LoadCorpus(path string) (Corpus, error) {
@@ -36,17 +44,32 @@ func LoadCorpus(path string) (Corpus, error) {
 	if err = json.Unmarshal(b, &c); err != nil {
 		return c, err
 	}
-	seen := map[int]bool{}
-	if len(c.Cases) == 0 || c.AsOf == "" {
-		return c, fmt.Errorf("empty corpus or as_of")
+	return c, c.validate(true)
+}
+
+func (c Corpus) validate(scored bool) error {
+	if len(c.Cases) == 0 {
+		return fmt.Errorf("empty corpus")
 	}
+	if _, err := time.Parse("2006-01-02", c.AsOf); err != nil {
+		return fmt.Errorf("as_of must be an explicit YYYY-MM-DD research date")
+	}
+	seen := map[int]bool{}
 	for _, s := range c.Cases {
-		if s.ID < 1 || seen[s.ID] || s.Name == "" || s.Prompt == "" || len(s.Assertions) == 0 {
-			return c, fmt.Errorf("invalid or duplicate case %d", s.ID)
+		if s.ID < 0 || seen[s.ID] || strings.TrimSpace(s.Prompt) == "" {
+			return fmt.Errorf("invalid or duplicate case %d", s.ID)
+		}
+		if scored && len(s.Assertions) == 0 {
+			return fmt.Errorf("case %d has no assertions/expectations to grade", s.ID)
+		}
+		for _, a := range s.Assertions {
+			if strings.TrimSpace(a) == "" {
+				return fmt.Errorf("case %d has an empty criterion", s.ID)
+			}
 		}
 		seen[s.ID] = true
 	}
-	return c, nil
+	return nil
 }
 func digest(b []byte) string { h := sha256.Sum256(b); return hex.EncodeToString(h[:]) }
 func HashFile(path string) (string, error) {

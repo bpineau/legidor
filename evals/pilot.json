@@ -1,13 +1,6 @@
 {
-  "source": "https://github.com/romainsimon/paperasse/blob/f5717490bc2f088f7587c239e33323478ce03918/fiscaliste/evals/evals.json",
-  "commit": "f5717490bc2f088f7587c239e33323478ce03918",
-  "source_sha256": "e89a359d9299ced1f6ffeae1bc7fb89908ecb1b5a80787b6c41f0f341da5842e",
-  "as_of": "2026-11-07",
-  "cases": [
+  "evals": [
     {
-      "id": 1,
-      "name": "ir-celibataire-salaire-simple",
-      "prompt": "Je suis célibataire, sans enfant, mon salaire net imposable (case 1AJ) est de 50 000 €. Pas d'autres revenus. Calcule mon impôt sur le revenu pour les revenus 2025.",
       "assertions": [
         "Le skill applique l'abattement forfaitaire 10% sur les salaires (RNI = 50 000 × 0.9 = 45 000 €)",
         "Le barème progressif est appliqué tranche par tranche (0%, 11%, 30%)",
@@ -18,14 +11,29 @@
         "Pas de prélèvements sociaux calculés (pas de revenus du capital)",
         "Le calcul est structuré étape par étape"
       ],
-      "amendments": [
-        "Normalize typographic quotes and dashes to ASCII; preserve upstream amounts and scoring intent."
-      ]
+      "expectations": [
+        "Le skill applique l'abattement forfaitaire 10% sur les salaires (RNI = 50 000 × 0.9 = 45 000 €)",
+        "Le barème progressif est appliqué tranche par tranche (0%, 11%, 30%)",
+        "Les tranches 2025 correctes sont utilisées (11 600 / 29 579 / 84 577 / 181 917)",
+        "L'impôt brut pour 45 000 € avec 1 part est calculé (environ 6 604 €)",
+        "La décote est testée mais non applicable (impôt brut \u003e 1 982 €)",
+        "L'année de référence des données (revenus 2025, déclaration 2026) est mentionnée",
+        "Pas de prélèvements sociaux calculés (pas de revenus du capital)",
+        "Le calcul est structuré étape par étape"
+      ],
+      "expected_output": "Le skill applique l'abattement forfaitaire 10% sur les salaires (RNI = 50 000 × 0.9 = 45 000 €)\nLe barème progressif est appliqué tranche par tranche (0%, 11%, 30%)\nLes tranches 2025 correctes sont utilisées (11 600 / 29 579 / 84 577 / 181 917)\nL'impôt brut pour 45 000 € avec 1 part est calculé (environ 6 604 €)\nLa décote est testée mais non applicable (impôt brut \u003e 1 982 €)\nL'année de référence des données (revenus 2025, déclaration 2026) est mentionnée\nPas de prélèvements sociaux calculés (pas de revenus du capital)\nLe calcul est structuré étape par étape",
+      "files": [],
+      "id": 1,
+      "name": "ir-celibataire-salaire-simple",
+      "prompt": "Je suis célibataire, sans enfant, mon salaire net imposable (case 1AJ) est de 50 000 €. Pas d'autres revenus. Calcule mon impôt sur le revenu pour les revenus 2025.",
+      "x_legidor": {
+        "amendments": [
+          "Normalize typographic quotes and dashes to ASCII; preserve upstream amounts and scoring intent.",
+          "Derive expected_output from the amended assertions to avoid stale upstream answers."
+        ]
+      }
     },
     {
-      "id": 3,
-      "name": "per-arbitrage-tmi",
-      "prompt": "Je gagne 90 000 € bruts (80 000 € imposables 1AJ). Mon conseiller me propose de verser 8 000 € sur un PER. C'est vraiment utile ou juste un report d'imposition ?\n\nCas synthétique précisé : célibataire, une part, versement et revenus étudiés en 2025. Le salaire imposable 1AJ était également de 80 000 EUR en 2024. Aucun autre revenu, plafond reportable, mutualisation, frais réels, cotisation professionnelle de retraite supplémentaire ou abondement à déduire du plafond. L'avis indique un plafond disponible de 7 200 EUR.",
       "assertions": [
         "L'économie immédiate est calculée sur le montant déductible : 7 200 EUR x 30 % = 2 160 EUR, et non 8 000 EUR x 30 %.",
         "Le skill explique que c'est un REPORT d'imposition, pas une exonération",
@@ -33,17 +41,29 @@
         "Le plafond disponible de 7 200 EUR est respecté (référence aux revenus professionnels de l'année précédente), donc 800 EUR du versement ne sont pas déductibles.",
         "La réponse nuance : pas toujours avantageux, dépend de la situation"
       ],
-      "amendments": [
-        "Normalize typographic quotes and dashes to ASCII; preserve upstream amounts and scoring intent.",
-        "Append explicit synthetic facts and dates; see the prompt's final paragraph.",
-        "Clarify the available prior-year ceiling and deductible amount in criteria 0 and 3.",
-        "Remove the employer-matching advice criterion: the question asks about a personal PER contribution, with no matching arrangement to assess."
-      ]
+      "expectations": [
+        "L'économie immédiate est calculée sur le montant déductible : 7 200 EUR x 30 % = 2 160 EUR, et non 8 000 EUR x 30 %.",
+        "Le skill explique que c'est un REPORT d'imposition, pas une exonération",
+        "Le TMI futur à la retraite est mentionné comme variable clé",
+        "Le plafond disponible de 7 200 EUR est respecté (référence aux revenus professionnels de l'année précédente), donc 800 EUR du versement ne sont pas déductibles.",
+        "La réponse nuance : pas toujours avantageux, dépend de la situation"
+      ],
+      "expected_output": "L'économie immédiate est calculée sur le montant déductible : 7 200 EUR x 30 % = 2 160 EUR, et non 8 000 EUR x 30 %.\nLe skill explique que c'est un REPORT d'imposition, pas une exonération\nLe TMI futur à la retraite est mentionné comme variable clé\nLe plafond disponible de 7 200 EUR est respecté (référence aux revenus professionnels de l'année précédente), donc 800 EUR du versement ne sont pas déductibles.\nLa réponse nuance : pas toujours avantageux, dépend de la situation",
+      "files": [],
+      "id": 3,
+      "name": "per-arbitrage-tmi",
+      "prompt": "Je gagne 90 000 € bruts (80 000 € imposables 1AJ). Mon conseiller me propose de verser 8 000 € sur un PER. C'est vraiment utile ou juste un report d'imposition ?\n\nCas synthétique précisé : célibataire, une part, versement et revenus étudiés en 2025. Le salaire imposable 1AJ était également de 80 000 EUR en 2024. Aucun autre revenu, plafond reportable, mutualisation, frais réels, cotisation professionnelle de retraite supplémentaire ou abondement à déduire du plafond. L'avis indique un plafond disponible de 7 200 EUR.",
+      "x_legidor": {
+        "amendments": [
+          "Normalize typographic quotes and dashes to ASCII; preserve upstream amounts and scoring intent.",
+          "Append explicit synthetic facts and dates; see the prompt's final paragraph.",
+          "Clarify the available prior-year ceiling and deductible amount in criteria 0 and 3.",
+          "Remove the employer-matching advice criterion: the question asks about a personal PER contribution, with no matching arrangement to assess.",
+          "Derive expected_output from the amended assertions to avoid stale upstream answers."
+        ]
+      }
     },
     {
-      "id": 4,
-      "name": "pfu-vs-bareme-dividendes",
-      "prompt": "Célibataire, salaires 30 000 € net imposable. Je reçois 5 000 € de dividendes. Je choisis PFU ou barème ?\n\nRevenus de 2025, déclaration 2026, une part, dividendes éligibles à l'abattement, prélèvements sociaux prélevés à la source en 2025 par un établissement payeur français. Aucun autre revenu, charge, réduction ou crédit. Comparer les impôts totaux, décote et CSG déductible incluses.",
       "assertions": [
         "Les deux scénarios (PFU et barème) sont chiffrés",
         "Sous barème : abattement 40% sur dividendes est appliqué (3 000 € imposables)",
@@ -54,15 +74,30 @@
         "La décote est appliquée au calcul sans dividendes (impôt brut 1 694 €, décote ≈ 130 €)",
         "La CSG déductible (340 €) est déduite du revenu global de 2025 (PS prélevés à la source), pas de l'année suivante"
       ],
-      "amendments": [
-        "Normalize typographic quotes and dashes to ASCII; preserve upstream amounts and scoring intent.",
-        "Append explicit synthetic facts and dates; see the prompt's final paragraph."
-      ]
+      "expectations": [
+        "Les deux scénarios (PFU et barème) sont chiffrés",
+        "Sous barème : abattement 40% sur dividendes est appliqué (3 000 € imposables)",
+        "Le TMI du foyer après ajout des dividendes est correctement identifié",
+        "Les PS 17,2% sont calculés dans les deux cas",
+        "Le skill rappelle que l'option barème est GLOBALE (tous revenus du capital)",
+        "La recommandation est cohérente avec le TMI : à TMI 11%, le barème est souvent meilleur pour les dividendes",
+        "La décote est appliquée au calcul sans dividendes (impôt brut 1 694 €, décote ≈ 130 €)",
+        "La CSG déductible (340 €) est déduite du revenu global de 2025 (PS prélevés à la source), pas de l'année suivante"
+      ],
+      "expected_output": "Les deux scénarios (PFU et barème) sont chiffrés\nSous barème : abattement 40% sur dividendes est appliqué (3 000 € imposables)\nLe TMI du foyer après ajout des dividendes est correctement identifié\nLes PS 17,2% sont calculés dans les deux cas\nLe skill rappelle que l'option barème est GLOBALE (tous revenus du capital)\nLa recommandation est cohérente avec le TMI : à TMI 11%, le barème est souvent meilleur pour les dividendes\nLa décote est appliquée au calcul sans dividendes (impôt brut 1 694 €, décote ≈ 130 €)\nLa CSG déductible (340 €) est déduite du revenu global de 2025 (PS prélevés à la source), pas de l'année suivante",
+      "files": [],
+      "id": 4,
+      "name": "pfu-vs-bareme-dividendes",
+      "prompt": "Célibataire, salaires 30 000 € net imposable. Je reçois 5 000 € de dividendes. Je choisis PFU ou barème ?\n\nRevenus de 2025, déclaration 2026, une part, dividendes éligibles à l'abattement, prélèvements sociaux prélevés à la source en 2025 par un établissement payeur français. Aucun autre revenu, charge, réduction ou crédit. Comparer les impôts totaux, décote et CSG déductible incluses.",
+      "x_legidor": {
+        "amendments": [
+          "Normalize typographic quotes and dashes to ASCII; preserve upstream amounts and scoring intent.",
+          "Append explicit synthetic facts and dates; see the prompt's final paragraph.",
+          "Derive expected_output from the amended assertions to avoid stale upstream answers."
+        ]
+      }
     },
     {
-      "id": 6,
-      "name": "rsu-vesting-quotient",
-      "prompt": "J'ai reçu un vesting RSU de 100 000 € cette année. Mon salaire habituel est 60 000 €. Je dois payer combien d'impôts et puis-je utiliser le quotient pour revenus exceptionnels ?\n\nCas synthétique : acquisition définitive en 2025 d'actions gratuites dans un plan français qualifiant autorisé en 2020. Célibataire, une part, salaire net imposable 1AJ 60 000 EUR. Aucune action vendue en 2025. Expliquer également la fiscalité conditionnelle si ces actions avaient été vendues en 2025 pour leur valeur d'acquisition, sans autre gain. Ne pas présumer que le quotient est automatiquement acquis. Pour une future plus-value de cession, prendre une cession en 2026.",
       "assertions": [
         "Aucun impôt sur le gain d'acquisition du plan qualifiant au seul vesting en 2025, sans cession ; la cession déclenche l'imposition.",
         "Le skill ne traite PAS le gain d'un plan qualifiant comme un salaire ordinaire sous 300 000 € : barème après abattement de 50 %",
@@ -72,32 +107,57 @@
         "Le skill chiffre (ou explique comment chiffrer) les 2 scénarios avec/sans quotient",
         "Le skill distingue gain d'acquisition (barème après abattement) et future PV de cession (PFU 31,4 %)"
       ],
-      "amendments": [
-        "Normalize typographic quotes and dashes to ASCII; preserve upstream amounts and scoring intent.",
-        "Append explicit synthetic facts and dates; see the prompt's final paragraph.",
-        "Criteria 0 and 3 follow the explicitly qualified plan; do not require an irrelevant non-qualified-plan digression."
-      ]
+      "expectations": [
+        "Aucun impôt sur le gain d'acquisition du plan qualifiant au seul vesting en 2025, sans cession ; la cession déclenche l'imposition.",
+        "Le skill ne traite PAS le gain d'un plan qualifiant comme un salaire ordinaire sous 300 000 € : barème après abattement de 50 %",
+        "Les prélèvements sociaux de 18,6 % (revenus du patrimoine) sur le gain avant abattement sont mentionnés, sans CSG d'activité ni contribution salariale",
+        "La réponse ne confond pas le régime du plan qualifiant précisé avec celui d'un salaire ordinaire ou de la fraction de gain excédant 300 000 EUR. Elle n'a pas à développer un plan non qualifiant hors scénario.",
+        "Le mécanisme du quotient (coefficient 4) est expliqué, avec la réserve sur son caractère exceptionnel",
+        "Le skill chiffre (ou explique comment chiffrer) les 2 scénarios avec/sans quotient",
+        "Le skill distingue gain d'acquisition (barème après abattement) et future PV de cession (PFU 31,4 %)"
+      ],
+      "expected_output": "Aucun impôt sur le gain d'acquisition du plan qualifiant au seul vesting en 2025, sans cession ; la cession déclenche l'imposition.\nLe skill ne traite PAS le gain d'un plan qualifiant comme un salaire ordinaire sous 300 000 € : barème après abattement de 50 %\nLes prélèvements sociaux de 18,6 % (revenus du patrimoine) sur le gain avant abattement sont mentionnés, sans CSG d'activité ni contribution salariale\nLa réponse ne confond pas le régime du plan qualifiant précisé avec celui d'un salaire ordinaire ou de la fraction de gain excédant 300 000 EUR. Elle n'a pas à développer un plan non qualifiant hors scénario.\nLe mécanisme du quotient (coefficient 4) est expliqué, avec la réserve sur son caractère exceptionnel\nLe skill chiffre (ou explique comment chiffrer) les 2 scénarios avec/sans quotient\nLe skill distingue gain d'acquisition (barème après abattement) et future PV de cession (PFU 31,4 %)",
+      "files": [],
+      "id": 6,
+      "name": "rsu-vesting-quotient",
+      "prompt": "J'ai reçu un vesting RSU de 100 000 € cette année. Mon salaire habituel est 60 000 €. Je dois payer combien d'impôts et puis-je utiliser le quotient pour revenus exceptionnels ?\n\nCas synthétique : acquisition définitive en 2025 d'actions gratuites dans un plan français qualifiant autorisé en 2020. Célibataire, une part, salaire net imposable 1AJ 60 000 EUR. Aucune action vendue en 2025. Expliquer également la fiscalité conditionnelle si ces actions avaient été vendues en 2025 pour leur valeur d'acquisition, sans autre gain. Ne pas présumer que le quotient est automatiquement acquis. Pour une future plus-value de cession, prendre une cession en 2026.",
+      "x_legidor": {
+        "amendments": [
+          "Normalize typographic quotes and dashes to ASCII; preserve upstream amounts and scoring intent.",
+          "Append explicit synthetic facts and dates; see the prompt's final paragraph.",
+          "Criteria 0 and 3 follow the explicitly qualified plan; do not require an irrelevant non-qualified-plan digression.",
+          "Derive expected_output from the amended assertions to avoid stale upstream answers."
+        ]
+      }
     },
     {
-      "id": 11,
-      "name": "cehr-couple-haut-revenu",
-      "prompt": "Couple marié, RFR 2025 de 780 000 €. Quelle est la CEHR due en plus de notre IR ?\n\nHors mécanisme de lissage : les revenus des deux années précédentes ne permettent pas son application. La question porte uniquement sur la CEHR.",
       "assertions": [
         "Le skill utilise le RFR (pas le RNI) comme base de la CEHR",
         "Les seuils couple sont corrects (500 000 € / 1 000 000 €)",
         "Le calcul tranche par tranche est correct : (780 000 − 500 000) × 3 % = 8 400 €",
         "Le skill précise que la CEHR s'AJOUTE à l'IR net (ne se déduit pas)"
       ],
-      "amendments": [
-        "Normalize typographic quotes and dashes to ASCII; preserve upstream amounts and scoring intent.",
-        "Append explicit synthetic facts and dates; see the prompt's final paragraph.",
-        "Remove the optional smoothing discussion criterion: the scenario explicitly excludes smoothing."
-      ]
+      "expectations": [
+        "Le skill utilise le RFR (pas le RNI) comme base de la CEHR",
+        "Les seuils couple sont corrects (500 000 € / 1 000 000 €)",
+        "Le calcul tranche par tranche est correct : (780 000 − 500 000) × 3 % = 8 400 €",
+        "Le skill précise que la CEHR s'AJOUTE à l'IR net (ne se déduit pas)"
+      ],
+      "expected_output": "Le skill utilise le RFR (pas le RNI) comme base de la CEHR\nLes seuils couple sont corrects (500 000 € / 1 000 000 €)\nLe calcul tranche par tranche est correct : (780 000 − 500 000) × 3 % = 8 400 €\nLe skill précise que la CEHR s'AJOUTE à l'IR net (ne se déduit pas)",
+      "files": [],
+      "id": 11,
+      "name": "cehr-couple-haut-revenu",
+      "prompt": "Couple marié, RFR 2025 de 780 000 €. Quelle est la CEHR due en plus de notre IR ?\n\nHors mécanisme de lissage : les revenus des deux années précédentes ne permettent pas son application. La question porte uniquement sur la CEHR.",
+      "x_legidor": {
+        "amendments": [
+          "Normalize typographic quotes and dashes to ASCII; preserve upstream amounts and scoring intent.",
+          "Append explicit synthetic facts and dates; see the prompt's final paragraph.",
+          "Remove the optional smoothing discussion criterion: the scenario explicitly excludes smoothing.",
+          "Derive expected_output from the amended assertions to avoid stale upstream answers."
+        ]
+      }
     },
     {
-      "id": 12,
-      "name": "deficit-foncier-imputation",
-      "prompt": "Foncier nu au réel : loyers bruts 15 000 €, charges courantes 4 000 €, travaux déductibles 18 000 €, intérêts d'emprunt 6 000 €. Quel est mon déficit foncier et combien s'impute sur mon revenu global ?\n\nRevenus de 2025. Travaux déductibles ordinaires, hors dispositif temporaire de rénovation énergétique et hors dispositif spécial. Aucun déficit antérieur.",
       "assertions": [
         "Le déficit foncier est calculé correctement (−13 000 €)",
         "Le skill impute les loyers d'abord sur les intérêts d'emprunt et conclut qu'aucune part du déficit ne provient des intérêts",
@@ -106,15 +166,28 @@
         "Le report 10 ans sur revenus fonciers uniquement est mentionné pour la part non imputée",
         "La condition de location nue jusqu'au 31 décembre de la troisième année suivant l'imputation est rappelée"
       ],
-      "amendments": [
-        "Normalize typographic quotes and dashes to ASCII; preserve upstream amounts and scoring intent.",
-        "Append explicit synthetic facts and dates; see the prompt's final paragraph."
-      ]
+      "expectations": [
+        "Le déficit foncier est calculé correctement (−13 000 €)",
+        "Le skill impute les loyers d'abord sur les intérêts d'emprunt et conclut qu'aucune part du déficit ne provient des intérêts",
+        "La limite de 10 700 € d'imputation sur revenu global est citée",
+        "Le skill impute 10 700 € sur le revenu global et reporte 2 300 € sur les revenus fonciers",
+        "Le report 10 ans sur revenus fonciers uniquement est mentionné pour la part non imputée",
+        "La condition de location nue jusqu'au 31 décembre de la troisième année suivant l'imputation est rappelée"
+      ],
+      "expected_output": "Le déficit foncier est calculé correctement (−13 000 €)\nLe skill impute les loyers d'abord sur les intérêts d'emprunt et conclut qu'aucune part du déficit ne provient des intérêts\nLa limite de 10 700 € d'imputation sur revenu global est citée\nLe skill impute 10 700 € sur le revenu global et reporte 2 300 € sur les revenus fonciers\nLe report 10 ans sur revenus fonciers uniquement est mentionné pour la part non imputée\nLa condition de location nue jusqu'au 31 décembre de la troisième année suivant l'imputation est rappelée",
+      "files": [],
+      "id": 12,
+      "name": "deficit-foncier-imputation",
+      "prompt": "Foncier nu au réel : loyers bruts 15 000 €, charges courantes 4 000 €, travaux déductibles 18 000 €, intérêts d'emprunt 6 000 €. Quel est mon déficit foncier et combien s'impute sur mon revenu global ?\n\nRevenus de 2025. Travaux déductibles ordinaires, hors dispositif temporaire de rénovation énergétique et hors dispositif spécial. Aucun déficit antérieur.",
+      "x_legidor": {
+        "amendments": [
+          "Normalize typographic quotes and dashes to ASCII; preserve upstream amounts and scoring intent.",
+          "Append explicit synthetic facts and dates; see the prompt's final paragraph.",
+          "Derive expected_output from the amended assertions to avoid stale upstream answers."
+        ]
+      }
     },
     {
-      "id": 13,
-      "name": "pea-retrait-avant-5-ans",
-      "prompt": "J'ai ouvert mon PEA il y a 3 ans, valorisation 40 000 € pour 30 000 € de versements. Si je retire maintenant (en 2026), quelle fiscalité ?\n\nRetrait total en 2026. Pour ce calcul synthétique, les 10 000 EUR de gains ont tous été acquis en 2026. Aucune exception liée à la situation personnelle n'est applicable ; les présenter seulement comme réserves générales.",
       "assertions": [
         "Le skill identifie le retrait avant 5 ans comme entraînant clôture du PEA, hors exceptions",
         "L'imposition à 12,8 % + 18,6 % (31,4 %) sur les gains (10 000 €) est calculée pour un retrait en 2026",
@@ -122,16 +195,28 @@
         "Le skill recommande d'attendre 5 ans pour économiser 12,8 % d'IR",
         "Le skill précise qu'après 5 ans les PS (18,6 % depuis 2026) restent dus (pas d'exonération totale)"
       ],
-      "amendments": [
-        "Normalize typographic quotes and dashes to ASCII; preserve upstream amounts and scoring intent.",
-        "Append explicit synthetic facts and dates; see the prompt's final paragraph.",
-        "Remove the pre-2026 gains caveat criterion: all gains in this synthetic scenario were earned in 2026."
-      ]
+      "expectations": [
+        "Le skill identifie le retrait avant 5 ans comme entraînant clôture du PEA, hors exceptions",
+        "L'imposition à 12,8 % + 18,6 % (31,4 %) sur les gains (10 000 €) est calculée pour un retrait en 2026",
+        "Le skill mentionne au moins l'exception création ou reprise d'entreprise (exonération d'IR sans clôture)",
+        "Le skill recommande d'attendre 5 ans pour économiser 12,8 % d'IR",
+        "Le skill précise qu'après 5 ans les PS (18,6 % depuis 2026) restent dus (pas d'exonération totale)"
+      ],
+      "expected_output": "Le skill identifie le retrait avant 5 ans comme entraînant clôture du PEA, hors exceptions\nL'imposition à 12,8 % + 18,6 % (31,4 %) sur les gains (10 000 €) est calculée pour un retrait en 2026\nLe skill mentionne au moins l'exception création ou reprise d'entreprise (exonération d'IR sans clôture)\nLe skill recommande d'attendre 5 ans pour économiser 12,8 % d'IR\nLe skill précise qu'après 5 ans les PS (18,6 % depuis 2026) restent dus (pas d'exonération totale)",
+      "files": [],
+      "id": 13,
+      "name": "pea-retrait-avant-5-ans",
+      "prompt": "J'ai ouvert mon PEA il y a 3 ans, valorisation 40 000 € pour 30 000 € de versements. Si je retire maintenant (en 2026), quelle fiscalité ?\n\nRetrait total en 2026. Pour ce calcul synthétique, les 10 000 EUR de gains ont tous été acquis en 2026. Aucune exception liée à la situation personnelle n'est applicable ; les présenter seulement comme réserves générales.",
+      "x_legidor": {
+        "amendments": [
+          "Normalize typographic quotes and dashes to ASCII; preserve upstream amounts and scoring intent.",
+          "Append explicit synthetic facts and dates; see the prompt's final paragraph.",
+          "Remove the pre-2026 gains caveat criterion: all gains in this synthetic scenario were earned in 2026.",
+          "Derive expected_output from the amended assertions to avoid stale upstream answers."
+        ]
+      }
     },
     {
-      "id": 14,
-      "name": "assurance-vie-rachat-apres-8-ans-couple",
-      "prompt": "Couple pacsé, rachat partiel sur une assurance-vie ouverte il y a 10 ans : 25 000 € dont 8 000 € de gains. Versements totaux 100 000 €. Quelle fiscalité ?\n\nRachat en 2026. Tous les versements ont été effectués en 2016, contrat en unités de compte, aucun prélèvement social déjà payé sur les gains, aucun autre rachat cette année, abattement annuel intégralement disponible.",
       "assertions": [
         "Le skill applique l'abattement 9 200 € couple (\u003e 8 ans)",
         "Le skill vérifie le seuil 150 000 € de versements (non dépassé)",
@@ -139,10 +224,33 @@
         "Les PS 17,2 % sont calculés SUR LES GAINS (sans abattement applicable aux PS)",
         "Le skill distingue clairement IR et PS (piège classique)"
       ],
-      "amendments": [
-        "Normalize typographic quotes and dashes to ASCII; preserve upstream amounts and scoring intent.",
-        "Append explicit synthetic facts and dates; see the prompt's final paragraph."
-      ]
+      "expectations": [
+        "Le skill applique l'abattement 9 200 € couple (\u003e 8 ans)",
+        "Le skill vérifie le seuil 150 000 € de versements (non dépassé)",
+        "Les gains imposables à l'IR ressortent à 0 € grâce à l'abattement",
+        "Les PS 17,2 % sont calculés SUR LES GAINS (sans abattement applicable aux PS)",
+        "Le skill distingue clairement IR et PS (piège classique)"
+      ],
+      "expected_output": "Le skill applique l'abattement 9 200 € couple (\u003e 8 ans)\nLe skill vérifie le seuil 150 000 € de versements (non dépassé)\nLes gains imposables à l'IR ressortent à 0 € grâce à l'abattement\nLes PS 17,2 % sont calculés SUR LES GAINS (sans abattement applicable aux PS)\nLe skill distingue clairement IR et PS (piège classique)",
+      "files": [],
+      "id": 14,
+      "name": "assurance-vie-rachat-apres-8-ans-couple",
+      "prompt": "Couple pacsé, rachat partiel sur une assurance-vie ouverte il y a 10 ans : 25 000 € dont 8 000 € de gains. Versements totaux 100 000 €. Quelle fiscalité ?\n\nRachat en 2026. Tous les versements ont été effectués en 2016, contrat en unités de compte, aucun prélèvement social déjà payé sur les gains, aucun autre rachat cette année, abattement annuel intégralement disponible.",
+      "x_legidor": {
+        "amendments": [
+          "Normalize typographic quotes and dashes to ASCII; preserve upstream amounts and scoring intent.",
+          "Append explicit synthetic facts and dates; see the prompt's final paragraph.",
+          "Derive expected_output from the amended assertions to avoid stale upstream answers."
+        ]
+      }
     }
-  ]
+  ],
+  "skill_name": "legidor",
+  "x_legidor": {
+    "as_of": "2026-11-07",
+    "commit": "f5717490bc2f088f7587c239e33323478ce03918",
+    "source": "https://github.com/romainsimon/paperasse/blob/f5717490bc2f088f7587c239e33323478ce03918/fiscaliste/evals/evals.json",
+    "source_sha256": "e89a359d9299ced1f6ffeae1bc7fb89908ecb1b5a80787b6c41f0f341da5842e",
+    "upstream_cases": 50
+  }
 }

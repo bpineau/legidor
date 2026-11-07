@@ -66,7 +66,7 @@ func TestOfflineRunnerResumeAndPromptBoundary(t *testing.T) {
 	calls := fakeCLI(t)
 	root := t.TempDir()
 	corpus := filepath.Join(root, "corpus.json")
-	writeJSON(corpus, Corpus{AsOf: "2026-11-07", Cases: []Case{{ID: 1, Name: "synthetic", Prompt: "Calculate (780000-500000)*0.03", Assertions: []string{"PRIVATE_RUBRIC_CANARY"}}}})
+	writeJSON(corpus, Corpus{AsOf: "2026-11-07", Cases: []Case{{ID: 1, Name: "synthetic", Prompt: "Calculate (780000-500000)*0.03", ExpectedOutput: "PRIVATE_EXPECTED_OUTPUT_CANARY", Assertions: []string{"PRIVATE_RUBRIC_CANARY"}}}})
 	o := Options{Corpus: corpus, Output: filepath.Join(root, "results"), Agents: []string{"codex"}, Arms: []string{"none"}, CodexModel: "test-sol", Effort: "medium", CacheMode: "cold", Repetitions: 1, Timeout: 5 * time.Second}
 	if err := Run(context.Background(), o); err != nil {
 		t.Fatal(err)
@@ -79,7 +79,7 @@ func TestOfflineRunnerResumeAndPromptBoundary(t *testing.T) {
 		t.Fatalf("resume ran model again: %q", b)
 	}
 	prompt, _ := os.ReadFile(filepath.Join(o.Output, "case-001-codex-test-sol-none-r1", "attempt-001", "prompt.txt"))
-	if strings.Contains(string(prompt), "PRIVATE_RUBRIC_CANARY") {
+	if strings.Contains(string(prompt), "PRIVATE_RUBRIC_CANARY") || strings.Contains(string(prompt), "PRIVATE_EXPECTED_OUTPUT_CANARY") {
 		t.Fatal("rubric leaked into evaluated conversation")
 	}
 	summary, _ := os.ReadFile(filepath.Join(o.Output, "summary.json"))

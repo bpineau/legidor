@@ -94,11 +94,80 @@ The plural model flags override their singular counterparts. Each requested mode
 gets every selected case, arm and repetition; it is also recorded separately from
 the effective model reported by the agent (when available).
 
-`-corpus` accepts another corpus with the same JSON schema as `pilot.json`.
+`-corpus` accepts the interoperable scenario format described below, or legacy
+Legidor `cases` files. The runner prints selected/available cases and planned
+sample counts before starting. Unknown or duplicate `-cases` IDs are errors.
 Repeating an identical command resumes recorded samples with their original
 metrics. It does not count reused answers as fresh zero-cost measurements. A
 changed manifest requires a new output directory. Failed samples remain visible;
 use a separate run to retest them rather than silently replacing them.
+
+## Scenario interchange
+
+`pilot.json` uses the [Anthropic skill-creator scenario format](https://github.com/anthropics/skills/blob/2c5958ecac7cee2b583967a2c4981d0f4a75c579/skills/skill-creator/references/schemas.md):
+`skill_name`, `evals`, and each scenario's `id`, `prompt`, `expected_output` and
+`files`. It also retains human-readable names. Both `assertions` and
+`expectations` are written identically because upstream SKILL.md and schemas.md
+use different names. Either spelling is accepted; conflicting copies are rejected.
+
+Legidor adds `x_legidor` for the research date, source commit/hash and amendments.
+Unknown extension fields survive conversion. Expected output and criteria are
+available to the judge only, never the evaluated agent. Dates must be explicit;
+converting a file does not validate its tax assumptions or update its answers.
+
+```sh
+# Convert an upstream scenario file, without running agents.
+bin/legidor-eval convert -corpus /path/to/skill/evals/evals.json \
+  -as-of 2026-11-07 -out /tmp/converted-evals.json
+bin/legidor-eval list -corpus /tmp/converted-evals.json
+
+# Convert a legacy Legidor corpus; its embedded date is retained.
+bin/legidor-eval convert -corpus /path/to/old-corpus.json \
+  -out /tmp/converted-legacy.json
+```
+
+`files` references and draft scenarios without criteria are preserved during
+conversion. This research runner currently requires nonempty criteria and rejects
+selected scenarios with attachments before calling a model. It cannot yet serve
+arbitrary PDF/image inputs. The imported Paperasse fiscal corpus has no attachments.
+Missing scenario names get a stable `case-ID` fallback; IDs must be nonnegative
+and unique. Run snapshots retain their original bytes and hashes: do not replace
+an old run's `corpus.json` with a converted file.
+
+## Result interchange
+
+Export a completed comparison to Anthropic-compatible `benchmark.json`, per-run
+`grading.json` and `timing.json`, plus the scenario file. This is a Go data export,
+not a dependency on Anthropic's Python runner or a complete viewer workspace.
+
+```sh
+bin/legidor-eval export-anthropic -run /tmp/legidor-pilot \
+  -agent codex -model gpt-6.1-sol -with legidor -without none \
+  -out /tmp/legidor-vs-none-export
+
+# Measures the incremental value of Legidor alongside Paperasse.
+bin/legidor-eval export-anthropic -run /tmp/legidor-pilot \
+  -agent codex -model gpt-6.1-sol -with both -without paperasse \
+  -out /tmp/legidor-plus-paperasse-export
+```
+
+The exact recorded model and two distinct arms are mandatory. The export maps
+them explicitly to `with_skill` and `without_skill`; it never pools models or
+silently drops cells. Every planned case/repetition in that pair must have a
+successful answer, complete usage and complete grading. The destination must be
+new. Old derived manifests without a planned matrix cannot establish completeness.
+
+Native manifests, model/CLI versions, cache counts, cost estimates, and evidence
+and temporal scores remain in `x_legidor`. Unknown error counts, per-tool counts
+and verified-claim results are omitted, not fabricated. Token totals include
+cache reads; timing covers execution, with grading usage kept in the native
+report. Summary statistics use sample standard deviation across selected cases
+and repetitions; they are not confidence intervals.
+
+Use the native report for failed, interrupted or partly graded campaigns. It
+includes planned and unstarted counts when the original matrix is available;
+otherwise planned coverage is explicitly unknown. All exports remain private
+artifacts and must be reviewed before sharing.
 
 ## What is isolated
 
@@ -154,7 +223,7 @@ rebuild that executable while its samples are running.
 ## Grading and interpretation
 
 `grade` defaults to Opus with no tools, no evaluated skill and no configuration labels.
-Select another judge explicitly with `-agent codex -model gpt-6-astra`, for
+Select another judge explicitly with `-agent codex -model gpt-6.1-sol`, for
 example when Claude quota is unavailable. The grading manifest pins this choice;
 use the same judge for every comparison in a report and disclose family bias.
 It grades fiscal assertions separately from evidence and temporal scores (0..2).
@@ -180,6 +249,30 @@ commit `f5717490bc2f088f7587c239e33323478ce03918`, under the
 recorded in `pilot.json`. Cases 1, 3, 4, 6, 11, 12, 13 and 14 cover IR, PER,
 dividends, RSUs, CEHR, rental deficits, PEA and life insurance. The other upstream
 cases are not included in the pilot.
+
+The pinned upstream fiscal suite contains 50 scenarios and 275 assertions. The
+eight-case pilot is a bounded diagnostic subset chosen to cover several personal
+tax topics while controlling development costs, not a claim of exhaustive fiscal
+coverage. Running only PER, RSU and PEA further narrows that coverage. Other
+upstream topics include household taxation, LMNP, crypto, IFI, BSPCE, declaration
+workflows, withholding, tax credits, foreign accounts and departure from France.
+They can serve as additional tests or holdouts after reviewing their assumptions.
+
+Import every upstream case unchanged, including its expected output and criteria:
+
+```sh
+bin/legidor-eval import-paperasse -repo /path/to/paperasse -all \
+  -as-of 2026-11-07 -out /tmp/paperasse-fiscal-evals
+bin/legidor-eval list -corpus /tmp/paperasse-fiscal-evals/all.json
+```
+
+This copies the source license and records the commit and source hash. It does
+not apply pilot amendments and does not run models. Select a bounded subset with
+`run -corpus /tmp/paperasse-fiscal-evals/all.json -cases ... -max-samples ...`.
+Using all 50 cases with four arms means 200 conversations per model/repetition,
+plus grading; do not launch it accidentally. Paperasse's executable calculators
+remain unavailable in every configuration: this tests its documentation/data,
+not the full executable Paperasse product.
 
 Dates and missing synthetic assumptions were clarified before measurement. In
 particular, the PER ceiling is explicitly available from prior-year income, the

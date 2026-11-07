@@ -224,6 +224,9 @@ Paperasse scenarios with explicit provenance and amendments, and records fiscal
 correctness, evidence, dates, tokens, cache usage and elapsed time. No JavaScript
 or Python tooling is required. Live model evaluations are opt-in and separate
 from ordinary Go tests.
+Scenario files follow the Anthropic skill-creator format with Legidor metadata
+extensions. The Go tooling can import all 50 upstream fiscal scenarios and export
+completed model/arm pairs as compatible benchmark and grading JSON.
 
 ### Tests
 
