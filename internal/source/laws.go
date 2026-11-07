@@ -149,6 +149,23 @@ func (c *Client) law(ctx context.Context, r reference.Reference) (model.Document
 	if original.Kind == "law" && !sameNature(original.Nature, str(raw, "nature"), d.Title) {
 		return d, model.Err("IDENTITY_MISMATCH", 1, "text nature differs from requested law or decree")
 	}
+	if original.TextDate != "" {
+		enactment := date(raw["dateTexte"])
+		if enactment == "" {
+			// Consolidated consultations can omit dateTexte while retaining the
+			// complete enactment date in the official title.
+			header := regexp.MustCompile(`(?i)^` + reference.NumberedTextPattern).FindString(d.Title)
+			if titleRef, err := reference.Parse(header); err == nil {
+				enactment = titleRef.TextDate
+			}
+		}
+		if enactment == "" {
+			return d, model.Err("UPSTREAM_FORMAT", 3, "source does not establish the enactment date")
+		}
+		if enactment != original.TextDate {
+			return d, model.Err("IDENTITY_MISMATCH", 1, "enactment date differs from requested text")
+		}
+	}
 	if original.Kind == "named_law" {
 		phrase := "finances pour " + original.Number
 		if original.Nature == "LFSS" {

@@ -34,6 +34,7 @@ Examples:
   legidor get 'CMF L224-4' --part 'I 2°' --date 2025-12-31
   legidor get 'ordonnance 96-50 art. 19' --date 2026-01-01
   legidor get 'BOI-RFPI-DECLA-10 §60' --json
+  legidor get 'BOI-RSA-PENS-30-10-20 §90..120'
 Errors: IDENTITY_MISMATCH, PART_NOT_FOUND, STRUCTURE_UNRECOGNIZED, VERSION_CONFLICT, AUTH.
 `,
 		"resolve": `Usage: legidor resolve REF [--date YYYY-MM-DD] [--parse-only] [--full]
@@ -111,6 +112,7 @@ Errors: AUTH_CONFIG (permissions), AUTH (credentials, subscription, environment)
 		"cache": `Usage: legidor cache stats|clear
 Report or clear the current environment's private token and response cache.
 Default: $XDG_CACHE_HOME/legidor/production (or ~/.cache/legidor/production).
+Override: $LEGIDOR_CACHE_DIR/production (sandbox uses its own subdirectory).
 TTL: 30 days for current sources and BOFiP; 90 days for historical consultations and decisions.
 --max-age 24h overrides response age; --fresh bypasses even recent responses.
 Do not combine --max-age with --fresh. OAuth expiry follows the server.

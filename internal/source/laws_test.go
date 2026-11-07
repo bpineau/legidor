@@ -154,3 +154,49 @@ func TestCodeAndSectionIndexDoesNotFetchArticles(t *testing.T) {
 		}
 	}
 }
+
+func TestLawEnactmentDateMustMatchSource(t *testing.T) {
+	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		if r.URL.Path == "/token" {
+			w.Write([]byte(`{"access_token":"fake","expires_in":3600}`))
+			return
+		}
+		w.Write([]byte(`{"cid":"JORFTEXT000000000001","title":"Ordonnance n° 96-999 du 24 janvier 1996","nature":"ORDONNANCE","dateTexte":"1996-01-24","articles":[{"id":"JORFARTI000000000001","num":"19","content":"<p>Invented rule.</p>"}]}`))
+	}))
+	defer s.Close()
+	c := NewClient(Config{ClientID: "fake", ClientSecret: "fake", Environment: "test"}, cache.New(t.TempDir()))
+	c.LFURL = s.URL
+	c.TokenURL = s.URL + "/token"
+	r := reference.Reference{Kind: "law", ID: "JORFTEXT000000000001", Number: "96-999", Nature: "ordonnance", Article: "19", TextDate: "1996-01-24"}
+	if _, err := c.Get(context.Background(), r); err != nil {
+		t.Fatal(err)
+	}
+	r.TextDate = "1996-01-25"
+	if _, err := c.Get(context.Background(), r); err == nil || !strings.Contains(err.Error(), "IDENTITY_MISMATCH") {
+		t.Fatalf("wrong date accepted: %v", err)
+	}
+}
+
+func TestLawEnactmentDateCanBeEstablishedByOfficialTitle(t *testing.T) {
+	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		if r.URL.Path == "/token" {
+			w.Write([]byte(`{"access_token":"fake","expires_in":3600}`))
+			return
+		}
+		w.Write([]byte(`{"cid":"JORFTEXT000000000001","title":"Ordonnance n° 96-999 du 24 janvier 1996 relative a une regle inventee","nature":"ORDONNANCE","dateTexte":null,"articles":[{"id":"JORFARTI000000000001","num":"19","content":"<p>Invented rule.</p>"}]}`))
+	}))
+	defer s.Close()
+	c := NewClient(Config{ClientID: "fake", ClientSecret: "fake", Environment: "test"}, cache.New(t.TempDir()))
+	c.LFURL = s.URL
+	c.TokenURL = s.URL + "/token"
+	r := reference.Reference{Kind: "law", ID: "JORFTEXT000000000001", Number: "96-999", Nature: "ordonnance", Article: "19", TextDate: "1996-01-24"}
+	if _, err := c.Get(context.Background(), r); err != nil {
+		t.Fatal(err)
+	}
+	r.TextDate = "1996-01-25"
+	if _, err := c.Get(context.Background(), r); err == nil {
+		t.Fatal("wrong title date accepted")
+	}
+}

@@ -1,6 +1,7 @@
 package text
 
 import (
+	"github.com/bpineau/legidor/internal/model"
 	"strings"
 	"testing"
 )
@@ -191,5 +192,37 @@ func TestBOISectionsStayWithFollowingParagraphs(t *testing.T) {
 	}
 	if !strings.Contains(s, "Actualité liée") {
 		t.Fatal("lost editorial notice from full source")
+	}
+}
+
+func TestBOIParagraphRangePreservesContextAndOmissions(t *testing.T) {
+	raw := `<p>General condition.</p><img src="intro.png"><h1>First section</h1><p class="numero-de-paragraphe-western">10</p><p>Rule one.</p><h1>Second section</h1><p>Section condition.</p><p class="numero-de-paragraphe-western">20</p><table><tr><td rowspan="2">Complex</td></tr></table><p>Rule two.</p><p class="numero-de-paragraphe-western">30</p><p>Rule three.</p><p class="numero-de-paragraphe-western">40</p><p>Outside range.</p>`
+	s, ps, _ := BOI(raw)
+	got, err := Select(s, ps, "10..30")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, part := range []string{"General condition.", "First section", "Second section", "Section condition.", "Rule one.", "Rule two.", "Rule three."} {
+		if !strings.Contains(got, part) {
+			t.Fatalf("lost %s: %s", part, got)
+		}
+	}
+	if strings.Contains(got, "Outside range") || len(Omissions(got)) != 2 {
+		t.Fatalf("wrong selection %s", got)
+	}
+	for _, label := range []string{"30..10", "10..50"} {
+		if _, err := Select(s, ps, label); err == nil {
+			t.Fatalf("accepted %s", label)
+		}
+	}
+	duplicate := append(append([]model.Part(nil), ps...), ps[0])
+	if _, err := Select(s, duplicate, "10..30"); err == nil {
+		t.Fatal("ambiguous bound accepted")
+	}
+}
+func TestParagraphRangeRejectsNonBOIStructure(t *testing.T) {
+	s := "1. First.\n2. Second."
+	if _, err := Select(s, Parts(s), "1..2"); err == nil {
+		t.Fatal("silently interpreted a statute as BOFiP")
 	}
 }

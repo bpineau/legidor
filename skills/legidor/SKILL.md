@@ -12,6 +12,7 @@ legidor get 'CGI 219' --part 'I b'
 legidor get 'CGI 32' --grep 'sur option'
 legidor get 'ordonnance 96-50 art. 19' --date 2026-01-01
 legidor get 'BOI-IR-CHR §220'
+legidor get 'BOI-RSA-PENS-30-10-20 §90..120'
 legidor get 'CIBS L231-17..L231-21' --date 2027-01-01
 legidor get 'CIBS' --date 2027-01-01 --parts
 legidor get 'CIBS L213-82' --date 2027-01-01

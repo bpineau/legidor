@@ -23,6 +23,7 @@ type Reference struct {
 	End          string `json:"end,omitempty"`
 	Date         string `json:"date,omitempty"`
 	DecisionDate string `json:"decision_date,omitempty"`
+	TextDate     string `json:"text_date,omitempty"`
 	URL          string `json:"url,omitempty"`
 	Nature       string `json:"nature,omitempty"`
 }
@@ -77,8 +78,13 @@ const ArticleNumberPattern = `[LRDA]?\*?\s*\.?\s*\d+(?:-\d+)*(?:\s+[A-Z]{1,3}\b)
 
 var articleRE = regexp.MustCompile(`^(` + ArticleNumberPattern + `)(.*)$`)
 var idRE = regexp.MustCompile(`^(LEGIARTI|JORFARTI|KALIARTI|LEGITEXT|JORFTEXT|KALITEXT|LEGISCTA|KALISCTA|CETATEXT|JURITEXT|CONSTEXT)\d{12}$`)
-var boiRE = regexp.MustCompile(`^(BOI-[A-Z0-9]+(?:-[A-Z0-9]+)*?)(?:\s*§\s*(\d+))?$`)
-var lawRE = regexp.MustCompile(`(?i)^(loi|décret|decret|ordonnance|arrêté|arrete)\s+(?:n[°o]\s*)?(\d{2}(?:\d{2})?-\d+)(?:\s+art(?:icle)?\.?\s+([\w.-]+))?$`)
+var boiRE = regexp.MustCompile(`^(BOI-[A-Z0-9]+(?:-[A-Z0-9]+)*?)(?:\s*§\s*(\d+(?:\.\.\d+)?))?$`)
+
+// NumberedTextPattern preserves an optional enactment date, independently of
+// the version date selected with --date. It is also used by citation extraction.
+const NumberedTextPattern = `(loi|décret|decret|ordonnance|arrêté|arrete)\s+(?:n[°o]\s*)?(\d{2}(?:\d{2})?-\d+)(?:\s+du\s+(\d{1,2}|1er)\s+(janvier|février|fevrier|mars|avril|mai|juin|juillet|août|aout|septembre|octobre|novembre|décembre|decembre)\s+(\d{4}))?(?:\s+art(?:icle)?\.?\s+([\w.-]+))?`
+
+var lawRE = regexp.MustCompile(`(?i)^` + NumberedTextPattern + `$`)
 var decisionRE = regexp.MustCompile(`(?i)^(CE|CAA|TA|Cass\.(?:\s+[a-z0-9èé]+\.?)*)\s+(\d{4}-\d{2}-\d{2})\s+n[°o]\s*([\d.-]+)$`)
 var partRE = regexp.MustCompile(`^(?:(?:[IVX]+|[A-Z]|\d+(?:°(?:-\d+)?)?|[a-z])(?:\s+` + LatinSuffixPattern + `\b)?|alinéa\s+\d+)(?:\s+(?:(?:[IVX]+|[A-Z]|\d+(?:°(?:-\d+)?)?|[a-z])(?:\s+` + LatinSuffixPattern + `\b)?))*$`)
 
@@ -206,7 +212,7 @@ func Parse(input string) (Reference, error) {
 		}
 		return r, nil
 	}
-	if m := regexp.MustCompile(`^((?:JORFTEXT|LEGITEXT|KALITEXT)\d{12})\s+art\.\s+([0-9A-Za-z.-]+)$`).FindStringSubmatch(s); m != nil {
+	if m := regexp.MustCompile(`^((?:JORFTEXT|LEGITEXT|KALITEXT)\d{12})\s+(?i:art(?:icle)?\.?)\s+([0-9A-Za-z.-]+)$`).FindStringSubmatch(s); m != nil {
 		r.Kind = "text"
 		r.ID = m[1]
 		r.Article = m[2]
@@ -254,7 +260,18 @@ func Parse(input string) (Reference, error) {
 		r.Kind = "law"
 		r.Nature = strings.ToLower(m[1])
 		r.Number = m[2]
-		r.Article = m[3]
+		r.Article = strings.TrimRight(m[6], ".")
+		if m[3] != "" {
+			months := map[string]string{"janvier": "01", "février": "02", "fevrier": "02", "mars": "03", "avril": "04", "mai": "05", "juin": "06", "juillet": "07", "août": "08", "aout": "08", "septembre": "09", "octobre": "10", "novembre": "11", "décembre": "12", "decembre": "12"}
+			day := strings.TrimSuffix(strings.ToLower(m[3]), "er")
+			if len(day) == 1 {
+				day = "0" + day
+			}
+			r.TextDate = m[5] + "-" + months[strings.ToLower(m[4])] + "-" + day
+			if !ValidDate(r.TextDate) {
+				return bad()
+			}
+		}
 		return r, nil
 	}
 	if m := regexp.MustCompile(`^(LFI|LFSS|LFR) (\d{4})(?: art\. (\d+))?$`).FindStringSubmatch(s); m != nil {

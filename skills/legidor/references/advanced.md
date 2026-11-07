@@ -28,10 +28,12 @@ legidor get 'ordonnance 96-50 art. 19' --date 2026-01-01
 A numbered law without `--date` searches its published JORF version. Rectifications can create several candidates: use the returned identifiers and titles to identify the intended publication. A dated law requests the consolidated LODA version, which can differ from the original publication. A fixed JORF identifier does not support consolidated date selection.
 
 Use the short form `ordonnance 96-50 art. 19` or `loi 78-17 art. 1`, preserving
-the official number's two-digit year. Do not expand it to a four-digit year or
-append the publication date/title. `--date` selects the consolidated version;
-it is not the enactment date. For a returned text identifier, keep the explicit
-`art.` marker: `LEGITEXT... art. 19`, not `LEGITEXT... 19`.
+the official number's two-digit year. Do not expand it to a four-digit year.
+An optional enactment date, as in `ordonnance 96-50 du 24 janvier 1996 art. 19`,
+is checked against the source; omit the full descriptive title. `--date` selects
+the consolidated version independently of enactment. For a returned text
+identifier, use an explicit `art.`, `art` or `article` marker:
+`LEGITEXT... art. 19`, not `LEGITEXT... 19`.
 
 Named-law searches filter by the law's principal title, excluding implementing orders and texts that merely mention it. Original publications and rectifications remain distinct candidates. An incomplete search never establishes uniqueness.
 
@@ -67,7 +69,18 @@ legidor cache stats --json
 
 Grep is case-sensitive literal matching; a missing match returns exit 1. A match is not a legal conclusion. Quote checks preserve digits and negation; inspect surrounding context before relying on an extracted fragment.
 
+For consecutive BOFiP paragraphs, use `BOI-RSA-PENS-30-10-20 §90..120` or
+`--part 90..120`. Both bounds must exist and be unique; at most 200 paragraphs
+are selected, including intervening headings and the first paragraph's context.
+Missing bounds fail explicitly. This syntax applies to numbered BOFiP paragraphs,
+not arbitrary legislative subdivisions. For other missing parts, inspect `--parts`
+and copy the exact label, including degree signs (`3°`, not `3`).
+
 Cached output retains its original retrieval time. Offline mode accepts only unexpired entries and does not contact sources. Missing/expired entries fail; they never silently become evidence. Sandbox data is marked and cached separately, and should not support a production legal assertion.
+
+Set `LEGIDOR_CACHE_DIR=/path/to/job-cache` for an isolated cache root; it overrides
+the normal user cache and keeps production and sandbox in separate subdirectories.
+Credential lookup is unchanged. Use a separate root per parallel research job.
 
 The default age budget is 30 days for current sources and 90 days for historical consultations, direct article versions and decisions. `--max-age 24h` overrides that budget for all response reads, including article resolution; `--max-age 1h` is stricter. `--fresh` bypasses response caches entirely and cannot be combined with `--max-age` or `--offline`. `--offline --max-age 24h` accepts only recent local evidence. OAuth token expiry is independent.
 

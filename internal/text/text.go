@@ -119,6 +119,9 @@ func Parts(s string) []model.Part {
 }
 func Select(s string, ps []model.Part, label string) (string, error) {
 	label = strings.Join(strings.Fields(strings.ReplaceAll(label, ",", " ")), " ")
+	if bounds := regexp.MustCompile(`^(\d+)\.\.(\d+)$`).FindStringSubmatch(label); bounds != nil {
+		return selectBOIRange(s, ps, bounds[1], bounds[2])
+	}
 	if strings.HasPrefix(label, "alinéa ") {
 		n, e := strconv.Atoi(strings.TrimPrefix(label, "alinéa "))
 		lines := strings.Split(s, "\n")
@@ -182,6 +185,50 @@ func Select(s string, ps []model.Part, label string) (string, error) {
 	}
 	out = append(out, strings.TrimSpace(s[p.Start:p.End]))
 	return strings.Join(out, "\n"), nil
+}
+
+// selectBOIRange uses source order and exact numbered BOFiP bounds. It keeps
+// the first paragraph's introductory context and every intervening heading,
+// condition and omission. It never guesses ranges in legislative subdivisions.
+func selectBOIRange(s string, ps []model.Part, first, last string) (string, error) {
+	start, end := -1, -1
+	for i, p := range ps {
+		if p.Label == first {
+			if start != -1 {
+				return "", model.Err("AMBIGUOUS_PART", 3, "duplicate first paragraph")
+			}
+			start = i
+		}
+		if p.Label == last {
+			if end != -1 {
+				return "", model.Err("AMBIGUOUS_PART", 3, "duplicate last paragraph")
+			}
+			end = i
+		}
+	}
+	if start < 0 || end < 0 || start > end {
+		return "", model.Err("PART_NOT_FOUND", 1, "paragraph range needs existing bounds in source order")
+	}
+	if end-start+1 > 200 {
+		return "", model.Err("USAGE", 2, "select at most 200 BOFiP paragraphs at a time")
+	}
+	previous := -1
+	for _, p := range ps[start : end+1] {
+		n, err := strconv.Atoi(p.Label)
+		if err != nil || p.Context == nil || n <= previous {
+			return "", model.Err("STRUCTURE_UNRECOGNIZED", 3, "range requires uniquely ordered numbered BOFiP paragraphs")
+		}
+		previous = n
+	}
+	a, b := ps[start], ps[end]
+	if a.Start < 0 || b.End > len(s) || a.Start > b.End {
+		return "", model.Err("STRUCTURE_UNRECOGNIZED", 3, "invalid paragraph offsets")
+	}
+	text := strings.TrimSpace(s[a.Start:b.End])
+	if *a.Context != "" {
+		text = *a.Context + "\n" + text
+	}
+	return text, nil
 }
 
 var markerRE = regexp.MustCompile(`(?is)<p\b[^>]*class\s*=\s*["'][^"']*numero-de-paragraphe-western[^"']*["'][^>]*>\s*(?:<[^>]+>\s*)*(\d+)\s*(?:</[^>]+>\s*)*</p>`)

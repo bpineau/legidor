@@ -145,3 +145,35 @@ func TestTwoDigitYearLawNumbers(t *testing.T) {
 		}
 	}
 }
+
+func TestLawEnactmentDateIsNotVersionDate(t *testing.T) {
+	r, err := Parse("Ordonnance n° 96-50 du 24 janvier 1996 art. 19")
+	if err != nil || r.TextDate != "1996-01-24" || r.Date != "" || r.Number != "96-50" || r.Article != "19" {
+		t.Fatalf("%+v %v", r, err)
+	}
+	r, err = r.Options("2026-11-07", "")
+	if err != nil || r.Date != "2026-11-07" || r.TextDate != "1996-01-24" {
+		t.Fatalf("%+v %v", r, err)
+	}
+	for _, s := range []string{"loi 2025-999 du 31 février 2025 art. 1", "loi 2025-999 du 0 janvier 2025 art. 1"} {
+		if _, err := Parse(s); err == nil {
+			t.Fatalf("invalid enactment date accepted: %s", s)
+		}
+	}
+}
+
+func TestTextArticleAcceptsCommonMarkerSpellings(t *testing.T) {
+	for _, marker := range []string{"art.", "art", "article", "Article"} {
+		r, err := Parse("JORFTEXT000000000001 " + marker + " 28")
+		if err != nil || r.Article != "28" || r.ID != "JORFTEXT000000000001" {
+			t.Fatalf("%s: %+v %v", marker, r, err)
+		}
+	}
+}
+
+func TestBOIParagraphRangeReference(t *testing.T) {
+	r, err := Parse("BOI-EXAMPLE-10 §90..120")
+	if err != nil || r.Kind != "bofip" || r.Number != "BOI-EXAMPLE-10" || r.Part != "90..120" {
+		t.Fatalf("%+v %v", r, err)
+	}
+}
