@@ -1,78 +1,57 @@
 # Validation
 
-## Offline suite
+## Offline tests
 
-Run `go test -race ./...` and `go vet ./...`. Tests require no credentials or external network. Fake source schemas follow observed production responses; all test content and credentials are invented.
+```sh
+go test -race ./...
+go vet ./...
+```
 
-Coverage includes reference aliases, official URLs, numeric/Roman/Latin suffixes, conflicting options, code and parent identity mismatches, source nature, historical intervals, absent intervals, HTML errors, OAuth renewal after 401, quota handling, offline misses, cache expiry and concurrent writes. Text checks cover nested clauses and introductory text, ambiguous labels, doubled BOFiP attribute quotes, absent paragraphs, altered numbers/negation, ordered ellipses, numeric boundaries and word diffs. CLI checks exercise 30 manifest rows in input order, error precedence, table-of-contents quote refusal, complete preamble diffs, content-pinned pagination and bounded table output.
-
-Cache-policy regressions cover the 30/90-day boundaries, positive `--max-age` validation and conflicts, online refresh versus offline refusal, unchanged OAuth token reuse, and forced refresh of recent entries. A simulated next day verifies implicit-current resolution reuse without network calls, preserved source timestamps, explicit-date separation, and invalidation at a known version end. An old search with a newly retrieved article cannot bypass a stricter age budget or rejuvenate the resolution alias. Pagination retains the requested freshness flags.
+Tests require no credentials or external network. Fixtures use invented content
+and local HTTP servers. They cover reference parsing, strict source identity,
+version intervals, structured selections, quotation checks, output completeness,
+OAuth renewal, cache expiry/isolation, concurrent writes and CLI error handling.
+Evaluation-runner tests use recorded synthetic events or stub executables, never
+paid model calls.
 
 ## Live acceptance
 
 ```sh
-LEGIDOR_LIVE=1 go test ./internal/acceptance -run TestLive -count=1 -v
+LEGIDOR_LIVE=1 LEGIDOR_CACHE_DIR=/tmp/legidor-acceptance \
+  go test ./internal/acceptance -run TestLive -count=1 -v
 ```
 
-The opt-in suite validates public-source identities and structure for:
+This opt-in suite retrieves public legislation, BOFiP and decisions using private
+PISTE credentials. The dedicated cache root keeps responses and OAuth tokens
+separate from everyday usage. Existing valid entries can be reused, so repeated
+runs are not cold-cache performance measurements. See the cases in
+[internal/acceptance/live_test.go](../internal/acceptance/live_test.go) for the
+exact references and expected identities.
 
-- CSS L136-8 at 2025-12-31 and its IV; CSS L742-1.
-- CGI 158, 200 A, 150-0 D subdivision 11, and 199 novovicies.
-- LPF L169 and CMF L224-4 subdivision I 2°.
-- BOI-RFPI-DECLA-10 paragraph 60 and BOI-RSA-PENS-30-10-20 paragraph 200.
-- LFI 2024 article 110, an identified Conseil d'Etat decision and a Cour de cassation decision.
-- CPCE R322-39 through R322-42 in official order, including R322-41-1.
+## Source fidelity
 
-These 14 cases passed against production sources during implementation. Additional manual checks exercised QPC/CONSTIT and JURI consultations, KALI search/consultation, dated section URLs, NOR-based ELI, history and diffs. Repeated runs can use the normal fresh cache; this is not a cold-cache performance benchmark.
+Regression fixtures cover unusual article suffixes, nested and repeated labels,
+BOFiP paragraph boundaries, HTML tables and omitted content. Rectangular tables
+and supported full-width notes retain source cells and formulas, including
+upstream defects. Unsupported merged/nested tables and images remain explicitly
+incomplete. Do not repair source wording by inference.
 
-Production probes established several non-obvious contracts: BOFiP HTML can have doubled attribute quotes; LODA search returns a consolidated identifier distinct from the original JORF CID; CONSTIT consultation uses the generic `/consult/juri` endpoint; some modifying LODA articles have sentinel validity dates even when their containing text has a dated version. These cases have explicit handling rather than fabricated metadata.
+Date checks distinguish a requested version from legal applicability. Missing
+historical intervals, ambiguous publications, absent subdivisions and upstream
+errors must remain explicit. A confirmed identity or quotation does not establish
+that a rule applies to a particular taxpayer or event.
 
-The revised cache policy was also checked with a live `CIV 1240 --fresh` consultation followed by `--offline --max-age 24h`: the latter reused both response and resolution while preserving their retrieval times. The cache changes received a separate read-only code review with no material findings.
+## Agent evaluations
 
-## Independent review and skill evaluation
+Use the [Go evaluation guide](../evals/README.md) for isolated model comparisons,
+quota controls, grading and reporting. Keep raw traces, one-off reports and
+completed plans outside this repository. Publish conclusions in the requesting
+conversation, with measured coverage and limitations.
 
-An independent code review found issues in date handling, text nature, nested clauses, preamble diffs, empty doctrine, ignored flags, synthetic table content and page-size cursor binding. Material findings were corrected and covered by offline regression tests. Source excerpts from live calls were not copied into test fixtures.
+## Coverage limits
 
-A Codex subagent used the skill for five scenarios: a 30-entry citation audit with intentional failures, a dated subdivision, tracking an amendment, a range with an intercalated article, and a Conseil d'Etat citation. It also exercised an uncached offline miss. No false verification success was observed. The evaluation used 12 CLI calls (one help call and 11 scenario calls); measured scenario output was 81421 bytes before subsequent audit-output compaction. These are CLI output measurements, not API-call counts or latency results.
-
-The evaluation prompted improvements for consolidated amendment placeholders, avoiding inferred case-law subdivisions, and compact audit status projection. A separate Claude Code evaluation was attempted but could not run because its account's five-hour usage limit was reached. At that initial stage, cross-provider behavioral acceptance was unverified for Claude Code; no successful Claude test was claimed.
-
-## Citation-review exercise
-
-Legidor was exercised against the substantive tax changes in Paperasse PRs [126](https://github.com/romainsimon/paperasse/pull/126), [127](https://github.com/romainsimon/paperasse/pull/127) and [129](https://github.com/romainsimon/paperasse/pull/129), at heads `565b27f`, `17f1b83` and `9f2fbe2` respectively. This was a local source-validation exercise, not a posted GitHub approval or a review of the whole repository.
-
-The workflow used `refs --diff`, a manually reviewed 23-entry manifest, `check`, targeted `get` calls, and a dated `diff`. Primary texts supported the material changes: distinct complaint/assessment deadlines, the 2023 Besson repeal and the 2026 private-landlord provision, and separate micro-BIC limits for mixed furnished rentals. Applicability was checked from the amending law as well as the consolidated code; identity confirmation alone was not treated as legal validation. No blocking issue was identified in those changes.
-
-The exercise exposed two defects, now covered by regression tests: extraction missed code-last references such as `art. L. 169 LPF`, and parsing treated the final letters in `1649 bis C` and `199 decies EA` as subdivisions. After correction, extraction on PR 126 found 10 occurrences instead of two (including context lines); this is not an exhaustive-recall metric. Twenty of the 23 initial manifest entries then completed without errors. Follow-up consultations selected the original 2026 finance law from explicit candidates and read an older version of article 199 decies F (marked PERIME by the source); neither was silently substituted for the original request.
-
-At the time of that review, BOI-BAREME-000044 contained unsupported tables and remained explicitly incomplete. Its thresholds were checked in the official web publication, while article 50-0 and the textual BOFiP paragraphs were available through the CLI. Rectangular table rendering is now supported; complex tables, inferred references without a code name, historical BOFiP and tax-form box verification remain coverage limits. This exercise measured functionality, not comparative token savings or agent-provider performance.
-
-## Calculation-review exercise
-
-Paperasse [PR 97](https://github.com/romainsimon/paperasse/pull/97) was reviewed at head `3e70c1f`, against base `4fd0a05`. The review covered the changed capital-income options, deductible CSG, furnished and unfurnished rental income, carried-forward property losses, net capital losses and reference-income adjustments. Its existing deterministic calculation suite passed in an isolated export of that commit; the user's working checkout was unchanged. No blocking issue was identified within the calculator's documented scope.
-
-A manually reviewed 16-entry manifest completed through `legidor check`, then again offline, with all identities confirmed and no incomplete content. Targeted consultations included commencement provisions: the article 200 C version available at the end of 2022 already described the crypto option, but its NOTA made it applicable only to disposals from 2023. The 2026 social-security finance law likewise distinguished income-year applicability from the commencement date for investment proceeds. The tool supplied the evidence; applicability remained a separate review step.
-
-This exercise also exposed a source-maintenance caveat rather than a retrieval defect: BOI-IR-BASE-20-20 is present in the current-doctrine dataset but its 2017 publication still quotes older CSG rates. The dated CGI and the [2026 official income-tax brochure](https://www.impots.gouv.fr/www2/fichiers/documentation/brochure/ir_2026/pdf_integral/Brochure-IR-2026.pdf) supported the review instead. The skill now explicitly distinguishes current-corpus membership from up-to-date legal content. The brochure and tax-form fields required a web/PDF fallback; they were not retrieved by legidor. No PR comment or approval was posted.
-
-## Explicit limits
-
-Merged/nested tables other than supported full-width notes, images and unsupported embedded content are not flattened into supposedly complete legal text. Historical BOFiP, notices/forms, PDF-only text, bulk mirrors and legal-applicability inference remain outside this version. A missing historical interval, ambiguous publication (including rectifications), absent subdivision or network failure is explicit. BOFiP is current administrative doctrine; it does not establish historical law.
-
-## Source reading regression checks
-
-Synthetic tests cover rectangular tables, full-width notes, formulas with exponents and indices, rejection of complex tables, omitted introductions, scoped completeness, compound subdivisions, dotted lowercase labels, explicit citation lists and ambiguous-list diagnostics. Batch output retains temporal evidence in both output modes. Source-link tests cover official hosts, credential-bearing URLs, actual href attributes and parent-preserving continuation cursors.
-
-Bounded live checks passed for CGI 219 I b, CGI 1609 nonies G, BOI-RFPI-TPVIE-20 paragraph 70, BOI-IR-CDHR-10 paragraph 250 and CIBS L213-82 at its requested date. The current table renderer also retains malformed wording already present in source HTML; it does not guess repairs. Named-law filtering reduced the LFI 2026 candidates to the original publication and its rectification, preserving that ambiguity. These checks establish retrieval behavior, not legal applicability or comparative token savings.
-
-## Research workflow regressions
-
-Regression tests cover compound article suffixes, repeated BOFiP paragraph symbols, code-less citation diagnostics, and Roman-subdivision retries. A retry requires verified absence from dated and exhaustive all-state searches: a positive exact hit followed by consultation failure, a withdrawn version, incomplete search groups or an existing letter-suffixed article must not authorize reinterpretation. Consulted code identity also distinguishes annex articles mislabeled by search.
-
-Other tests exercise numbered-law nature filtering, future-article history, intervals overlapping `--since`, nonbreaking paragraph markers, BOFiP heading/context boundaries, compact grep/history rendering, modifier omission counts and full-output recovery. Code/section index tests reject article-body fetches while browsing immediate children.
-
-Bounded public-source checks passed for the four Roman-subdivision examples (`CGI 1417 IV`, `CGI 219 I b`, `CGI 35 I 1°`, `art. 257 I 2 2° CGI`), the compound article `CGI 1649 quater-0 B bis`, two numbered laws sharing their number with another text nature, BOI-IR-CHR paragraph 220, the future history of CIBS L213-82, and code/section navigation at an explicit date. CGI 268 history retains the interval overlapping 2026 rather than returning an empty list.
-
-Locally measured text output for CSS L136-8 history decreased from 31529 to 6365 bytes. The article LEGIARTI000053100831 decreased from 44720 to 7904 bytes, showing five modifier links and explicitly counting 236 omitted links. The skill entrypoint decreased from 9682 to 5032 bytes; detailed evidence guidance is loaded from references as needed. These are output-size measurements on the same cached public sources, not agent token counts or comparative research-speed benchmarks.
-
-The malformed cell boundaries in CGI 1609 nonies G are present in the upstream HTML. The renderer preserves them and warns about using source tables as calculations; it does not invent a repaired schedule. Automatic old/new recodification correspondence and historical BOFiP remain outside coverage. The skill documents a dated search, index/range and original-modifier workflow instead.
+Historical BOFiP, tax notices/forms, PDF-only text, bulk mirrors, automatic
+recodification correspondence and legal-applicability inference are outside the
+CLI's scope. Membership in the current BOFiP corpus does not guarantee that every
+quoted rule is up to date. Verify material changes against dated legislation and
+commencement provisions.
