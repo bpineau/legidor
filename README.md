@@ -24,7 +24,43 @@ Put the binary directory on PATH (the checkout installer uses `~/.local/bin`). `
 
 ## Configure PISTE
 
-Create a PISTE application subscribed to Legifrance and Judilibre, accepting each API's terms. Store credentials outside the checkout in `~/.config/legidor/piste.env` (or `$XDG_CONFIG_HOME/legidor/piste.env`):
+PISTE setup has three separate parts: a user account, consent to each API's terms, and an application authorized to use those APIs. Creating an account or obtaining credentials alone does not enable API access. BOFiP needs no PISTE credentials.
+
+### 1. Create and activate your account
+
+Open [piste.gouv.fr](https://piste.gouv.fr/) and choose the account creation option. Complete the [registration form](https://piste.gouv.fr/component/apiportal/registration), accept the PISTE platform terms (CGU, "Conditions générales d'utilisation"), then activate the account through the email link and sign in. The organization code field is optional; an individual user can leave it empty.
+
+The steps below use French menu labels. Labels may vary with the portal language or interface version.
+
+### 2. Accept the terms for both APIs
+
+Open **API > Consentement CGU API**. Find **Légifrance** and **Judilibre**, read their respective terms and record your consent for production. If you also want sandbox access, accept the terms for those entries too. Platform registration consent does not replace these API-specific consents. See the official [Legifrance access FAQ](https://www.legifrance.gouv.fr/contenu/pied-de-page/foire-aux-questions-api) and [Judilibre onboarding guide](https://www.courdecassation.fr/acces-rapide-judilibre/donnees-ouvertes-open-data-et-api).
+
+### 3. Create the production application and enable the APIs
+
+Open **Applications > Créer une application** and create a production application, using `legidor` or another available name. PISTE automatically creates a sandbox application at registration; create the production application separately for legidor's default environment.
+
+In the application's API selection, enable **both Légifrance and Judilibre**, then save. For an existing application, open **Modifier l'application**, select the APIs near the bottom of the form, and apply the changes. Reopen the application and verify that both APIs appear as selected/subscribed. Accepting terms and attaching APIs to the application are separate actions. The [PISTE application guide](https://portail.chorus-pro.gouv.fr/aife_documentation?id=kb_article_view&sysparm_article=KB0012883) illustrates these controls; its PPF-specific organization instructions do not apply to legidor.
+
+### 4. Copy the application's OAuth credentials
+
+Open the application's authentication/OAuth credentials section and obtain its **Client ID** and **Client Secret**. These belong to the application, not your PISTE login. If creating an OAuth credential explicitly, use a confidential client: legidor authenticates with `client_credentials` and a client secret, without a browser callback.
+
+Use the pair from the **production** application. Legidor obtains and renews access tokens automatically; no manually generated bearer token is needed. A KeyId/API key shown elsewhere in PISTE is not a substitute for this OAuth pair.
+
+### 5. Save credentials locally
+
+Create the private configuration file outside the checkout:
+
+```sh
+legidor_config_dir="${XDG_CONFIG_HOME:-$HOME/.config}/legidor"
+mkdir -p "$legidor_config_dir"
+chmod 700 "$legidor_config_dir"
+touch "$legidor_config_dir/piste.env"
+chmod 600 "$legidor_config_dir/piste.env"
+```
+
+Open that file in your editor and replace the placeholders below with the application's credentials. Keep them out of shell history, screenshots, issues and commits.
 
 ```text
 PISTE_CLIENT_ID=your-client-id
@@ -33,13 +69,21 @@ PISTE_CLIENT_SECRET=your-client-secret
 
 Use directory mode 0700 and file mode 0600. The file is parsed as data, never sourced as shell code. Environment variables override file values. `PISTE_API_KEY` is recognized for status reporting; OAuth is the supported authentication method. No credential value is printed.
 
+### 6. Verify authentication and access to each API
+
 ```sh
 legidor auth status
+legidor get 'CIV 1240' --fresh
+legidor search 'bail' --in judilibre --limit 1 --fresh
 ```
 
-Production is the default. `--env sandbox` uses separate endpoints, `piste-sandbox.env` and a separate cache. OAuth expiry comes from the server; tokens renew automatically, including one renewal after an HTTP 401. Network timeouts and retry counts are bounded, and long Retry-After delays are returned to the caller without early retries.
+`auth status` checks OAuth authentication only. The next two commands exercise Legifrance and Judilibre independently; `--fresh` ensures an existing response cache cannot hide a missing API permission.
 
-BOFiP needs no PISTE credentials.
+If authentication succeeds but an API request fails with access denied, return to PISTE and check that its terms were accepted and that the API was enabled on the same application whose credentials you copied. If authentication itself fails, check the credential pair and environment. Also check for exported `PISTE_CLIENT_ID` or `PISTE_CLIENT_SECRET` variables overriding the file, without printing their values.
+
+For sandbox use, repeat the consent and API-selection steps on the sandbox application, store its own OAuth pair in `piste-sandbox.env` with mode 0600, and pass `--env sandbox` to every command. Production and sandbox have distinct credentials, endpoints and caches; a sandbox token cannot authenticate to production.
+
+OAuth expiry comes from the server; tokens renew automatically, including one renewal after an HTTP 401. Network timeouts and retry counts are bounded, and long Retry-After delays are returned to the caller without early retries.
 
 ## Use
 
