@@ -25,6 +25,7 @@ func TestThirtyCitationAuditAndTOC(t *testing.T) {
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
 	root := t.TempDir()
 	t.Setenv("XDG_CACHE_HOME", root)
+	t.Setenv("LEGIDOR_CACHE_DIR", "")
 	disk := cache.New(filepath.Join(root, "legidor/production"))
 	seedResponse(t, disk, "/consult/getArticle", map[string]string{"id": "LEGIARTI000000000001"}, `{"article":{"id":"LEGIARTI000000000001","num":"1","dateDebut":1735689600000,"dateFin":1767225600000,"texteHtml":"<p>I.- It does not apply.</p>","textTitles":[{"id":"LEGITEXT000000000001","titreLong":"Code civil"}]}}`)
 	seedResponse(t, disk, "/consult/jorf", map[string]string{"textCid": "JORFTEXT000000000001"}, `{"cid":"JORFTEXT000000000001","title":"LOI n° 2025-999","articles":[{"id":"JORFARTI000000000001","num":"1","content":"<p>Source content.</p>"}]}`)
@@ -86,6 +87,7 @@ func TestSelectedEvidenceAndSourceLinksOffline(t *testing.T) {
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
 	root := t.TempDir()
 	t.Setenv("XDG_CACHE_HOME", root)
+	t.Setenv("LEGIDOR_CACHE_DIR", "")
 	disk := cache.New(filepath.Join(root, "legidor/production"))
 	raw := `{"article":{"id":"LEGIARTI000000000001","num":"1","dateDebut":1735689600000,"dateFin":1767225600000,"nota":"An exception has a separate commencement date.","texteHtml":"<p>I.- Shared introduction.</p><p>1° Usable provision. <a href=\"https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000000000002\">Related article</a></p><p>2° See illustration.</p><img src=\"example.png\">","textTitles":[{"id":"LEGITEXT000000000001","titreLong":"Code civil"}]}}`
 	seedResponse(t, disk, "/consult/getArticle", map[string]string{"id": "LEGIARTI000000000001"}, raw)

@@ -99,3 +99,12 @@ func TestPartialClaudeUsageDeduplicatesStreamMessages(t *testing.T) {
 		t.Fatalf("%+v %v", m, err)
 	}
 }
+
+func TestTerminalWithoutUsageIsNotZeroCostEvidence(t *testing.T) {
+	for agent, trace := range map[string]string{"claude": `{"type":"result","subtype":"success","result":"answer"}`, "codex": `{"type":"item.completed","item":{"type":"agent_message","text":"answer"}}` + "\n" + `{"type":"turn.completed"}`} {
+		m, err := ParseTrace(agent, strings.NewReader(trace))
+		if err != nil || m.UsageComplete {
+			t.Fatalf("%s: %+v %v", agent, m, err)
+		}
+	}
+}

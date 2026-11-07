@@ -175,6 +175,18 @@ Browse a code with `legidor get CIBS --date 2027-01-01 --parts`, then follow a r
 
 ## Cache
 
+Set `LEGIDOR_CACHE_DIR` to give a job its own cache root. This overrides
+`XDG_CACHE_HOME` and the default user cache without changing credential lookup.
+Production and sandbox remain separate subdirectories. For example:
+
+```sh
+LEGIDOR_CACHE_DIR=/tmp/legal-research-a legidor get 'CGI 32'
+LEGIDOR_CACHE_DIR=/tmp/legal-research-b legidor get 'CGI 32'
+```
+
+The two commands can run concurrently without clearing or sharing the normal
+user cache. Both responses and OAuth tokens use the selected private cache root.
+
 Private token and response caches live under `~/.cache/legidor/ENVIRONMENT` or `$XDG_CACHE_HOME/legidor/ENVIRONMENT`, with atomic writes. Validated source JSON is cached; normalization and identity checks run again on reads. Errors and HTML error pages are not stored as legal content.
 
 Current consultations, resolution, search and BOFiP use a 30-day cache. Dated historical consultations and searches, direct article versions and decision consultations use 90 days. These are reuse budgets, not guarantees that the source has remained unchanged. A cached article's end date, state and links can change upstream even if its wording does not.

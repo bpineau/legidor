@@ -29,6 +29,14 @@ func ParseTrace(agent string, r io.Reader) (Measurement, error) {
 	done := false
 	var failure error
 	partial := map[string]Measurement{}
+	type usage struct {
+		Input      int64 `json:"input_tokens"`
+		Output     int64 `json:"output_tokens"`
+		Cached     int64 `json:"cached_input_tokens"`
+		Read       int64 `json:"cache_read_input_tokens"`
+		Write      int64 `json:"cache_creation_input_tokens"`
+		CodexWrite int64 `json:"cache_write_input_tokens"`
+	}
 	scan := bufio.NewScanner(r)
 	scan.Buffer(make([]byte, 4096), 16*1024*1024)
 	for scan.Scan() {
@@ -39,26 +47,14 @@ func ParseTrace(agent string, r io.Reader) (Measurement, error) {
 			Result  string   `json:"result"`
 			IsError bool     `json:"is_error"`
 			Cost    *float64 `json:"total_cost_usd"`
-			Usage   struct {
-				Input      int64 `json:"input_tokens"`
-				Output     int64 `json:"output_tokens"`
-				Cached     int64 `json:"cached_input_tokens"`
-				Read       int64 `json:"cache_read_input_tokens"`
-				Write      int64 `json:"cache_creation_input_tokens"`
-				CodexWrite int64 `json:"cache_write_input_tokens"`
-			} `json:"usage"`
-			Item struct {
+			Usage   *usage   `json:"usage"`
+			Item    struct {
 				Type string `json:"type"`
 				Text string `json:"text"`
 			} `json:"item"`
 			Message struct {
-				ID    string `json:"id"`
-				Usage struct {
-					Input  int64 `json:"input_tokens"`
-					Output int64 `json:"output_tokens"`
-					Read   int64 `json:"cache_read_input_tokens"`
-					Write  int64 `json:"cache_creation_input_tokens"`
-				} `json:"usage"`
+				ID      string `json:"id"`
+				Usage   *usage `json:"usage"`
 				Content []struct {
 					Type string `json:"type"`
 				} `json:"content"`
@@ -72,7 +68,7 @@ func ParseTrace(agent string, r io.Reader) (Measurement, error) {
 				m.Model = e.Model
 			}
 			if e.Type == "assistant" {
-				if e.Message.ID != "" && !done {
+				if e.Message.ID != "" && e.Message.Usage != nil && !done {
 					old := partial[e.Message.ID]
 					u := e.Message.Usage
 					next := Measurement{InputTokens: max(old.InputTokens, u.Input+u.Read+u.Write), OutputTokens: max(old.OutputTokens, u.Output), CacheReadTokens: max(old.CacheReadTokens, u.Read), CacheWriteTokens: max(old.CacheWriteTokens, u.Write)}
@@ -90,12 +86,14 @@ func ParseTrace(agent string, r io.Reader) (Measurement, error) {
 			}
 			if e.Type == "result" {
 				done = true
-				m.UsageComplete = true
 				m.Answer = e.Result
-				m.InputTokens = e.Usage.Input + e.Usage.Read + e.Usage.Write
-				m.OutputTokens = e.Usage.Output
-				m.CacheReadTokens = e.Usage.Read
-				m.CacheWriteTokens = e.Usage.Write
+				if e.Usage != nil {
+					m.UsageComplete = true
+					m.InputTokens = e.Usage.Input + e.Usage.Read + e.Usage.Write
+					m.OutputTokens = e.Usage.Output
+					m.CacheReadTokens = e.Usage.Read
+					m.CacheWriteTokens = e.Usage.Write
+				}
 				m.CostUSD = e.Cost
 				if e.IsError || e.Subtype != "success" {
 					failure = fmt.Errorf("Claude terminal status: %s", e.Subtype)
@@ -112,11 +110,13 @@ func ParseTrace(agent string, r io.Reader) (Measurement, error) {
 			}
 			if e.Type == "turn.completed" {
 				done = true
-				m.UsageComplete = true
-				m.InputTokens = e.Usage.Input
-				m.OutputTokens = e.Usage.Output
-				m.CacheReadTokens = e.Usage.Cached
-				m.CacheWriteTokens = e.Usage.CodexWrite
+				if e.Usage != nil {
+					m.UsageComplete = true
+					m.InputTokens = e.Usage.Input
+					m.OutputTokens = e.Usage.Output
+					m.CacheReadTokens = e.Usage.Cached
+					m.CacheWriteTokens = e.Usage.CodexWrite
+				}
 			}
 			if e.Type == "turn.failed" || e.Type == "error" {
 				failure = errors.New("Codex failed; inspect trace")

@@ -166,6 +166,8 @@ Return ONLY JSON: {"grades":[{"sample":"answer-1","criteria":[{"index":0,"pass":
 
 type Summary struct {
 	Agent            string   `json:"agent"`
+	Model            string   `json:"model"`
+	CLIVersion       string   `json:"cli_version"`
 	Arm              string   `json:"arm"`
 	Attempts         int      `json:"attempts"`
 	Succeeded        int      `json:"succeeded"`
@@ -189,6 +191,16 @@ type Summary struct {
 
 // Report includes failed/ungraded attempts. It never turns an unknown cost into zero.
 func Report(root string) error {
+	versions := map[string]string{}
+	if b, err := os.ReadFile(filepath.Join(root, "manifest.json")); err == nil {
+		var manifest struct {
+			Versions map[string]string `json:"cli_versions"`
+		}
+		if err := json.Unmarshal(b, &manifest); err != nil {
+			return err
+		}
+		versions = manifest.Versions
+	}
 	expected := map[int]int{}
 	if corpus, err := LoadCorpus(filepath.Join(root, "corpus.json")); err == nil {
 		for _, c := range corpus.Cases {
@@ -222,10 +234,10 @@ func Report(root string) error {
 	rows := map[string]*Summary{}
 	unknownCost := map[string]bool{}
 	for id, s := range samples {
-		k := s.Agent + "/" + s.Arm
+		k := s.Agent + "/" + s.Model + "/" + s.Arm
 		r := rows[k]
 		if r == nil {
-			r = &Summary{Agent: s.Agent, Arm: s.Arm}
+			r = &Summary{Agent: s.Agent, Model: s.Model, CLIVersion: versions[s.Agent], Arm: s.Arm}
 			rows[k] = r
 		}
 		r.Attempts++
@@ -289,7 +301,11 @@ func Report(root string) error {
 			evidence = fmt.Sprintf("%.2f", float64(r.Evidence)/float64(r.Attempts))
 			temporal = fmt.Sprintf("%.2f", float64(r.Temporal)/float64(r.Attempts))
 		}
-		fmt.Fprintf(&md, "| %s | %s | %d/%d | %d | %s | %s | %s | %d | %d | %d | %.1f | %d | %d | %s |\n", r.Agent, r.Arm, r.Succeeded, r.Attempts, r.Graded, fiscal, evidence, temporal, r.InputTokens, r.CacheReadTokens, r.OutputTokens, float64(r.DurationMS)/1000, r.ToolCalls, r.IncompleteUsage, cost)
+		label := r.Agent + " " + r.Model
+		if r.CLIVersion != "" {
+			label += " (" + r.CLIVersion + ")"
+		}
+		fmt.Fprintf(&md, "| %s | %s | %d/%d | %d | %s | %s | %s | %d | %d | %d | %.1f | %d | %d | %s |\n", label, r.Arm, r.Succeeded, r.Attempts, r.Graded, fiscal, evidence, temporal, r.InputTokens, r.CacheReadTokens, r.OutputTokens, float64(r.DurationMS)/1000, r.ToolCalls, r.IncompleteUsage, cost)
 	}
 	if err = writeJSON(filepath.Join(root, "summary.json"), out); err != nil {
 		return err

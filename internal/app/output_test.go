@@ -16,6 +16,7 @@ func TestCompactOutputAndFullMetadata(t *testing.T) {
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
 	root := t.TempDir()
 	t.Setenv("XDG_CACHE_HOME", root)
+	t.Setenv("LEGIDOR_CACHE_DIR", "")
 	disk := cache.New(filepath.Join(root, "legidor/production"))
 	mods := []map[string]string{}
 	for i := 0; i < 30; i++ {

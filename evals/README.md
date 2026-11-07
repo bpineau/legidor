@@ -45,6 +45,33 @@ bin/legidor-eval run -cases 3,13 -repetitions 3 -cache cold \
 ```
 
 `-agents claude,codex` and `-arms none,paperasse,legidor,both` select the matrix.
+`-workers 2` runs at most two agent conversations concurrently; the default is
+one. Cold/fresh cache modes keep a separate cache for every sample. The manifest
+records the worker count because concurrency can affect latency and quotas.
+
+Model IDs appear in sample directories, individual results and aggregate tables;
+tables also include CLI versions. Run additional model pairs in separate roots:
+
+```sh
+bin/legidor-eval run -claude-model claude-sonnet-5-5 -codex-model gpt-6-astra \
+  -paperasse /path/to/paperasse/fiscaliste -legidor "$PWD/bin/legidor" \
+  -workers 2 -out /tmp/legidor-sonnet-astra
+```
+
+Or run all four models in one matrix with a global concurrency limit:
+
+```sh
+bin/legidor-eval run \
+  -claude-models claude-opus-5-5,claude-sonnet-5-5 \
+  -codex-models gpt-6.1-sol,gpt-6-astra -workers 4 \
+  -paperasse /path/to/paperasse/fiscaliste -legidor "$PWD/bin/legidor" \
+  -out /tmp/legidor-four-models
+```
+
+The plural model flags override their singular counterparts. Each requested model
+gets every selected case, arm and repetition; it is also recorded separately from
+the effective model reported by the agent (when available).
+
 `-corpus` accepts another corpus with the same JSON schema as `pilot.json`.
 Repeating an identical command resumes recorded samples with their original
 metrics. It does not count reused answers as fresh zero-cost measurements. A
@@ -88,7 +115,10 @@ effort, schedule seed, repetitions, time limit and cache mode.
 - `-cache fresh` appends `--fresh` to Legidor research calls. OAuth refresh still
   follows normal expiry; this is not a way to disable provider prompt caching.
 
-No mode uses the operator's everyday Legidor cache. Provider prompt caching is
+No mode uses the operator's everyday Legidor cache.
+The adapter overrides `LEGIDOR_CACHE_DIR` and `XDG_CACHE_HOME` in each Legidor
+child process, including any inherited override, to enforce this isolation.
+Provider prompt caching is
 reported separately and may occur in every arm. Normalized input tokens include
 cache reads and writes. A provider's reported cost is an estimate, not a bill;
 Codex's unavailable cost stays null. Native tool-call counting conventions differ,

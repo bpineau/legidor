@@ -11,9 +11,12 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -21,22 +24,27 @@ type Options struct {
 	Corpus, Output, Paperasse, Skill, Legidor  string
 	Agents, Arms, IDs                          []string
 	ClaudeModel, CodexModel, Effort, CacheMode string
+	ClaudeModels, CodexModels                  []string
 	Repetitions                                int
+	Workers                                    int
 	Seed                                       int64
 	Timeout                                    time.Duration
 }
 type Sample struct {
-	CaseID     int       `json:"case_id"`
-	Agent      string    `json:"agent"`
-	Arm        string    `json:"arm"`
-	Repetition int       `json:"repetition"`
-	Status     string    `json:"status"`
-	Trace      string    `json:"trace,omitempty"`
-	Error      string    `json:"error,omitempty"`
-	Started    time.Time `json:"started"`
-	DurationMS int64     `json:"duration_ms"`
+	CaseID         int       `json:"case_id"`
+	Agent          string    `json:"agent"`
+	RequestedModel string    `json:"requested_model"`
+	Arm            string    `json:"arm"`
+	Repetition     int       `json:"repetition"`
+	Status         string    `json:"status"`
+	Trace          string    `json:"trace,omitempty"`
+	Error          string    `json:"error,omitempty"`
+	Started        time.Time `json:"started"`
+	DurationMS     int64     `json:"duration_ms"`
 	Measurement
 }
+
+var modelSlugRE = regexp.MustCompile(`[^A-Za-z0-9._-]+`)
 
 // EnsureManifest prevents mixing resource/model/protocol versions when resuming.
 func EnsureManifest(path string, v any) error {
@@ -68,6 +76,16 @@ func (o Options) validate() error {
 	if o.Output == "" || o.Corpus == "" || o.Repetitions < 1 || o.Timeout <= 0 || len(o.Agents) == 0 || len(o.Arms) == 0 {
 		return errors.New("corpus, output, agents, arms, positive repetitions and timeout are required")
 	}
+	for name, values := range map[string][]string{"agents": o.Agents, "arms": o.Arms, "claude-models": o.ClaudeModels, "codex-models": o.CodexModels} {
+		seen := map[string]bool{}
+		for _, value := range values {
+			key := modelSlugRE.ReplaceAllString(value, "_")
+			if value == "" || seen[key] {
+				return fmt.Errorf("empty, duplicate or colliding %s entry %q", name, value)
+			}
+			seen[key] = true
+		}
+	}
 	for _, a := range o.Agents {
 		if a != "claude" && a != "codex" {
 			return fmt.Errorf("unknown agent %s", a)
@@ -85,6 +103,12 @@ func (o Options) validate() error {
 }
 
 func Run(ctx context.Context, o Options) error {
+	if o.Workers == 0 {
+		o.Workers = 1
+	}
+	if o.Workers < 1 || o.Workers > 16 {
+		return errors.New("workers must be 1..16")
+	}
 	if err := o.validate(); err != nil {
 		return err
 	}
@@ -149,6 +173,9 @@ func Run(ctx context.Context, o Options) error {
 		}
 	}
 	manifest := map[string]any{"protocol": 1, "corpus_sha256": corpusHash, "resources_sha256": resourceHash, "runner_sha256": runnerHash, "legidor_sha256": binHash, "cli_versions": versions, "claude_model": o.ClaudeModel, "codex_model": o.CodexModel, "effort": o.Effort, "cache_mode": o.CacheMode, "repetitions": o.Repetitions, "seed": o.Seed, "timeout_seconds": o.Timeout.Seconds(), "agents": o.Agents, "arms": o.Arms, "ids": o.IDs, "as_of": corpus.AsOf}
+	manifest["workers"] = o.Workers
+	manifest["claude_models"] = o.ClaudeModels
+	manifest["codex_models"] = o.CodexModels
 	if err = EnsureManifest(filepath.Join(o.Output, "manifest.json"), manifest); err != nil {
 		return err
 	}
@@ -160,9 +187,9 @@ func Run(ctx context.Context, o Options) error {
 		return err
 	}
 	type job struct {
-		c          Case
-		agent, arm string
-		rep        int
+		c                 Case
+		agent, model, arm string
+		rep               int
 	}
 	var jobs []job
 	for rep := 1; rep <= o.Repetitions; rep++ {
@@ -171,8 +198,22 @@ func Run(ctx context.Context, o Options) error {
 				continue
 			}
 			for _, agent := range o.Agents {
-				for _, arm := range o.Arms {
-					jobs = append(jobs, job{c, agent, arm, rep})
+				models := o.ClaudeModels
+				fallback := o.ClaudeModel
+				if agent == "codex" {
+					models = o.CodexModels
+					fallback = o.CodexModel
+				}
+				if len(models) == 0 {
+					models = []string{fallback}
+				}
+				for _, model := range models {
+					if model == "" {
+						return fmt.Errorf("empty model for %s", agent)
+					}
+					for _, arm := range o.Arms {
+						jobs = append(jobs, job{c, agent, model, arm, rep})
+					}
 				}
 			}
 		}
@@ -182,12 +223,17 @@ func Run(ctx context.Context, o Options) error {
 	}
 	rng := rand.New(rand.NewSource(o.Seed))
 	rng.Shuffle(len(jobs), func(i, j int) { jobs[i], jobs[j] = jobs[j], jobs[i] })
-	failures := 0
-	for i, j := range jobs {
+	var failures atomic.Int64
+	var reportMu sync.Mutex
+	err = parallel(ctx, len(jobs), o.Workers, func(i int) error {
+		j := jobs[i]
+		var err error
 		if err = ctx.Err(); err != nil {
 			return err
 		}
-		id := fmt.Sprintf("case-%03d-%s-%s-r%d", j.c.ID, j.agent, j.arm, j.rep)
+		model := j.model
+		modelSlug := modelSlugRE.ReplaceAllString(model, "_")
+		id := fmt.Sprintf("case-%03d-%s-%s-%s-r%d", j.c.ID, j.agent, modelSlug, j.arm, j.rep)
 		dir := filepath.Join(o.Output, id)
 		if _, err = os.Stat(filepath.Join(dir, "result.json")); err == nil {
 			var previous Sample
@@ -199,24 +245,24 @@ func Run(ctx context.Context, o Options) error {
 				return err
 			}
 			if previous.Status != "ok" {
-				failures++
+				failures.Add(1)
 			}
 			fmt.Fprintf(os.Stderr, "[%d/%d] resume %s\n", i+1, len(jobs), id)
-			continue
+			return nil
 		} else if !os.IsNotExist(err) {
 			return err
 		}
 		if _, err := os.Stat(dir); err == nil {
-			previous, err := recoverInterrupted(dir, Sample{CaseID: j.c.ID, Agent: j.agent, Arm: j.arm, Repetition: j.rep})
+			previous, err := recoverInterrupted(dir, Sample{CaseID: j.c.ID, Agent: j.agent, RequestedModel: model, Arm: j.arm, Repetition: j.rep})
 			if err != nil {
 				return err
 			}
 			if err = writeJSON(filepath.Join(dir, "result.json"), previous); err != nil {
 				return err
 			}
-			failures++
+			failures.Add(1)
 			fmt.Fprintf(os.Stderr, "[%d/%d] retained interrupted sample %s\n", i+1, len(jobs), id)
-			continue
+			return nil
 		} else if !os.IsNotExist(err) {
 			return err
 		}
@@ -271,11 +317,7 @@ func Run(ctx context.Context, o Options) error {
 				prompt += ", and the legidor tool to execute the CLI recipes (argv array, no shell)"
 			}
 			prompt += ". No shell or script runtime is available."
-			model := o.ClaudeModel
-			if j.agent == "codex" {
-				model = o.CodexModel
-			}
-			sample := Sample{CaseID: j.c.ID, Agent: j.agent, Arm: j.arm, Repetition: j.rep, Started: time.Now().UTC(), Status: "ok", Trace: filepath.Join(filepath.Base(attempt), "trace.jsonl")}
+			sample := Sample{CaseID: j.c.ID, Agent: j.agent, RequestedModel: model, Arm: j.arm, Repetition: j.rep, Started: time.Now().UTC(), Status: "ok", Trace: filepath.Join(filepath.Base(attempt), "trace.jsonl")}
 			fmt.Fprintf(os.Stderr, "[%d/%d] run %s (%s)\n", i+1, len(jobs), id, model)
 			m, err := Invoke(ctx, Invocation{Agent: j.agent, Model: model, Effort: o.Effort, Work: work, Output: attempt, Prompt: prompt, BrokerConfig: config, Timeout: o.Timeout})
 			sample.Measurement = m
@@ -283,7 +325,7 @@ func Run(ctx context.Context, o Options) error {
 			if err != nil {
 				sample.Status = "failed"
 				sample.Error = err.Error()
-				failures++
+				failures.Add(1)
 			}
 			if err := writeJSON(filepath.Join(dir, "result.json"), sample); err != nil {
 				return err
@@ -293,19 +335,68 @@ func Run(ctx context.Context, o Options) error {
 		if err != nil {
 			return err
 		}
+		reportMu.Lock()
+		defer reportMu.Unlock()
 		if err = Report(o.Output); err != nil {
 			return err
 		}
+		return nil
+	})
+	if err != nil {
+		return err
 	}
-	if failures > 0 {
-		return fmt.Errorf("%d failed samples retained; inspect results", failures)
+	if err = Report(o.Output); err != nil {
+		return err
+	}
+	if failures.Load() > 0 {
+		return fmt.Errorf("%d failed samples retained; inspect results", failures.Load())
 	}
 	return nil
+}
+
+func parallel(ctx context.Context, count, workers int, fn func(int) error) error {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	queue := make(chan int)
+	errs := make(chan error, workers)
+	var wg sync.WaitGroup
+	for n := 0; n < workers; n++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for i := range queue {
+				if ctx.Err() != nil {
+					return
+				}
+				if err := fn(i); err != nil {
+					errs <- err
+					cancel()
+					return
+				}
+			}
+		}()
+	}
+schedule:
+	for i := 0; i < count; i++ {
+		select {
+		case queue <- i:
+		case <-ctx.Done():
+			break schedule
+		}
+	}
+	close(queue)
+	wg.Wait()
+	close(errs)
+	for err := range errs {
+		return err
+	}
+	return ctx.Err()
 }
 
 func recoverInterrupted(dir string, s Sample) (Sample, error) {
 	s.Status = "failed"
 	s.Error = "interrupted before result persistence; usage and duration may be incomplete; use a new run to retry"
+	s.Model = s.RequestedModel
 	traces, err := filepath.Glob(filepath.Join(dir, "attempt-*", "trace.jsonl"))
 	if err != nil {
 		return s, err
@@ -320,6 +411,9 @@ func recoverInterrupted(dir string, s Sample) (Sample, error) {
 		s.Trace, _ = filepath.Rel(dir, trace)
 	} else if !os.IsNotExist(err) {
 		return s, err
+	}
+	if s.Model == "" {
+		s.Model = s.RequestedModel
 	}
 	return s, nil
 }
@@ -349,6 +443,9 @@ func Samples(root string) (map[string]Sample, error) {
 		}
 		if s.Agent == "" {
 			return nil
+		}
+		if s.Model == "" {
+			s.Model = s.RequestedModel
 		}
 		// Re-parse older/partial measurements when native evidence is available.
 		// This also upgrades early pilot artifacts without modifying their traces.

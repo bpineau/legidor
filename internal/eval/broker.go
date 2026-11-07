@@ -200,7 +200,7 @@ func (b Broker) call(ctx context.Context, name string, a json.RawMessage) (strin
 		defer cancel()
 		cmd := exec.CommandContext(ctx, b.Legidor, p.Args...)
 		cmd.Stdin = strings.NewReader(p.Stdin)
-		cmd.Env = append(os.Environ(), "XDG_CACHE_HOME="+b.Cache)
+		cmd.Env = append(os.Environ(), "XDG_CACHE_HOME="+b.Cache, "LEGIDOR_CACHE_DIR="+b.Cache)
 		out, err := cmd.CombinedOutput()
 		result := string(out)
 		if err != nil {

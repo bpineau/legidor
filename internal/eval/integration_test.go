@@ -78,7 +78,7 @@ func TestOfflineRunnerResumeAndPromptBoundary(t *testing.T) {
 	if string(b) != "call\n" {
 		t.Fatalf("resume ran model again: %q", b)
 	}
-	prompt, _ := os.ReadFile(filepath.Join(o.Output, "case-001-codex-none-r1", "attempt-001", "prompt.txt"))
+	prompt, _ := os.ReadFile(filepath.Join(o.Output, "case-001-codex-test-sol-none-r1", "attempt-001", "prompt.txt"))
 	if strings.Contains(string(prompt), "PRIVATE_RUBRIC_CANARY") {
 		t.Fatal("rubric leaked into evaluated conversation")
 	}
@@ -104,5 +104,65 @@ func TestInvocationTimeoutRetainsTrace(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(root, "out", "trace.jsonl")); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestOfflineParallelRunner(t *testing.T) {
+	fakeCLI(t)
+	root := t.TempDir()
+	corpus := filepath.Join(root, "cases.json")
+	writeJSON(corpus, Corpus{AsOf: "2026-11-07", Cases: []Case{{ID: 1, Name: "one", Prompt: "p", Assertions: []string{"a"}}, {ID: 2, Name: "two", Prompt: "q", Assertions: []string{"b"}}}})
+	o := Options{Corpus: corpus, Output: filepath.Join(root, "out"), Agents: []string{"codex"}, Arms: []string{"none"}, CodexModel: "test-sol", Effort: "medium", CacheMode: "cold", Repetitions: 2, Workers: 2, Timeout: 5 * time.Second}
+	if err := Run(context.Background(), o); err != nil {
+		t.Fatal(err)
+	}
+	samples, err := Samples(o.Output)
+	if err != nil || len(samples) != 4 {
+		t.Fatalf("%d %v", len(samples), err)
+	}
+	for _, s := range samples {
+		if s.Status != "ok" || s.Model != "test-sol" {
+			t.Fatalf("%+v", s)
+		}
+	}
+}
+
+func TestModelMatrixCreatesDistinctArtifacts(t *testing.T) {
+	fakeCLI(t)
+	root := t.TempDir()
+	corpus := filepath.Join(root, "cases.json")
+	writeJSON(corpus, Corpus{AsOf: "2026-11-07", Cases: []Case{{ID: 1, Name: "one", Prompt: "p", Assertions: []string{"a"}}}})
+	o := Options{Corpus: corpus, Output: filepath.Join(root, "out"), Agents: []string{"codex"}, Arms: []string{"none"}, CodexModels: []string{"test-sol-6.1", "test-astra-6"}, Effort: "medium", CacheMode: "cold", Repetitions: 1, Workers: 2, Timeout: 5 * time.Second}
+	if err := Run(context.Background(), o); err != nil {
+		t.Fatal(err)
+	}
+	samples, err := Samples(o.Output)
+	if err != nil || len(samples) != 2 {
+		t.Fatalf("%d %v", len(samples), err)
+	}
+	for _, model := range o.CodexModels {
+		p := filepath.Join(o.Output, "case-001-codex-"+model+"-none-r1", "result.json")
+		if _, err := os.Stat(p); err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+
+func TestDuplicateMatrixCellsRejectedBeforeModelsRun(t *testing.T) {
+	calls := fakeCLI(t)
+	root := t.TempDir()
+	corpus := filepath.Join(root, "cases.json")
+	writeJSON(corpus, Corpus{AsOf: "2026-11-07", Cases: []Case{{ID: 1, Name: "one", Prompt: "p", Assertions: []string{"a"}}}})
+	o := Options{Corpus: corpus, Output: filepath.Join(root, "out"), Agents: []string{"codex"}, Arms: []string{"none", "none"}, CodexModel: "test-sol", Effort: "medium", CacheMode: "cold", Repetitions: 1, Workers: 2, Timeout: 5 * time.Second}
+	if err := Run(context.Background(), o); err == nil {
+		t.Fatal("duplicate arms accepted")
+	}
+	if _, err := os.Stat(calls); !os.IsNotExist(err) {
+		t.Fatal("ran models before rejecting duplicates")
+	}
+	o.Arms = []string{"none"}
+	o.CodexModels = []string{"vendor/model", "vendor_model"}
+	if err := Run(context.Background(), o); err == nil {
+		t.Fatal("colliding model directories accepted")
 	}
 }

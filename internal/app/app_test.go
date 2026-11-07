@@ -29,6 +29,7 @@ func TestCLIParseAndUsage(t *testing.T) {
 }
 func TestMalformedManifestKeepsOrder(t *testing.T) {
 	t.Setenv("XDG_CACHE_HOME", t.TempDir())
+	t.Setenv("LEGIDOR_CACHE_DIR", "")
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
 	var out, err bytes.Buffer
 	code := Run(context.Background(), []string{"check", "-", "--json", "--offline"}, strings.NewReader("bad json\n{\"ref\":\"CSS L136-8\"}\n"), &out, &err)

@@ -1,11 +1,14 @@
 package eval
 
 import (
+	"context"
 	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
+	"sync/atomic"
 	"testing"
+	"time"
 )
 
 func TestManifestRejectsChangedResume(t *testing.T) {
@@ -182,5 +185,67 @@ func TestGradingCostsIncludeFailedAttempts(t *testing.T) {
 	json.Unmarshal(b, &s)
 	if s.Attempts != 2 || s.InputTokens != 100 || s.CostUSD == nil || *s.CostUSD != 0.2 {
 		t.Fatalf("%s", b)
+	}
+}
+
+func TestReportKeepsModelsSeparate(t *testing.T) {
+	root := t.TempDir()
+	for i, model := range []string{"claude-opus-5-5", "claude-sonnet-5-5"} {
+		p := filepath.Join(root, string(rune('a'+i)))
+		os.MkdirAll(p, 0700)
+		writeJSON(filepath.Join(p, "result.json"), Sample{Agent: "claude", Arm: "none", Status: "ok", Measurement: Measurement{Model: model, UsageComplete: true}})
+	}
+	if err := Report(root); err != nil {
+		t.Fatal(err)
+	}
+	b, _ := os.ReadFile(filepath.Join(root, "summary.json"))
+	var rows []Summary
+	json.Unmarshal(b, &rows)
+	if len(rows) != 2 {
+		t.Fatalf("models merged: %s", b)
+	}
+}
+
+func TestParallelJobsBoundConcurrency(t *testing.T) {
+	var active, maxActive, completed atomic.Int64
+	err := parallel(context.Background(), 12, 2, func(_ int) error {
+		n := active.Add(1)
+		for {
+			old := maxActive.Load()
+			if n <= old || maxActive.CompareAndSwap(old, n) {
+				break
+			}
+		}
+		time.Sleep(5 * time.Millisecond)
+		active.Add(-1)
+		completed.Add(1)
+		return nil
+	})
+	if err != nil || completed.Load() != 12 || maxActive.Load() > 2 || maxActive.Load() < 2 {
+		t.Fatalf("completed=%d max=%d err=%v", completed.Load(), maxActive.Load(), err)
+	}
+}
+
+func TestInterruptedCodexKeepsRequestedModel(t *testing.T) {
+	root := t.TempDir()
+	attempt, err := newAttempt(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	os.WriteFile(filepath.Join(attempt, "trace.jsonl"), []byte("{\"type\":\"thread.started\"}\n"), 0600)
+	s, err := recoverInterrupted(root, Sample{Agent: "codex", RequestedModel: "test-astra"})
+	if err != nil || s.Model != "test-astra" {
+		t.Fatalf("%+v %v", s, err)
+	}
+	s.Model = ""
+	writeJSON(filepath.Join(root, "result.json"), s)
+	samples, err := Samples(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, got := range samples {
+		if got.Model != "test-astra" {
+			t.Fatalf("lost persisted model: %+v", got)
+		}
 	}
 }

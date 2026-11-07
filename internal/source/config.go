@@ -61,10 +61,14 @@ func LoadConfig(environment string) (Config, error) {
 	c.ClientID = get("PISTE_CLIENT_ID")
 	c.ClientSecret = get("PISTE_CLIENT_SECRET")
 	c.APIKey = get("PISTE_API_KEY")
-	root = os.Getenv("XDG_CACHE_HOME")
+	root = os.Getenv("LEGIDOR_CACHE_DIR")
 	if root == "" {
-		root = filepath.Join(home, ".cache")
+		root = os.Getenv("XDG_CACHE_HOME")
+		if root == "" {
+			root = filepath.Join(home, ".cache")
+		}
+		root = filepath.Join(root, "legidor")
 	}
-	c.CacheDir = filepath.Join(root, "legidor", environment)
+	c.CacheDir = filepath.Join(root, environment)
 	return c, nil
 }
