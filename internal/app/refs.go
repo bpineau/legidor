@@ -20,12 +20,13 @@ var listSeparatorRE = regexp.MustCompile(`\s*(?:,|\bet\b)\s*`)
 var trailingCodeRE = regexp.MustCompile(`\s+(` + extractionCode + `)$`)
 var leadingCodeRE = regexp.MustCompile(`^(` + extractionCode + `)\s+`)
 var ambiguousNumericListRE = regexp.MustCompile(`,\s*\d+(?:\s|$)`)
+var bareArticleRE = regexp.MustCompile(`(?i)\bart(?:icle)?\.?\s+` + reference.ArticleNumberPattern)
 
 var extractionPatterns = []*regexp.Regexp{
 	regexp.MustCompile(`\b` + extractionCode + `\s+(?:[Aa]rticles?\.?\s+)?` + reference.ArticleNumberPattern + `(?:\s*(?:,|et)\s*` + reference.ArticleNumberPattern + `)+`),
 	regexp.MustCompile(`\b[Aa]rticles\s+` + reference.ArticleNumberPattern + `(?:\s*(?:,|et)\s*` + reference.ArticleNumberPattern + `)+\s+` + extractionCode),
 	regexp.MustCompile(`\b` + extractionArticle + `(?:\s*(?:,|et)\s*` + reference.ArticleNumberPattern + `)+\s+` + extractionCode),
-	regexp.MustCompile(`BOI-[A-Z0-9]+(?:-[A-Z0-9]+)*(?:\s*§\s*\d+(?:\s*(?:,|et)\s*\d+)*)?`),
+	regexp.MustCompile(`BOI-[A-Z0-9]+(?:-[A-Z0-9]+)*(?:\s*§\s*\d+(?:\s*(?:,|et)\s*(?:§\s*)?\d+)*)?`),
 	regexp.MustCompile(`(?:LEGIARTI|JORFARTI|JORFTEXT|LEGITEXT|KALIARTI|CETATEXT|JURITEXT|CONSTEXT)\d{12}`),
 	regexp.MustCompile(`\b` + extractionCode + `\s+` + extractionArticle + extractionParts),
 	regexp.MustCompile(`\b` + extractionArticle + extractionParts + `\s+` + extractionCode),
@@ -105,6 +106,19 @@ func refs(name string, o options, in io.Reader, out, errout io.Writer) int {
 				}
 			}
 		}
+		for _, loc := range bareArticleRE.FindAllStringIndex(text, -1) {
+			coveredByReference := false
+			for _, span := range covered {
+				if loc[0] < span[1] && loc[1] > span[0] {
+					coveredByReference = true
+					break
+				}
+			}
+			if !coveredByReference {
+				fmt.Fprintf(errout, "%s:%d: citation candidate %q has no recognized code; complete the manifest manually.\n", name, line, text[loc[0]:loc[1]])
+				exit = 3
+			}
+		}
 	}
 	if s.Err() != nil {
 		return fail(out, errout, o.json, model.Err("INPUT", 2, "cannot read input or line exceeds 2 MiB"))
@@ -128,7 +142,7 @@ func expandReferences(s string) ([]string, bool) {
 		if base, list, ok := strings.Cut(s, "§"); ok {
 			var refs []string
 			for _, part := range listSeparatorRE.Split(strings.TrimSpace(list), -1) {
-				refs = append(refs, strings.TrimSpace(base)+" §"+part)
+				refs = append(refs, strings.TrimSpace(base)+" §"+strings.TrimSpace(strings.TrimPrefix(part, "§")))
 			}
 			return refs, false
 		}

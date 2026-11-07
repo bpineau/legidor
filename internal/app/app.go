@@ -158,7 +158,7 @@ func Run(ctx context.Context, args []string, in io.Reader, out, errout io.Writer
 		if o.json {
 			emit(out, true, s)
 		} else {
-			fmt.Fprintf(out, "source: %s | retrieved_at: %s | cached: %t | offline: %t | environment: %s\nsort: %s | total: %d\n%s\n", s.Provenance.Source, s.Provenance.RetrievedAt, s.Provenance.Cached, s.Provenance.Offline, s.Provenance.Environment, s.Sort, s.Total, s.Stability)
+			fmt.Fprintf(out, "source: %s | retrieved_at: %s | cached: %t | offline: %t | environment: %s\nsort: %s | total: %d %s | returned: %d\n%s\n", s.Provenance.Source, s.Provenance.RetrievedAt, s.Provenance.Cached, s.Provenance.Offline, s.Provenance.Environment, s.Sort, s.Total, s.TotalUnit, len(s.Hits), s.Stability)
 			for _, h := range s.Hits {
 				fmt.Fprintf(out, "%s | %s | %s\n%s\n", h.ID, h.Title, h.Number, h.Snippet)
 			}
@@ -172,7 +172,7 @@ func Run(ctx context.Context, args []string, in io.Reader, out, errout io.Writer
 		if e != nil {
 			return fail(out, errout, o.json, e)
 		}
-		emit(out, o.json, map[string]any{"schema": model.Schema, "versions": vs, "complete": true})
+		renderVersions(out, o, vs)
 		return 0
 	case "diff":
 		return diff(ctx, c, r, o, out, errout)
@@ -188,10 +188,14 @@ func Run(ctx context.Context, args []string, in io.Reader, out, errout io.Writer
 			}
 			r = cur.Reference
 		}
+		if o.parts && r.Kind == "section" {
+			r.Kind = "section_index"
+		}
 		d, e := c.Get(ctx, r)
 		if e != nil {
 			return fail(out, errout, o.json, e)
 		}
+		d = compactMetadata(d, o.full)
 		if cmd == "resolve" {
 			d.Text = ""
 			d.HTML = ""
@@ -233,7 +237,17 @@ func Run(ctx context.Context, args []string, in io.Reader, out, errout io.Writer
 		}
 		if o.grep != "" {
 			ms := legaltext.Grep(d.Text, o.grep, d.Parts)
-			emit(out, o.json, map[string]any{"schema": model.Schema, "id": d.ID, "matches": ms, "complete": d.Complete, "provenance": d.Provenance})
+			if o.json {
+				emit(out, true, map[string]any{"schema": model.Schema, "id": d.ID, "matches": ms, "complete": d.Complete, "provenance": d.Provenance, "warnings": d.Warnings})
+			} else {
+				fmt.Fprintf(out, "%s | %s | complete: %t | matches: %d\n%s\n", d.Title, d.ID, d.Complete, len(ms), d.Provenance.URL)
+				for _, m := range ms {
+					fmt.Fprintf(out, "part: %s | offset: %d | %s\n", m.Part, m.Offset, strings.Join(strings.Fields(m.Context), " "))
+				}
+				for _, w := range d.Warnings {
+					fmt.Fprintln(out, "warning:", w)
+				}
+			}
 			if !d.Complete {
 				return 3
 			}
@@ -303,6 +317,15 @@ func renderDocument(out io.Writer, jsonMode bool, d model.Document) {
 }
 
 func renderCaveats(out io.Writer, d model.Document) {
+	if d.State != "" {
+		fmt.Fprintln(out, "state:", d.State)
+	}
+	for _, v := range d.NextVersions {
+		fmt.Fprintf(out, "next version: %s | %s -> %s | %s\n", v.ID, v.Start, v.End, v.State)
+	}
+	if d.OmittedModifications > 0 {
+		fmt.Fprintf(out, "omitted_modifications: %d; repeat with --full for every modifier\n", d.OmittedModifications)
+	}
 	if d.SourceComplete != nil {
 		fmt.Fprintf(out, "source_complete: %t\n", *d.SourceComplete)
 	}
@@ -350,8 +373,8 @@ func selectPart(d model.Document, label string) (model.Document, error) {
 }
 func validateCommandOptions(cmd string, o options) error {
 	allowed := map[string]string{
-		"get": "date part parts grep full cursor links", "resolve": "date parse-only",
-		"search": "date in limit cursor", "check": "", "refs": "diff", "versions": "since",
+		"get": "date part parts grep full cursor links", "resolve": "date parse-only full",
+		"search": "date in limit cursor", "check": "full", "refs": "diff", "versions": "since full",
 		"diff": "from to part full", "auth": "", "cache": "",
 	}
 	for name := range o.supplied {

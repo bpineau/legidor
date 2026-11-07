@@ -107,6 +107,12 @@ func (c *Client) lfSearch(ctx context.Context, fond string, fields, filters []ob
 		return s, model.Err("UPSTREAM_FORMAT", 3, "search count missing")
 	}
 	s.Total = int(total)
+	s.ReturnedGroups = len(array(raw, "results"))
+	if article {
+		s.TotalUnit = "source_groups"
+	} else {
+		s.TotalUnit = "documents"
+	}
 	seen := map[string]bool{}
 	for _, r := range array(raw, "results") {
 		titles := array(r, "titles")
@@ -129,6 +135,8 @@ func (c *Client) lfSearch(ctx context.Context, fond string, fields, filters []ob
 			if number == "" {
 				number = str(x, "title")
 			}
+			number, _ = legaltext.HTML(number)
+			number = strings.Join(strings.Fields(number), " ")
 			snippet := ""
 			if vals, ok := x["values"].([]any); ok && len(vals) > 0 {
 				snippet, _ = vals[0].(string)
@@ -167,6 +175,9 @@ func (c *Client) lfSearch(ctx context.Context, fond string, fields, filters []ob
 }
 func unique(s model.Search) (model.Hit, error) {
 	if len(s.Hits) == 0 {
+		if s.Total > 0 {
+			return model.Hit{}, model.Err("AMBIGUOUS_REFERENCE", 3, "no eligible candidate on an incomplete or filtered search page")
+		}
 		return model.Hit{}, model.Err("NOT_FOUND_IN_CORPUS", 1, "reference not found in the selected corpus")
 	}
 	if len(s.Hits) > 1 || s.Total > 1 {
@@ -177,6 +188,14 @@ func unique(s model.Search) (model.Hit, error) {
 		return model.Hit{}, e
 	}
 	return s.Hits[0], nil
+}
+
+func searchExhausted(s model.Search) bool {
+	groups := s.ReturnedGroups
+	if s.TotalUnit == "" && groups == 0 {
+		groups = len(s.Hits)
+	}
+	return s.Complete && s.Total <= groups
 }
 func (c *Client) Get(ctx context.Context, r reference.Reference) (model.Document, error) {
 	switch r.Kind {
@@ -191,7 +210,7 @@ func (c *Client) Get(ctx context.Context, r reference.Reference) (model.Document
 		return c.article(ctx, r, "")
 	case "law", "named_law", "nor", "eli", "text":
 		return c.law(ctx, r)
-	case "range", "section":
+	case "range", "section", "code", "section_index":
 		return c.collection(ctx, r)
 	}
 	return model.Document{}, model.Err("UNSUPPORTED_REFERENCE", 2, "unsupported reference kind")
@@ -271,14 +290,27 @@ func (c *Client) article(ctx context.Context, r reference.Reference, expectedPar
 		d.Versions = append(d.Versions, model.Version{ID: str(v, "id"), Start: date(v["dateDebut"]), End: date(v["dateFin"]), State: str(v, "etat")})
 	}
 	sort.SliceStable(d.Versions, func(i, j int) bool { return d.Versions[i].Start < d.Versions[j].Start })
+	if d.End != "" {
+		for _, v := range d.Versions {
+			if v.ID != d.ID && v.Start >= d.End && (v.End == "" || v.End > v.Start) {
+				if len(d.NextVersions) > 0 && v.Start != d.NextVersions[0].Start {
+					break
+				}
+				d.NextVersions = append(d.NextVersions, v)
+			}
+		}
+	}
 	for _, l := range array(a, "lienModifications") {
 		id := str(l, "articleId")
 		if id == "" {
 			id = str(l, "textCid")
 		}
-		d.Modifications = append(d.Modifications, model.Link{ID: id, Title: str(l, "textTitle"), Type: str(l, "linkType"), URL: officialURL(id, ""), Date: str(l, "datePubliTexte")})
+		d.Modifications = append(d.Modifications, model.Link{ID: id, Title: strings.Join(strings.Fields(str(l, "textTitle")), " "), Type: str(l, "linkType"), URL: officialURL(id, ""), Date: str(l, "datePubliTexte")})
 	}
 	d.Parts = legaltext.Parts(d.Text)
+	if strings.Contains(strings.ToLower(d.HTML), "<table") {
+		d.Warnings = append(d.Warnings, "Table cells preserve the source HTML boundaries, including possible upstream layout defects. Verify the official publication before turning a table into a calculation.")
+	}
 	if len(d.Unsupported) > 0 || strings.TrimSpace(d.Text) == "" {
 		d.Complete = false
 		d.Warnings = append(d.Warnings, "unsupported_content: consult the official source")
@@ -287,15 +319,18 @@ func (c *Client) article(ctx context.Context, r reference.Reference, expectedPar
 }
 func (c *Client) Versions(ctx context.Context, r reference.Reference, since string) ([]model.Version, error) {
 	d, e := c.Get(ctx, r)
+	if problem, ok := e.(*model.Error); ok && problem.Code == "NO_VERSION_AT_DATE" && d.ID != "" && r.Kind == "article" {
+		e = nil
+	}
 	if e != nil {
 		return nil, e
 	}
 	if len(d.Versions) == 0 {
 		return nil, model.Err("UNSUPPORTED_CONTENT", 3, "version history unavailable for this source")
 	}
-	var out []model.Version
+	out := []model.Version{}
 	for _, v := range d.Versions {
-		if since != "" && v.Start < since {
+		if since != "" && v.End != "" && v.End <= since {
 			continue
 		}
 		rr := reference.Reference{Kind: "article", ID: v.ID, Code: d.Code, Number: d.Number}

@@ -35,7 +35,7 @@ An independent code review found issues in date handling, text nature, nested cl
 
 A Codex subagent used the skill for five scenarios: a 30-entry citation audit with intentional failures, a dated subdivision, tracking an amendment, a range with an intercalated article, and a Conseil d'Etat citation. It also exercised an uncached offline miss. No false verification success was observed. The evaluation used 12 CLI calls (one help call and 11 scenario calls); measured scenario output was 81421 bytes before subsequent audit-output compaction. These are CLI output measurements, not API-call counts or latency results.
 
-The evaluation prompted improvements for consolidated amendment placeholders, avoiding inferred case-law subdivisions, and compact audit status projection. A separate Claude Code evaluation was attempted but could not run because its account's five-hour usage limit was reached. Cross-provider behavioral acceptance therefore remains unverified for Claude Code; no successful Claude test is claimed.
+The evaluation prompted improvements for consolidated amendment placeholders, avoiding inferred case-law subdivisions, and compact audit status projection. A separate Claude Code evaluation was attempted but could not run because its account's five-hour usage limit was reached. At that initial stage, cross-provider behavioral acceptance was unverified for Claude Code; no successful Claude test was claimed.
 
 ## Citation-review exercise
 
@@ -64,3 +64,15 @@ Merged/nested tables other than supported full-width notes, images and unsupport
 Synthetic tests cover rectangular tables, full-width notes, formulas with exponents and indices, rejection of complex tables, omitted introductions, scoped completeness, compound subdivisions, dotted lowercase labels, explicit citation lists and ambiguous-list diagnostics. Batch output retains temporal evidence in both output modes. Source-link tests cover official hosts, credential-bearing URLs, actual href attributes and parent-preserving continuation cursors.
 
 Bounded live checks passed for CGI 219 I b, CGI 1609 nonies G, BOI-RFPI-TPVIE-20 paragraph 70, BOI-IR-CDHR-10 paragraph 250 and CIBS L213-82 at its requested date. The current table renderer also retains malformed wording already present in source HTML; it does not guess repairs. Named-law filtering reduced the LFI 2026 candidates to the original publication and its rectification, preserving that ambiguity. These checks establish retrieval behavior, not legal applicability or comparative token savings.
+
+## Research workflow regressions
+
+Regression tests cover compound article suffixes, repeated BOFiP paragraph symbols, code-less citation diagnostics, and Roman-subdivision retries. A retry requires verified absence from dated and exhaustive all-state searches: a positive exact hit followed by consultation failure, a withdrawn version, incomplete search groups or an existing letter-suffixed article must not authorize reinterpretation. Consulted code identity also distinguishes annex articles mislabeled by search.
+
+Other tests exercise numbered-law nature filtering, future-article history, intervals overlapping `--since`, nonbreaking paragraph markers, BOFiP heading/context boundaries, compact grep/history rendering, modifier omission counts and full-output recovery. Code/section index tests reject article-body fetches while browsing immediate children.
+
+Bounded public-source checks passed for the four Roman-subdivision examples (`CGI 1417 IV`, `CGI 219 I b`, `CGI 35 I 1°`, `art. 257 I 2 2° CGI`), the compound article `CGI 1649 quater-0 B bis`, two numbered laws sharing their number with another text nature, BOI-IR-CHR paragraph 220, the future history of CIBS L213-82, and code/section navigation at an explicit date. CGI 268 history retains the interval overlapping 2026 rather than returning an empty list.
+
+Locally measured text output for CSS L136-8 history decreased from 31529 to 6365 bytes. The article LEGIARTI000053100831 decreased from 44720 to 7904 bytes, showing five modifier links and explicitly counting 236 omitted links. The skill entrypoint decreased from 9682 to 5032 bytes; detailed evidence guidance is loaded from references as needed. These are output-size measurements on the same cached public sources, not agent token counts or comparative research-speed benchmarks.
+
+The malformed cell boundaries in CGI 1609 nonies G are present in the upstream HTML. The renderer preserves them and warns about using source tables as calculations; it does not invent a repaired schedule. Automatic old/new recodification correspondence and historical BOFiP remain outside coverage. The skill documents a dated search, index/range and original-modifier workflow instead.

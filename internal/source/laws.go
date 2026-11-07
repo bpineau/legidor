@@ -78,6 +78,19 @@ func (c *Client) law(ctx context.Context, r reference.Reference) (model.Document
 		if r.Kind == "named_law" {
 			s = namedLawCandidates(s, r)
 		}
+		if r.Kind == "law" {
+			allSeen := searchExhausted(s)
+			var hits []model.Hit
+			for _, h := range s.Hits {
+				if sameNature(r.Nature, "", h.Title) && containsNumber(h.Title, r.Number) {
+					hits = append(hits, h)
+				}
+			}
+			s.Hits = hits
+			if allSeen {
+				s.Total = len(hits)
+			}
+		}
 		h, e := unique(s)
 		if e != nil {
 			return model.Document{}, e
@@ -257,7 +270,9 @@ func (c *Client) collection(ctx context.Context, r reference.Reference) (model.D
 		}
 		parent = d.Parent
 	} else {
-		if r.Parent != "" {
+		if r.Kind == "code" && r.ID != "" {
+			parent = r.ID
+		} else if r.Parent != "" {
 			parent = r.Parent
 		} else {
 			if r.Code == "" {
@@ -270,6 +285,9 @@ func (c *Client) collection(ctx context.Context, r reference.Reference) (model.D
 			h, e := unique(s)
 			if e != nil {
 				return model.Document{}, e
+			}
+			if reference.CodeKey(strings.TrimSuffix(h.Title, ".")) != r.Code {
+				return model.Document{}, model.Err("IDENTITY_MISMATCH", 1, "code index search returned a different code")
 			}
 			parent = h.ID
 		}
@@ -285,6 +303,9 @@ func (c *Client) collection(ctx context.Context, r reference.Reference) (model.D
 	if json.Unmarshal(b, &root) != nil {
 		return d, unexpected("table of contents")
 	}
+	if title := str(root, "title"); r.Code != "" && title != "" && reference.CodeKey(strings.TrimSuffix(title, ".")) != r.Code {
+		return d, model.Err("IDENTITY_MISMATCH", 1, "table of contents belongs to a different code")
+	}
 	if r.Code == "" {
 		r.Code = reference.CodeKey(str(root, "title"))
 		d.Code = r.Code
@@ -293,7 +314,7 @@ func (c *Client) collection(ctx context.Context, r reference.Reference) (model.D
 			return d, model.Err("IDENTITY_UNVERIFIED", 3, "cannot identify the section's parent code")
 		}
 	}
-	if r.Kind == "section" {
+	if r.Kind == "section" || r.Kind == "section_index" {
 		var find func(object) object
 		find = func(o object) object {
 			if str(o, "id") == r.ID || str(o, "cid") == r.ID {
@@ -313,6 +334,36 @@ func (c *Client) collection(ctx context.Context, r reference.Reference) (model.D
 		d.ID = r.ID
 		d.Title = str(root, "title")
 		d.Provenance.URL = officialURL(r.ID, r.Date)
+	}
+	if r.Kind == "code" || r.Kind == "section_index" {
+		d.ContentKind = "table_of_contents"
+		type entry struct {
+			order float64
+			link  model.Link
+		}
+		var entries []entry
+		for _, s := range array(root, "sections") {
+			id := str(s, "id")
+			if id == "" {
+				id = str(s, "cid")
+			}
+			order, _ := s["intOrdre"].(float64)
+			entries = append(entries, entry{order, model.Link{ID: id, Title: str(s, "title"), Type: "section", URL: "https://www.legifrance.gouv.fr/codes/section_lc/" + parent + "/" + id + "/" + r.Date}})
+		}
+		for _, a := range array(root, "articles") {
+			id := str(a, "id")
+			order, _ := a["intOrdre"].(float64)
+			entries = append(entries, entry{order, model.Link{ID: id, Title: "Article " + str(a, "num"), Type: "article", URL: officialURL(id, r.Date)}})
+		}
+		sort.SliceStable(entries, func(i, j int) bool { return entries[i].order < entries[j].order })
+		for _, e := range entries {
+			d.Items = append(d.Items, e.link)
+		}
+		if len(d.Items) == 0 {
+			d.Complete = false
+			d.Unsupported = []string{"empty_table_of_contents"}
+		}
+		return d, nil
 	}
 	articles := orderedArticles(root)
 	start, end := -1, -1

@@ -73,7 +73,7 @@ const LatinSuffixPattern = `(?:bis|ter|quater|quinquies|sexies|septies|octies|no
 
 // ArticleNumberPattern recognizes a complete article number, including mixed
 // Latin and letter suffixes. A comma separates an ambiguous subdivision.
-const ArticleNumberPattern = `[LRDA]?\*?\s*\.?\s*\d+(?:-\d+)*(?:\s+[A-Z]{1,3}\b)?(?:\s+` + LatinSuffixPattern + `\b(?:\s+[A-Z]{1,3}\b)?)?`
+const ArticleNumberPattern = `[LRDA]?\*?\s*\.?\s*\d+(?:-\d+)*(?:\s+[A-Z]{1,3}\b)?(?:\s+` + LatinSuffixPattern + `\b(?:-\d+)?(?:\s+[A-Z]{1,3}\b)?)*(?:\s+` + LatinSuffixPattern + `\b)?`
 
 var articleRE = regexp.MustCompile(`^(` + ArticleNumberPattern + `)(.*)$`)
 var idRE = regexp.MustCompile(`^(LEGIARTI|JORFARTI|KALIARTI|LEGITEXT|JORFTEXT|KALITEXT|LEGISCTA|KALISCTA|CETATEXT|JURITEXT|CONSTEXT)\d{12}$`)
@@ -115,6 +115,10 @@ func (r Reference) Options(date, part string) (Reference, error) {
 func Parse(input string) (Reference, error) {
 	s := strings.Join(strings.Fields(input), " ")
 	r := Reference{Raw: input}
+	if code := CodeKey(s); code != "" {
+		r.Kind, r.Code = "code", code
+		return r, nil
+	}
 	bad := func() (Reference, error) {
 		return r, model.Err("INVALID_REFERENCE", 2, "unrecognized reference %q; use legidor resolve REF --parse-only", input)
 	}

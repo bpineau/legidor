@@ -10,7 +10,8 @@
 | `IDENTITY_MISMATCH` | Stop using that result. Check the supplied reference and report the mismatch. |
 | `VERSION_CONFLICT`, `CONFLICT` | Reconcile reference, URL, cursor and options. Resolve a human reference at the desired date rather than forcing another date onto a fixed version. |
 | `PART_NOT_FOUND`, `AMBIGUOUS_PART`, `STRUCTURE_UNRECOGNIZED` | Read `get REF --parts`. Use a full recognized label or inspect the official source. Do not claim an inferred boundary is verified. |
-| `NO_VERSION_AT_DATE` | The requested historical version cannot be established from this source. Current BOFiP cannot replace historical doctrine. |
+| `NO_VERSION_AT_DATE` | No version is available at the requested date. For a published future article, inspect `versions` and choose an explicit future `--date`. Current BOFiP cannot replace historical doctrine. |
+| `REINTERPRETATION_FAILED` | The exact article was absent, but checking an alternative Roman subdivision failed. Review the diagnostic and use an explicit manifest `part`; do not treat the original identity as confirmed. |
 | `UNSUPPORTED_CONTENT`, `RESULT_TOO_LARGE` | Use a narrower article/subdivision or consult the official source. `--full` only removes output truncation, not format limitations. |
 | `CURSOR_CHANGED` | Restart the consultation; do not concatenate pages from different content revisions. |
 

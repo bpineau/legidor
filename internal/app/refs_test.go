@@ -110,3 +110,11 @@ func TestExtractDoesNotDropLeadingList(t *testing.T) {
 		}
 	}
 }
+
+func TestExtractExtendedReferences(t *testing.T) {
+	var out, diag bytes.Buffer
+	code := refs("-", options{}, strings.NewReader("CGI 1649 quater-0 B bis; BOI-EXAMPLE-10 § 90, § 120; art. 150-0 A"), &out, &diag)
+	if code != 3 || !strings.Contains(out.String(), "1649 quater-0 B bis") || !strings.Contains(out.String(), "§120") || !strings.Contains(diag.String(), "150-0 A") {
+		t.Fatalf("%d %s %s", code, &out, &diag)
+	}
+}

@@ -8,12 +8,16 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"regexp"
+	"strings"
 
 	"github.com/bpineau/legidor/internal/model"
 	"github.com/bpineau/legidor/internal/reference"
 	"github.com/bpineau/legidor/internal/source"
 	legaltext "github.com/bpineau/legidor/internal/text"
 )
+
+var romanArticleSuffixRE = regexp.MustCompile(`^(\d+(?:-\d+)*) ([IVX]+)$`)
 
 func inputReader(name string, in io.Reader) (io.Reader, func(), error) {
 	if name == "-" {
@@ -88,6 +92,29 @@ func check(ctx context.Context, c *source.Client, name string, o options, in io.
 			memo[string(key)] = v
 		}
 		d := v.d
+		// Preserve real letter-suffixed articles. Only retry after both dated
+		// and all-state lookup established that the exact number was absent.
+		if problem, ok := v.e.(*model.Error); ok && problem.ExactArticleAbsent && r.Kind == "article" && r.ID == "" {
+			if m := romanArticleSuffixRE.FindStringSubmatch(r.Number); m != nil {
+				alternative := r
+				alternative.Number = m[1]
+				alternativeKey, _ := json.Marshal(alternative)
+				retry, ok := memo[string(alternativeKey)]
+				if !ok {
+					retry.d, retry.e = c.Get(ctx, alternative)
+					memo[string(alternativeKey)] = retry
+				}
+				if retry.e == nil {
+					d, v.e = retry.d, nil
+					part = strings.TrimSpace(m[2] + " " + part)
+					d.Warnings = append(append([]string{}, d.Warnings...), fmt.Sprintf("Reinterpreted absent article %s as article %s, subdivision %s after exact lookup failed; verify this reading against the cited claim.", r.Number, alternative.Number, part))
+				} else if failure, ok := retry.e.(*model.Error); !ok || failure.Code != "NOT_FOUND_IN_CORPUS" {
+					// An attempted reinterpretation cannot hide an API failure or
+					// pretend to confirm the original citation's identity.
+					v.e = model.Err("REINTERPRETATION_FAILED", 3, "exact article absent; checking article %s with subdivision %s failed: %v", alternative.Number, m[2], retry.e)
+				}
+			}
+		}
 		if v.e != nil {
 			result.Error = asError(v.e)
 			switch result.Error.Code {
@@ -147,6 +174,7 @@ func check(ctx context.Context, c *source.Client, name string, o options, in io.
 		d.Versions = nil
 		d.Items = nil
 		if d.ID != "" {
+			d = compactMetadata(d, o.full)
 			result.Document = &d
 		}
 		emitCheck(out, o.json, result)

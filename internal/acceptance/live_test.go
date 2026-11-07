@@ -4,6 +4,7 @@ package acceptance
 import (
 	"context"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -100,4 +101,52 @@ func TestLiveSourceReading(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestLiveResearchRegressions(t *testing.T) {
+	if os.Getenv("LEGIDOR_LIVE") != "1" {
+		t.Skip("set LEGIDOR_LIVE=1 to call official APIs")
+	}
+	cfg, err := source.LoadConfig("production")
+	if err != nil {
+		t.Fatal(err)
+	}
+	c := source.NewClient(cfg, cache.New(cfg.CacheDir))
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	defer cancel()
+	for _, ref := range []string{"CGI 1649 quater-0 B bis", "loi 2026-534", "loi 2026-470", "décret 2017-372", "CIBS"} {
+		t.Run(ref, func(t *testing.T) {
+			r, err := reference.Parse(ref)
+			if err != nil {
+				t.Fatal(err)
+			}
+			d, err := c.Get(ctx, r)
+			if err != nil || d.ID == "" {
+				t.Fatalf("%+v %v", d, err)
+			}
+		})
+	}
+	t.Run("future article history", func(t *testing.T) {
+		r, _ := reference.Parse("CIBS L213-82")
+		r.Date = "2026-11-07"
+		_, err := c.Get(ctx, r)
+		if err == nil || !strings.Contains(err.Error(), "NO_VERSION_AT_DATE") {
+			t.Fatalf("%v", err)
+		}
+		vs, err := c.Versions(ctx, r, "")
+		if err != nil || len(vs) == 0 {
+			t.Fatalf("%v", err)
+		}
+	})
+	t.Run("BOFiP paragraph after table", func(t *testing.T) {
+		r, _ := reference.Parse("BOI-IR-CHR")
+		d, err := c.Get(ctx, r)
+		if err != nil {
+			t.Fatal(err)
+		}
+		s, err := legaltext.Select(d.Text, d.Parts, "220")
+		if err != nil || len(legaltext.Omissions(s)) > 0 {
+			t.Fatalf("selection: %v", err)
+		}
+	})
 }

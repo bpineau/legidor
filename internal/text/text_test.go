@@ -172,3 +172,24 @@ func TestTableFullWidthNote(t *testing.T) {
 		t.Fatalf("%q %v", s, u)
 	}
 }
+
+func TestBOINonbreakingParagraphMarker(t *testing.T) {
+	s, ps, _ := BOI(`<p class="numero-de-paragraphe-western">210</p><table><tr><td rowspan="2">Complex</td></tr></table><p class="numero-de-paragraphe-western">&nbsp;220</p><p>Example.</p>`)
+	got, err := Select(s, ps, "220")
+	if err != nil || !strings.Contains(got, "Example.") || strings.Contains(got, "omitted:table") {
+		t.Fatalf("%q %v", got, err)
+	}
+}
+
+func TestBOISectionsStayWithFollowingParagraphs(t *testing.T) {
+	raw := `<p>Actualité liée : <a href="https://bofip.impots.gouv.fr/">Editorial notice</a></p><p>General condition.</p><h1>First section</h1><p class="numero-de-paragraphe-western">10</p><p>First rule.</p><h1>Second section</h1><p>Section condition.</p><p class="numero-de-paragraphe-western">20</p><p>Second rule.</p><p class="numero-de-paragraphe-western">30</p><p>Third rule.</p>`
+	s, ps, _ := BOI(raw)
+	first, e := Select(s, ps, "10")
+	third, e3 := Select(s, ps, "30")
+	if e != nil || e3 != nil || strings.Contains(first, "Second section") || strings.Contains(third, "First section") || strings.Contains(third, "Actualité liée") || !strings.Contains(third, "General condition.") || !strings.Contains(third, "Section condition.") {
+		t.Fatalf("first=%q third=%q %v %v", first, third, e, e3)
+	}
+	if !strings.Contains(s, "Actualité liée") {
+		t.Fatal("lost editorial notice from full source")
+	}
+}

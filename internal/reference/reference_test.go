@@ -49,7 +49,7 @@ func TestConflicts(t *testing.T) {
 	}
 }
 func TestReject(t *testing.T) {
-	for _, s := range []string{"C. civ. 757 B nonsense", "https://evil.example/LEGIARTI000012345678", "CGI", "LFR 2022 art. 1", "CGI 32 --oops"} {
+	for _, s := range []string{"C. civ. 757 B nonsense", "https://evil.example/LEGIARTI000012345678", "CGI unknown", "LFR 2022 art. 1", "CGI 32 --oops"} {
 		if _, e := Parse(s); e == nil {
 			t.Errorf("accepted %q", s)
 		}
@@ -111,5 +111,19 @@ func TestCompoundSubdivisionAndCIBS(t *testing.T) {
 		if err != nil || r.Code != tc.code || r.Number != tc.number || r.Part != tc.part {
 			t.Fatalf("%s: %+v %v", tc.raw, r, err)
 		}
+	}
+}
+
+func TestCompoundArticleSuffix(t *testing.T) {
+	r, err := Parse("CGI 1649 quater-0 B bis, I")
+	if err != nil || r.Number != "1649 quater-0 B bis" || r.Part != "I" {
+		t.Fatalf("%+v %v", r, err)
+	}
+}
+
+func TestCodeIndexReference(t *testing.T) {
+	r, err := Parse("CIBS")
+	if err != nil || r.Kind != "code" || r.Code != "CIBS" {
+		t.Fatalf("%+v %v", r, err)
 	}
 }

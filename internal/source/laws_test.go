@@ -104,3 +104,53 @@ func TestDecisionRetainsHTMLLinks(t *testing.T) {
 		t.Fatalf("%+v %v", d, err)
 	}
 }
+
+func TestNumberedLawFiltersNatureBeforeUniqueness(t *testing.T) {
+	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		switch r.URL.Path {
+		case "/token":
+			w.Write([]byte(`{"access_token":"fake","expires_in":3600}`))
+		case "/search":
+			w.Write([]byte(`{"totalResultNumber":2,"results":[{"titles":[{"cid":"JORFTEXT000000000001","title":"LOI n° <mark>2031-987</mark> du 1 janvier 2031"}]},{"titles":[{"cid":"JORFTEXT000000000002","title":"Décision n° 2031-987"}]}]}`))
+		default:
+			w.Write([]byte(`{"cid":"JORFTEXT000000000001","title":"LOI n° 2031-987 du 1 janvier 2031","nature":"LOI","articles":[{"id":"JORFARTI000000000001","num":"1","content":"<p>Invented.</p>"}]}`))
+		}
+	}))
+	defer s.Close()
+	c := NewClient(Config{ClientID: "fake", ClientSecret: "fake", Environment: "test"}, cache.New(t.TempDir()))
+	c.LFURL = s.URL
+	c.TokenURL = s.URL + "/token"
+	r, _ := reference.Parse("loi 2031-987")
+	d, err := c.Get(context.Background(), r)
+	if err != nil || d.ID != "JORFTEXT000000000001" {
+		t.Fatalf("%+v %v", d, err)
+	}
+}
+
+func TestCodeAndSectionIndexDoesNotFetchArticles(t *testing.T) {
+	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		switch r.URL.Path {
+		case "/token":
+			w.Write([]byte(`{"access_token":"fake","expires_in":3600}`))
+		case "/search":
+			w.Write([]byte(`{"totalResultNumber":1,"results":[{"titles":[{"id":"LEGITEXT000000000001","title":"Code civil"}]}]}`))
+		case "/consult/legi/tableMatieres":
+			w.Write([]byte(`{"id":"LEGITEXT000000000001","title":"Code civil","sections":[{"id":"LEGISCTA000000000001","title":"First section","intOrdre":1,"articles":[{"id":"LEGIARTI000000000001","num":"42","intOrdre":1}]}]}`))
+		default:
+			t.Errorf("unexpected article fetch: %s", r.URL.Path)
+			w.WriteHeader(500)
+		}
+	}))
+	defer s.Close()
+	c := NewClient(Config{ClientID: "fake", ClientSecret: "fake", Environment: "test"}, cache.New(t.TempDir()))
+	c.LFURL = s.URL
+	c.TokenURL = s.URL + "/token"
+	for _, r := range []reference.Reference{{Kind: "code", Code: "CIV"}, {Kind: "section_index", Code: "CIV", ID: "LEGISCTA000000000001"}} {
+		d, err := c.Get(context.Background(), r)
+		if err != nil || d.ContentKind != "table_of_contents" || len(d.Items) != 1 {
+			t.Fatalf("%+v %v", d, err)
+		}
+	}
+}

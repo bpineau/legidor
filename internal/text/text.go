@@ -160,7 +160,11 @@ func Select(s string, ps []model.Part, label string) (string, error) {
 		ancestors = append(ancestors, parent)
 	}
 	var out []string
-	if len(ps) > 0 && ps[0].Start > 0 {
+	if p.Context != nil {
+		if *p.Context != "" {
+			out = append(out, *p.Context)
+		}
+	} else if len(ps) > 0 && ps[0].Start > 0 {
 		out = append(out, strings.TrimSpace(s[:ps[0].Start]))
 	}
 	for i := len(ancestors) - 1; i >= 0; i-- {
@@ -181,9 +185,12 @@ func Select(s string, ps []model.Part, label string) (string, error) {
 }
 
 var markerRE = regexp.MustCompile(`(?is)<p\b[^>]*class\s*=\s*["'][^"']*numero-de-paragraphe-western[^"']*["'][^>]*>\s*(?:<[^>]+>\s*)*(\d+)\s*(?:</[^>]+>\s*)*</p>`)
+var headingRE = regexp.MustCompile(`(?is)<h([1-6])\b[^>]*>.*?</h[1-6]\s*>`)
+var paragraphHTMLRE = regexp.MustCompile(`(?is)<p\b[^>]*>.*?</p\s*>`)
 
 func BOI(raw string) (string, []model.Part, []string) {
 	raw = tagRE.ReplaceAllStringFunc(raw, func(tag string) string { return strings.ReplaceAll(tag, `""`, `"`) })
+	raw = strings.NewReplacer("\u00a0", " ", "&nbsp;", " ", "&#160;", " ", "&#xA0;", " ").Replace(raw)
 	markers := markerRE.FindAllStringSubmatchIndex(raw, -1)
 	if len(markers) == 0 {
 		s, u := HTML(raw)
@@ -192,7 +199,45 @@ func BOI(raw string) (string, []model.Part, []string) {
 	var b strings.Builder
 	var ps []model.Part
 	var unsupported []string
+	// Paragraph context follows the heading hierarchy. Editorial news remains
+	// in the full text but is not repeated in every selected paragraph.
+	type section struct {
+		level int
+		text  string
+	}
+	var sections []section
+	global := ""
+	updateContext := func(fragment string) {
+		fragment = paragraphHTMLRE.ReplaceAllStringFunc(fragment, func(p string) string {
+			plain, _ := HTML(p)
+			if strings.HasPrefix(plain, "Actualité liée :") {
+				return ""
+			}
+			return p
+		})
+		heads := headingRE.FindAllStringSubmatchIndex(fragment, -1)
+		if len(heads) == 0 {
+			global, _ = HTML(fragment)
+			return
+		}
+		if heads[0][0] > 0 {
+			global, _ = HTML(fragment[:heads[0][0]])
+		}
+		for j, h := range heads {
+			level, _ := strconv.Atoi(fragment[h[2]:h[3]])
+			end := len(fragment)
+			if j+1 < len(heads) {
+				end = heads[j+1][0]
+			}
+			body, _ := HTML(fragment[h[0]:end])
+			for len(sections) > 0 && sections[len(sections)-1].level >= level {
+				sections = sections[:len(sections)-1]
+			}
+			sections = append(sections, section{level, body})
+		}
+	}
 	intro, u := HTML(raw[:markers[0][0]])
+	updateContext(raw[:markers[0][0]])
 	unsupported = append(unsupported, u...)
 	if intro != "" {
 		b.WriteString(intro + "\n")
@@ -203,11 +248,29 @@ func BOI(raw string) (string, []model.Part, []string) {
 			end = markers[i+1][0]
 		}
 		label := raw[m[2]:m[3]]
-		s, u := HTML(raw[m[1]:end])
+		bodyEnd := end
+		if h := headingRE.FindStringIndex(raw[m[1]:end]); h != nil {
+			bodyEnd = m[1] + h[0]
+		}
+		s, u := HTML(raw[m[1]:bodyEnd])
 		unsupported = append(unsupported, u...)
 		start := b.Len()
 		b.WriteString(label + "\n" + s + "\n")
-		ps = append(ps, model.Part{Label: label, Start: start, End: b.Len() - 1, Parent: -1})
+		context := []string{}
+		if global != "" {
+			context = append(context, global)
+		}
+		for _, heading := range sections {
+			context = append(context, heading.text)
+		}
+		joined := strings.Join(context, "\n")
+		ps = append(ps, model.Part{Label: label, Start: start, End: b.Len() - 1, Parent: -1, Context: &joined})
+		if bodyEnd < end {
+			tail, omitted := HTML(raw[bodyEnd:end])
+			b.WriteString(tail + "\n")
+			unsupported = append(unsupported, omitted...)
+			updateContext(raw[bodyEnd:end])
+		}
 	}
 	return strings.TrimSuffix(b.String(), "\n"), ps, unsupported
 }

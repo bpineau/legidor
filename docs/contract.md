@@ -14,6 +14,16 @@ Check emits one JSON object per input line in input order. Each includes separat
 
 Batch documents retain NOTA, modification links and warnings, also shown in text mode. The article interval alone does not establish the effective period of every subdivision. `refs` is assisted extraction: ambiguous numeric lists produce diagnostics on stderr and exit 3, while independently recognized citations are still emitted. Explicit plural article lists and BOFiP paragraph lists are expanded.
 
+Article `state` is source-supplied. `next_versions` contains the closest later valid intervals from the same article's history, not successor article numbers after recodification. A known article without a version at the requested date returns `NO_VERSION_AT_DATE` and available interval information. All-state search candidates are checked against consulted code identity; annex titles in search are not authoritative.
+
+`check` may reinterpret a Roman article suffix as a subdivision only after dated and complete all-state searches establish that the exact article is absent. It records the interpretation in document warnings and preserves the input citation. Existing but unavailable, withdrawn or unconsultable exact articles do not authorize a retry. Code-less `refs` candidates produce stderr diagnostics and exit 3 rather than invented code names.
+
+`omitted_modifications` counts links hidden by output compaction. Documents and JSON version histories keep at most five recent links unless `--full` is requested; NOTA stays available. Text histories are indexes showing one modifier with a count of the remaining links, and expand with `--full`. `complete` is independent of this explicit metadata abridgement. `versions --since` retains intervals whose exclusive end is later than the filter date, including versions starting earlier and open-ended intervals; empty results are `[]`.
+
+Code aliases alone return immediate table-of-contents entries. A section with `--parts` does likewise, without fetching descendants' article content. Article searches can have `total_unit: "source_groups"`: `total` counts upstream groups, `returned_groups` counts received groups and `hits` contains flattened article candidates. These counts are not interchangeable.
+
+BOFiP paragraph selection recognizes nonbreaking-space markers and retains the relevant heading hierarchy and introductory conditions. Following section headings stay with their own paragraphs. Editorial news notices remain in full text but are omitted from selected paragraph context.
+
 Exit codes: 0 complete processing; 1 established verification failure; 2 invalid input; 3 indeterminate or incomplete result. In a mixed batch, 3 takes priority over 2, which takes priority over 1.
 
 Quote normalization only collapses whitespace and maps typographic apostrophes and quotation marks to their ASCII equivalents. Case, digits and negation remain unchanged. Literal `[...]` separates ordered quote fragments.

@@ -18,7 +18,7 @@ func namedLawTitle(title string, r reference.Reference) bool {
 }
 
 func namedLawCandidates(s model.Search, r reference.Reference) model.Search {
-	allSeen := s.Total <= len(s.Hits) && s.Complete
+	allSeen := searchExhausted(s)
 	var hits []model.Hit
 	for _, h := range s.Hits {
 		if namedLawTitle(h.Title, r) {

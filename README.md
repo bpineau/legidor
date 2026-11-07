@@ -148,6 +148,8 @@ Extraction happens locally and proposes detected references, not an exhaustive a
 
 Explicit plural article lists and BOFiP paragraph lists are expanded. Ambiguous numeric lists produce a diagnostic and exit 3 while other citations are still emitted. Resolve them with explicit plural wording or the manifest's `part` field. Batch output retains NOTA, modifier links and warnings in both JSON and text modes.
 
+`refs` also flags article candidates without a code and supports repeated paragraph symbols (`BOI-EXAMPLE § 10, § 20`). Prefer `{"ref":"CGI 1417","part":"IV"}` or `CGI 1417, IV` for subdivisions. After dated and all-state searches establish that an exact letter-suffixed article is absent, `check` can retry a Roman suffix as a subdivision and records a warning. Existing letter-suffixed articles are preserved; failed consultations never authorize this retry.
+
 ## Output and reliability
 
 Text is compact by default; `--json` uses the stable `legidor/1` contract described in [docs/contract.md](docs/contract.md). Source URLs, retrieval time, environment and cache/offline status accompany documents.
@@ -166,6 +168,10 @@ The supported structural subset includes Roman numerals, uppercase letters, numb
 Rectangular HTML tables preserve captions, headers, rows, cells and formulas. Full-width notes after regular rows are labeled `Table-wide:`. Exponents and indices use `^(...)` and `_(...)` notation. Other merged/nested tables, images and unsupported embedded content remain explicit omission markers. A selection can be complete when omissions occur elsewhere: `source_complete`, when present, preserves the original document's status. Omissions in retained introductions still block verification. Completeness describes rendering, not legal applicability or the absence of relevant exceptions in other provisions.
 
 Whole laws return their table of contents. Text output normally stops at 20000 characters with `complete=false`, omitted size and a continuation cursor that checks content identity. `--full` lifts this output cap. Requested subdivisions are never truncated. Collections use official order, include intercalated articles and are bounded at 200 articles.
+
+Modifier metadata is bounded separately: documents and JSON histories retain up to five recent links, with an explicit `omitted_modifications` count; `--full` returns all links. NOTA is preserved. `complete` describes source text, not an exhaustive modifier list. `versions` defaults to a compact text index, and `--since` includes intervals that overlap the requested period. `--grep` also defaults to readable text. Article headers expose `state` and `next_versions` when supplied by the source; the latter are later versions of the same article, not recodification successors.
+
+Browse a code with `legidor get CIBS --date 2027-01-01 --parts`, then follow a returned section URL with `--parts` to list its children without fetching article bodies. Start full-text searches with one or two distinctive words, then narrow to an article range. Search totals can count source groups while a group supplies several article hits; `total_unit` and `returned_groups` make that distinction explicit. A known article unavailable at the requested date returns `NO_VERSION_AT_DATE`; `versions` can still expose its published future history.
 
 ## Cache
 
@@ -204,6 +210,6 @@ make build
 LEGIDOR_LIVE=1 go test ./internal/acceptance -run TestLive -v
 ```
 
-Offline tests use invented responses and local HTTP servers. Live checks are opt-in, use the user's private credentials and never write them into fixtures. See [docs/validation.md](docs/validation.md) for scenarios and known limitations. The [agent skill](skills/legidor/SKILL.md) provides the legal-research workflow, four core recipes and troubleshooting.
+Offline tests use invented responses and local HTTP servers. Live checks are opt-in, use the user's private credentials and never write them into fixtures. See [docs/validation.md](docs/validation.md) for scenarios and known limitations. The [agent skill](skills/legidor/SKILL.md) provides the legal-research workflow, compact command recipes and troubleshooting.
 
 Official API references: [Legifrance FAQ](https://www.legifrance.gouv.fr/contenu/pied-de-page/foire-aux-questions-api), [Judilibre documentation](https://github.com/Cour-de-cassation/judilibre-search), [BOFiP current-doctrine dataset](https://data.economie.gouv.fr/explore/dataset/bofip-vigueur/).

@@ -46,7 +46,7 @@ func TestMalformedManifestKeepsOrder(t *testing.T) {
 	}
 }
 func TestRejectIgnoredFlags(t *testing.T) {
-	for _, args := range [][]string{{"check", "-", "--date", "2020-01-01", "--json"}, {"get", "CGI 32", "--in", "jorf", "--json"}, {"resolve", "CGI 32", "--full", "--json"}, {"get", "CGI 32, 2", "--parts", "--json"}} {
+	for _, args := range [][]string{{"check", "-", "--date", "2020-01-01", "--json"}, {"get", "CGI 32", "--in", "jorf", "--json"}, {"resolve", "CGI 32", "--grep", "example", "--json"}, {"get", "CGI 32, 2", "--parts", "--json"}} {
 		var out, err bytes.Buffer
 		if code := Run(context.Background(), args, strings.NewReader(""), &out, &err); code != 2 {
 			t.Fatalf("%v code %d %s", args, code, &out)

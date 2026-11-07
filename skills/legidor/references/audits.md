@@ -39,3 +39,5 @@ For recodification, read NOTA and the original modifying text; distinguish full 
 | Contractual condition or proof of eligibility | The actual contract or private supporting document | Local evidence reference; do not send it as a public API query |
 
 State which evidence came from legidor and which required another tool. Do not downgrade a legal uncertainty into an API outage, or upgrade an administrative summary into legislation. Retain unresolved points when the necessary source or factual evidence is absent.
+
+Start with material assertions explicitly marked uncertain (for example `[?]`) or sourced only to a secondary reproduction. A targeted primary-source read often resolves these with little output. Do not treat every uncertainty marker as a fiscal error: classify what the source actually resolves and what still depends on missing facts.

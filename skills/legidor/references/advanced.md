@@ -75,8 +75,25 @@ Legifrance case-law text is returned whole without inferred numbered subdivision
 For a large audit, save the full evidence and project just the statuses into the agent context:
 
 ```sh
-legidor check citations.jsonl --json > results.jsonl
+legidor check citations.jsonl --json --full > results.jsonl
 jq '{ref:.input.ref,where:.input.where,identity,version,part,quote,changed_since,applicability,error}' results.jsonl
 ```
 
 Preserve the check command's exit status. Batch documents retain NOTA, modification links, warnings and source completeness. Read those fields for legally material entries; a projected status row does not replace the underlying text or temporal caveats.
+
+## Targeted search, code indexes and recodification
+
+Full-text search combines the supplied terms; long natural-language queries often miss relevant wording. Start with one or two distinctive words in the right corpus. BOFiP search also depends on the exact wording and current dataset. Try a shorter term, then a returned BOI identifier. A zero-result query is not proof of absence.
+
+```sh
+legidor search 'marge' --in code:CIBS --date 2027-01-01 --limit 5
+legidor get 'CIBS' --date 2027-01-01 --parts
+legidor get 'CIBS L231-17..L231-21' --date 2027-01-01
+legidor versions 'CIBS L213-82'
+```
+
+A code alias alone returns its immediate table of contents. Follow a returned section URL with `--parts` to browse its immediate children without fetching article bodies. Read an article or a small range once identified. An index cannot verify a substantive quotation. Legifrance search totals can count source groups while one group supplies several article hits: inspect `total_unit` and the returned hits, not just `total`.
+
+For recodification, first read the old article's `state`, end date, NOTA and modifiers. Use `get REF --links` to inspect explicit cross-references. Read the original modifying text, search the destination code at the announced future date, then consult the relevant range. `next_versions` concerns the same article's history; it is not an old/new article correspondence. No general automatic successor mapping is claimed. Compare scope, exceptions and commencement provisions before calling a transfer legally equivalent.
+
+Numbered laws and decrees filter candidates by the requested nature before choosing a result; rectifications can still require explicit selection. Unusual suffixes such as `CGI 1649 quater-0 B bis` are supported. For article subdivisions in manifests, prefer a separate `part` field or a comma. `check` can retry a Roman subdivision after the exact article is absent from dated and all-state searches, preserving real letter-suffixed articles and recording the reinterpretation in a warning.
