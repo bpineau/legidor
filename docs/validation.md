@@ -37,6 +37,16 @@ A Codex subagent used the skill for five scenarios: a 30-entry citation audit wi
 
 The evaluation prompted improvements for consolidated amendment placeholders, avoiding inferred case-law subdivisions, and compact audit status projection. A separate Claude Code evaluation was attempted but could not run because its account's five-hour usage limit was reached. Cross-provider behavioral acceptance therefore remains unverified for Claude Code; no successful Claude test is claimed.
 
+## Citation-review exercise
+
+Legidor was exercised against the substantive tax changes in Paperasse PRs [126](https://github.com/romainsimon/paperasse/pull/126), [127](https://github.com/romainsimon/paperasse/pull/127) and [129](https://github.com/romainsimon/paperasse/pull/129), at heads `565b27f`, `17f1b83` and `9f2fbe2` respectively. This was a local source-validation exercise, not a posted GitHub approval or a review of the whole repository.
+
+The workflow used `refs --diff`, a manually reviewed 23-entry manifest, `check`, targeted `get` calls, and a dated `diff`. Primary texts supported the material changes: distinct complaint/assessment deadlines, the 2023 Besson repeal and the 2026 private-landlord provision, and separate micro-BIC limits for mixed furnished rentals. Applicability was checked from the amending law as well as the consolidated code; identity confirmation alone was not treated as legal validation. No blocking issue was identified in those changes.
+
+The exercise exposed two defects, now covered by regression tests: extraction missed code-last references such as `art. L. 169 LPF`, and parsing treated the final letters in `1649 bis C` and `199 decies EA` as subdivisions. After correction, extraction on PR 126 found 10 occurrences instead of two (including context lines); this is not an exhaustive-recall metric. Twenty of the 23 initial manifest entries then completed without errors. Follow-up consultations selected the original 2026 finance law from explicit candidates and read an older version of article 199 decies F (marked PERIME by the source); neither was silently substituted for the original request.
+
+BOI-BAREME-000044 contains tables and remained explicitly incomplete. Its thresholds were checked in the official web publication, while article 50-0 and the textual BOFiP paragraphs were available through the CLI. Table rendering, inferred references without a code name, historical BOFiP and tax-form box verification remain coverage limits. This exercise measured functionality, not comparative token savings or agent-provider performance.
+
 ## Explicit limits
 
 Unsupported tables, images and embedded content are not flattened into supposedly complete legal text. Historical BOFiP, notices/forms, PDF-only text, bulk mirrors and legal-applicability inference remain outside this version. A missing historical interval, ambiguous publication (including rectifications), absent subdivision or network failure is explicit. BOFiP is current administrative doctrine; it does not establish historical law.

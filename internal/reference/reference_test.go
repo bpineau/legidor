@@ -20,6 +20,21 @@ func TestParse(t *testing.T) {
 		})
 	}
 }
+
+func TestLetterAfterLatinArticleSuffix(t *testing.T) {
+	for _, tc := range []struct{ raw, number, part string }{
+		{"CGI 1649 bis C", "1649 bis C", ""},
+		{"CGI 199 decies EA", "199 decies EA", ""},
+		{"199 decies F CGI", "199 decies F", ""},
+		{"CGI 1649 bis C, I", "1649 bis C", "I"},
+		{"CGI 163 bis, C", "163 bis", "C"},
+	} {
+		got, err := Parse(tc.raw)
+		if err != nil || got.Number != tc.number || got.Part != tc.part {
+			t.Fatalf("%q: %+v %v", tc.raw, got, err)
+		}
+	}
+}
 func TestConflicts(t *testing.T) {
 	r, _ := Parse("CSS L136-8 IV")
 	if _, e := r.Options("2025-12-31", "III"); e == nil {

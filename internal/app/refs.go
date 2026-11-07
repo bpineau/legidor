@@ -11,10 +11,14 @@ import (
 	"github.com/bpineau/legidor/internal/reference"
 )
 
+const extractionCode = `(?:(?:CGI(?: ann\. (?:II|III|IV|I))?|CSS|CMF|CoMoFi|LPF|CCH|CPCE|CGCT|CSP)\b|C\. (?:civ|trav|assur|conso|com|urb)\.)`
+const extractionArticle = `(?:[Aa]rt(?:icle)?\.?\s+)?` + reference.ArticleNumberPattern
+
 var extractionPatterns = []*regexp.Regexp{
 	regexp.MustCompile(`BOI-[A-Z0-9]+(?:-[A-Z0-9]+)*(?:\s*§\s*\d+)?`),
 	regexp.MustCompile(`(?:LEGIARTI|JORFARTI|JORFTEXT|LEGITEXT|KALIARTI|CETATEXT|JURITEXT|CONSTEXT)\d{12}`),
-	regexp.MustCompile(`(?:CGI(?: ann\. (?:II|III|IV|I))?|CSS|CMF|CoMoFi|LPF|CCH|CPCE|CGCT|CSP|C\. (?:civ|trav|assur|conso|com|urb)\.)\s+(?:art\.\s+)?[LRDA]?\.?\s*\d+(?:-\d+)*(?:\s+[A-Z]{1,3}\b)?(?:\s+\d+°(?:\s+bis)?)?`),
+	regexp.MustCompile(`\b` + extractionCode + `\s+` + extractionArticle + `(?:\s+\d+°(?:\s+bis)?)?`),
+	regexp.MustCompile(`\b` + extractionArticle + `(?:,\s*(?:[IVX]+|[a-z]|\d+°?))*\s+` + extractionCode),
 	regexp.MustCompile(`(?i)(?:loi|décret|ordonnance)\s+(?:n[°o]\s*)?\d{4}-\d+(?:\s+art\.\s+\d+)?`),
 	regexp.MustCompile(`(?:LFI|LFSS|LFR) \d{4}(?: art\. \d+)?`),
 	regexp.MustCompile(`(?:CE|Cass\. (?:com\.|[123]e civ\.)) \d{4}-\d{2}-\d{2} n° [\d.-]+`),

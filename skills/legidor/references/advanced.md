@@ -13,6 +13,8 @@ Parse-only validates grammar, not existence. Search returns identifiers and boun
 
 Aliases include CGI and annexes, LPF, CSS, CMF/CoMoFi, C. civ., CCH, C. assur., C. trav., CPCE, C. conso., C. com., CGCT, CSP and C. urb. A suffix such as the I in CGI 990 I belongs to the article number. Use commas to separate uncertain subdivisions and inspect `resolve --parse-only`.
 
+Mixed suffixes are part of the article number: `CGI 1649 bis C` and `CGI 199 decies EA`. To select a subdivision of the shorter article instead, use a comma (`CGI 1649 bis, C`) or `--part C`. `refs` recognizes explicit code names before or after the number, including `art. R* 196-1, a LPF`; it does not infer the code of a nearby bare citation.
+
 ## Laws and official URLs
 
 ```sh
