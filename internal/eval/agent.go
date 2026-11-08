@@ -19,6 +19,7 @@ type Invocation struct {
 	Agent, Model, Effort, Work, Output, Prompt, BrokerConfig string
 	Timeout                                                  time.Duration
 	Grader                                                   bool
+	JSONSchema                                               string
 }
 
 func quote(s string) string { b, _ := json.Marshal(s); return string(b) }
@@ -51,6 +52,9 @@ func Invoke(ctx context.Context, v Invocation) (Measurement, error) {
 		}
 		b, _ := json.Marshal(mcp)
 		args = []string{"--restricted", "--setting-sources", "", "--disable-slash-commands", "--strict-mcp-config", "--mcp-config", string(b), "--system-prompt", basePrompt, "--tools", toolNames, "--allowedTools", allowed, "--permission-mode", "dontAsk", "--no-session-persistence", "--model", v.Model, "--effort", v.Effort, "--output-format", "stream-json", "--verbose", "-p"}
+		if v.JSONSchema != "" {
+			args = append(args, "--json-schema", v.JSONSchema)
+		}
 	} else if v.Agent == "codex" {
 		args = []string{"exec", "--ignore-user-config", "--ignore-rules", "--ephemeral", "--skip-git-repo-check", "--sandbox", "read-only", "--model", v.Model, "--json"}
 		configs := []string{"features.shell_tool=false", "features.unified_exec=false", "features.apply_patch_freeform=false", "features.skip_host_skill_discovery=true", "features.omit_skill_descriptions=true", "skills.include_instructions=false", "skills.bundled.enabled=false", "features.memories=false", "features.apps=false", "features.in_app_browser=false", "project_doc_max_bytes=0", "suppress_unstable_features_warning=true", "model_reasoning_effort=" + quote(v.Effort), "developer_instructions=" + quote(basePrompt)}

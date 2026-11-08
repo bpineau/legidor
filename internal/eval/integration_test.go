@@ -46,6 +46,19 @@ func TestMain(m *testing.M) {
 			}
 		}
 		encoded, _ := json.Marshal(answer)
+		if schema := os.Getenv("LEGIDOR_EVAL_FAKE_SCHEMA"); schema != "" {
+			found := false
+			for i, arg := range os.Args {
+				if arg == "--json-schema" && i+1 < len(os.Args) && os.Args[i+1] == schema {
+					found = true
+				}
+			}
+			if !found {
+				os.Exit(4)
+			}
+			fmt.Printf("{\"type\":\"result\",\"subtype\":\"success\",\"result\":\"ignored prose\",\"structured_output\":%s,\"usage\":{\"input_tokens\":32,\"output_tokens\":4}}\n", answer)
+			os.Exit(0)
+		}
 		fmt.Printf("{\"type\":\"item.completed\",\"item\":{\"type\":\"agent_message\",\"text\":%s}}\n", encoded)
 		fmt.Println(`{"type":"turn.completed","usage":{"input_tokens":32,"cached_input_tokens":16,"output_tokens":4}}`)
 		os.Exit(0)
@@ -113,6 +126,32 @@ func TestInvocationTimeoutRetainsTrace(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(root, "out", "trace.jsonl")); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestClaudeStructuredGradingTransport(t *testing.T) {
+	fakeCLI(t)
+	exe, _ := os.Executable()
+	bin := t.TempDir()
+	if err := os.Symlink(exe, filepath.Join(bin, "claude")); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("PATH", bin+string(os.PathListSeparator)+os.Getenv("PATH"))
+	expected := map[string]int{"answer-1": 1}
+	schema := gradeSchema(expected)
+	fixture := `{"grades":[{"sample":"answer-1","criteria":[{"index":0,"pass":true,"reason":"correct"}],"evidence":2,"temporal":2,"notes":""}]}`
+	t.Setenv("LEGIDOR_EVAL_FAKE_SCHEMA", schema)
+	t.Setenv("LEGIDOR_EVAL_FAKE_GRADE", fixture)
+	root := t.TempDir()
+	m, err := Invoke(context.Background(), Invocation{Agent: "claude", Model: "test-sonnet", Effort: "medium", Work: filepath.Join(root, "work"), Output: filepath.Join(root, "out"), Prompt: "Grade independent answers", Timeout: 5 * time.Second, Grader: true, JSONSchema: schema})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := ParseGrades(m.Answer, expected); err != nil {
+		t.Fatal(err)
+	}
+	if !m.UsageComplete || m.InputTokens != 32 || m.OutputTokens != 4 {
+		t.Fatalf("lost usage: %+v", m)
 	}
 }
 

@@ -41,14 +41,15 @@ func ParseTrace(agent string, r io.Reader) (Measurement, error) {
 	scan.Buffer(make([]byte, 4096), 16*1024*1024)
 	for scan.Scan() {
 		var e struct {
-			Type    string   `json:"type"`
-			Subtype string   `json:"subtype"`
-			Model   string   `json:"model"`
-			Result  string   `json:"result"`
-			IsError bool     `json:"is_error"`
-			Cost    *float64 `json:"total_cost_usd"`
-			Usage   *usage   `json:"usage"`
-			Item    struct {
+			Type             string          `json:"type"`
+			Subtype          string          `json:"subtype"`
+			Model            string          `json:"model"`
+			Result           string          `json:"result"`
+			StructuredOutput json.RawMessage `json:"structured_output"`
+			IsError          bool            `json:"is_error"`
+			Cost             *float64        `json:"total_cost_usd"`
+			Usage            *usage          `json:"usage"`
+			Item             struct {
 				Type string `json:"type"`
 				Text string `json:"text"`
 			} `json:"item"`
@@ -87,6 +88,9 @@ func ParseTrace(agent string, r io.Reader) (Measurement, error) {
 			if e.Type == "result" {
 				done = true
 				m.Answer = e.Result
+				if len(e.StructuredOutput) != 0 && string(e.StructuredOutput) != "null" {
+					m.Answer = string(e.StructuredOutput)
+				}
 				if e.Usage != nil {
 					m.UsageComplete = true
 					m.InputTokens = e.Usage.Input + e.Usage.Read + e.Usage.Write

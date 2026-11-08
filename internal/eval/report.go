@@ -29,6 +29,27 @@ type GradeSet struct {
 	Grades []Grade `json:"grades"`
 }
 
+// gradeSchema constrains transport shape; ParseGrades still checks identities,
+// complete criterion coverage and duplicate verdicts independently.
+func gradeSchema(expected map[string]int) string {
+	object := func(properties map[string]any, required ...string) map[string]any {
+		return map[string]any{"type": "object", "properties": properties, "required": required, "additionalProperties": false}
+	}
+	variants := []any{}
+	for _, sample := range sortedKeys(expected) {
+		n := expected[sample]
+		indices := make([]int, n)
+		for i := range indices {
+			indices[i] = i
+		}
+		criterion := object(map[string]any{"index": map[string]any{"type": "integer", "enum": indices}, "pass": map[string]any{"type": "boolean"}, "reason": map[string]any{"type": "string", "minLength": 1}}, "index", "pass", "reason")
+		score := map[string]any{"type": "integer", "enum": []int{0, 1, 2}}
+		variants = append(variants, object(map[string]any{"sample": map[string]any{"type": "string", "enum": []string{sample}}, "criteria": map[string]any{"type": "array", "items": criterion, "minItems": n, "maxItems": n}, "evidence": score, "temporal": score, "notes": map[string]any{"type": "string"}}, "sample", "criteria", "evidence", "temporal", "notes"))
+	}
+	b, _ := json.Marshal(object(map[string]any{"grades": map[string]any{"type": "array", "items": map[string]any{"anyOf": variants}, "minItems": len(expected), "maxItems": len(expected)}}, "grades"))
+	return string(b)
+}
+
 func ParseGrades(s string, expected map[string]int) (GradeSet, error) {
 	var g GradeSet
 	// Accept a single fenced JSON object, but never invent missing verdicts.
@@ -144,7 +165,7 @@ Return ONLY JSON: {"grades":[{"sample":"answer-1","criteria":[{"index":0,"pass":
 		}
 		fmt.Fprintf(os.Stderr, "grade case %d (%d answers)\n", c.ID, len(mapping))
 		start := time.Now()
-		m, runErr := Invoke(ctx, Invocation{Agent: agent, Model: model, Effort: "medium", Work: work, Output: attempt, Prompt: prompt, Timeout: timeout, Grader: true})
+		m, runErr := Invoke(ctx, Invocation{Agent: agent, Model: model, Effort: "medium", Work: work, Output: attempt, Prompt: prompt, Timeout: timeout, Grader: true, JSONSchema: gradeSchema(expected)})
 		os.RemoveAll(work)
 		if err = writeJSON(filepath.Join(attempt, "usage.json"), GradeUsage{Measurement: m, DurationMS: time.Since(start).Milliseconds()}); err != nil {
 			return err
