@@ -1,0 +1,1592 @@
+{
+  "skill_name": "legidor",
+  "evals": [
+    {
+      "id": 1,
+      "name": "ir-celibataire-salaire-simple",
+      "prompt": "Je suis célibataire, sans enfant, mon salaire net imposable (case 1AJ) est de 50 000 €. Pas d'autres revenus. Calcule mon impôt sur le revenu pour les revenus 2025.",
+      "expected_output": "La réponse applique l'abattement forfaitaire 10% sur les salaires (RNI = 50 000 × 0.9 = 45 000 €)\nLe barème progressif est appliqué tranche par tranche (0%, 11%, 30%)\nLes tranches 2025 correctes sont utilisées (11 600 / 29 579 / 84 577 / 181 917)\nL'impôt brut pour 45 000 € avec 1 part est calculé (environ 6 604 €)\nLa décote est testée mais non applicable (impôt brut \u003e 1 982 €)\nL'année de référence des données (revenus 2025, déclaration 2026) est mentionnée\nPas de prélèvements sociaux calculés (pas de revenus du capital)\nLe calcul est structuré étape par étape",
+      "assertions": [
+        "La réponse applique l'abattement forfaitaire 10% sur les salaires (RNI = 50 000 × 0.9 = 45 000 €)",
+        "Le barème progressif est appliqué tranche par tranche (0%, 11%, 30%)",
+        "Les tranches 2025 correctes sont utilisées (11 600 / 29 579 / 84 577 / 181 917)",
+        "L'impôt brut pour 45 000 € avec 1 part est calculé (environ 6 604 €)",
+        "La décote est testée mais non applicable (impôt brut \u003e 1 982 €)",
+        "L'année de référence des données (revenus 2025, déclaration 2026) est mentionnée",
+        "Pas de prélèvements sociaux calculés (pas de revenus du capital)",
+        "Le calcul est structuré étape par étape"
+      ],
+      "expectations": [
+        "La réponse applique l'abattement forfaitaire 10% sur les salaires (RNI = 50 000 × 0.9 = 45 000 €)",
+        "Le barème progressif est appliqué tranche par tranche (0%, 11%, 30%)",
+        "Les tranches 2025 correctes sont utilisées (11 600 / 29 579 / 84 577 / 181 917)",
+        "L'impôt brut pour 45 000 € avec 1 part est calculé (environ 6 604 €)",
+        "La décote est testée mais non applicable (impôt brut \u003e 1 982 €)",
+        "L'année de référence des données (revenus 2025, déclaration 2026) est mentionnée",
+        "Pas de prélèvements sociaux calculés (pas de revenus du capital)",
+        "Le calcul est structuré étape par étape"
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Normalize typographic quotes and dashes to ASCII; preserve upstream amounts and scoring intent.",
+          "Derive expected_output from the amended assertions to avoid stale upstream answers.",
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "tax",
+        "reviewed_on": "2026-11-08"
+      }
+    },
+    {
+      "id": 2,
+      "name": "ir-marie-2-enfants-plafonnement-qf",
+      "prompt": "Je suis marié avec 2 enfants à charge. Nos salaires imposables sont 80 000 € et 60 000 €. Pas d'autres revenus. Calcule notre impôt 2025 et explique si les enfants nous aident vraiment.\n\nPrécisions : revenus 2025, imposition commune ; les deux enfants mineurs sont à charge exclusive, sans invalidité ni autre majoration de parts. Les montants sont ceux des cases 1AJ/1BJ avant frais professionnels.",
+      "expected_output": "La réponse identifie 3 parts fiscales (2 base + 0,5 × 2 enfants)\nL'abattement 10% est appliqué sur chaque salaire séparément\nLa réponse calcule l'impôt avec 3 parts ET avec 2 parts pour comparer\nLe plafonnement QF est testé : gain réel vs gain max (2 × 1 807 = 3 614 €)\nLa réponse indique si le plafond QF est actif ou non dans ce cas\nLa réponse explique que les enfants aident mais que le gain est plafonné par demi-part\nLes valeurs 2025 correctes sont utilisées (tranches, plafond QF 1 807 €)",
+      "assertions": [
+        "La réponse identifie 3 parts fiscales (2 base + 0,5 × 2 enfants)",
+        "L'abattement 10% est appliqué sur chaque salaire séparément",
+        "La réponse calcule l'impôt avec 3 parts ET avec 2 parts pour comparer",
+        "Le plafonnement QF est testé : gain réel vs gain max (2 × 1 807 = 3 614 €)",
+        "La réponse indique si le plafond QF est actif ou non dans ce cas",
+        "La réponse explique que les enfants aident mais que le gain est plafonné par demi-part",
+        "Les valeurs 2025 correctes sont utilisées (tranches, plafond QF 1 807 €)"
+      ],
+      "expectations": [
+        "La réponse identifie 3 parts fiscales (2 base + 0,5 × 2 enfants)",
+        "L'abattement 10% est appliqué sur chaque salaire séparément",
+        "La réponse calcule l'impôt avec 3 parts ET avec 2 parts pour comparer",
+        "Le plafonnement QF est testé : gain réel vs gain max (2 × 1 807 = 3 614 €)",
+        "La réponse indique si le plafond QF est actif ou non dans ce cas",
+        "La réponse explique que les enfants aident mais que le gain est plafonné par demi-part",
+        "Les valeurs 2025 correctes sont utilisées (tranches, plafond QF 1 807 €)"
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Clarify missing facts or calculation scope in the prompt's final paragraph before running any comparison.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "tax",
+        "reviewed_on": "2026-11-08"
+      }
+    },
+    {
+      "id": 3,
+      "name": "per-arbitrage-tmi",
+      "prompt": "Je gagne 90 000 € bruts (80 000 € imposables 1AJ). Mon conseiller me propose de verser 8 000 € sur un PER. C'est vraiment utile ou juste un report d'imposition ?\n\nCas synthétique précisé : célibataire, une part, versement et revenus étudiés en 2025. Le salaire imposable 1AJ était également de 80 000 EUR en 2024. Aucun autre revenu, plafond reportable, mutualisation, frais réels, cotisation professionnelle de retraite supplémentaire ou abondement à déduire du plafond. L'avis indique un plafond disponible de 7 200 EUR.",
+      "expected_output": "L'économie immédiate est calculée sur le montant déductible : 7 200 EUR x 30 % = 2 160 EUR, et non 8 000 EUR x 30 %.\nLa réponse explique que c'est un REPORT d'imposition, pas une exonération\nLe TMI futur à la retraite est mentionné comme variable clé\nLe plafond disponible de 7 200 EUR est respecté (référence aux revenus professionnels de l'année précédente), donc 800 EUR du versement ne sont pas déductibles.\nLa réponse nuance : pas toujours avantageux, dépend de la situation",
+      "assertions": [
+        "L'économie immédiate est calculée sur le montant déductible : 7 200 EUR x 30 % = 2 160 EUR, et non 8 000 EUR x 30 %.",
+        "La réponse explique que c'est un REPORT d'imposition, pas une exonération",
+        "Le TMI futur à la retraite est mentionné comme variable clé",
+        "Le plafond disponible de 7 200 EUR est respecté (référence aux revenus professionnels de l'année précédente), donc 800 EUR du versement ne sont pas déductibles.",
+        "La réponse nuance : pas toujours avantageux, dépend de la situation"
+      ],
+      "expectations": [
+        "L'économie immédiate est calculée sur le montant déductible : 7 200 EUR x 30 % = 2 160 EUR, et non 8 000 EUR x 30 %.",
+        "La réponse explique que c'est un REPORT d'imposition, pas une exonération",
+        "Le TMI futur à la retraite est mentionné comme variable clé",
+        "Le plafond disponible de 7 200 EUR est respecté (référence aux revenus professionnels de l'année précédente), donc 800 EUR du versement ne sont pas déductibles.",
+        "La réponse nuance : pas toujours avantageux, dépend de la situation"
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Normalize typographic quotes and dashes to ASCII; preserve upstream amounts and scoring intent.",
+          "Append explicit synthetic facts and dates; see the prompt's final paragraph.",
+          "Clarify the available prior-year ceiling and deductible amount in criteria 0 and 3.",
+          "Remove the employer-matching advice criterion: the question asks about a personal PER contribution, with no matching arrangement to assess.",
+          "Derive expected_output from the amended assertions to avoid stale upstream answers.",
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "tax",
+        "reviewed_on": "2026-11-08"
+      }
+    },
+    {
+      "id": 4,
+      "name": "pfu-vs-bareme-dividendes",
+      "prompt": "Célibataire, salaires 30 000 € net imposable. Je reçois 5 000 € de dividendes. Je choisis PFU ou barème ?\n\nRevenus de 2025, déclaration 2026, une part, dividendes éligibles à l'abattement, prélèvements sociaux prélevés à la source en 2025 par un établissement payeur français. Aucun autre revenu, charge, réduction ou crédit. Comparer les impôts totaux, décote et CSG déductible incluses.",
+      "expected_output": "Les deux scénarios (PFU et barème) sont chiffrés\nSous barème : abattement 40% sur dividendes est appliqué (3 000 € imposables)\nLe TMI du foyer après ajout des dividendes est correctement identifié\nLes PS 17,2% sont calculés dans les deux cas\nLa réponse rappelle que l'option barème est GLOBALE (tous revenus du capital)\nLa recommandation compare les impôts totaux : le barème est plus favorable dans les faits précisés, même si le revenu final franchit légèrement le seuil de la tranche à 30 %.\nLa décote est appliquée au calcul sans dividendes (impôt brut 1 694 €, décote ≈ 130 €)\nLa CSG déductible (340 €) est déduite du revenu global de 2025 (PS prélevés à la source), pas de l'année suivante",
+      "assertions": [
+        "Les deux scénarios (PFU et barème) sont chiffrés",
+        "Sous barème : abattement 40% sur dividendes est appliqué (3 000 € imposables)",
+        "Le TMI du foyer après ajout des dividendes est correctement identifié",
+        "Les PS 17,2% sont calculés dans les deux cas",
+        "La réponse rappelle que l'option barème est GLOBALE (tous revenus du capital)",
+        "La recommandation compare les impôts totaux : le barème est plus favorable dans les faits précisés, même si le revenu final franchit légèrement le seuil de la tranche à 30 %.",
+        "La décote est appliquée au calcul sans dividendes (impôt brut 1 694 €, décote ≈ 130 €)",
+        "La CSG déductible (340 €) est déduite du revenu global de 2025 (PS prélevés à la source), pas de l'année suivante"
+      ],
+      "expectations": [
+        "Les deux scénarios (PFU et barème) sont chiffrés",
+        "Sous barème : abattement 40% sur dividendes est appliqué (3 000 € imposables)",
+        "Le TMI du foyer après ajout des dividendes est correctement identifié",
+        "Les PS 17,2% sont calculés dans les deux cas",
+        "La réponse rappelle que l'option barème est GLOBALE (tous revenus du capital)",
+        "La recommandation compare les impôts totaux : le barème est plus favorable dans les faits précisés, même si le revenu final franchit légèrement le seuil de la tranche à 30 %.",
+        "La décote est appliquée au calcul sans dividendes (impôt brut 1 694 €, décote ≈ 130 €)",
+        "La CSG déductible (340 €) est déduite du revenu global de 2025 (PS prélevés à la source), pas de l'année suivante"
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Normalize typographic quotes and dashes to ASCII; preserve upstream amounts and scoring intent.",
+          "Append explicit synthetic facts and dates; see the prompt's final paragraph.",
+          "Derive expected_output from the amended assertions to avoid stale upstream answers.",
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Replace an ambiguous, tool-specific or out-of-scope criterion; the final assertions are authoritative.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "tax",
+        "reviewed_on": "2026-11-08"
+      }
+    },
+    {
+      "id": 5,
+      "name": "lmnp-micro-vs-reel",
+      "prompt": "J'ai un appartement loué meublé, recettes 18 000 €/an (longue durée). Je suis au micro-BIC avec abattement 50%. Un ami me dit que je devrais passer au réel. Bonne idée ?\n\nPrécisions : revenus 2025, location meublée non professionnelle de longue durée d'un logement ordinaire, hors résidence bénéficiant d'une exception légale. Les charges et la valeur amortissable ne sont pas encore connues : toute simulation du réel doit rester illustrative.",
+      "expected_output": "La réponse retient l'abattement de 50 % et le seuil micro-BIC de longue durée applicable aux revenus 2025 (77 700 EUR).\nLe calcul micro est donné (18 000 × 50% = 9 000 € de base imposable)\nLa réponse explique le principe du réel : amortissements + charges, sans que les amortissements créent un déficit\nLa réponse rappelle que le déficit LMNP n'est PAS imputable sur le revenu global\nLa réponse signale l'incidence possible des amortissements déduits sur la plus-value lors d'une revente, avec les réserves ou exceptions matérielles, sans exiger un inventaire de tous les cas particuliers.\nLa règle de bascule LMP (23 000 € ET recettes \u003e total des autres revenus d'activité du foyer, pensions comprises, pas 50 %) est mentionnée\nLa recommandation est nuancée : ça dépend de la valeur du bien et des charges réelles",
+      "assertions": [
+        "La réponse retient l'abattement de 50 % et le seuil micro-BIC de longue durée applicable aux revenus 2025 (77 700 EUR).",
+        "Le calcul micro est donné (18 000 × 50% = 9 000 € de base imposable)",
+        "La réponse explique le principe du réel : amortissements + charges, sans que les amortissements créent un déficit",
+        "La réponse rappelle que le déficit LMNP n'est PAS imputable sur le revenu global",
+        "La réponse signale l'incidence possible des amortissements déduits sur la plus-value lors d'une revente, avec les réserves ou exceptions matérielles, sans exiger un inventaire de tous les cas particuliers.",
+        "La règle de bascule LMP (23 000 € ET recettes \u003e total des autres revenus d'activité du foyer, pensions comprises, pas 50 %) est mentionnée",
+        "La recommandation est nuancée : ça dépend de la valeur du bien et des charges réelles"
+      ],
+      "expectations": [
+        "La réponse retient l'abattement de 50 % et le seuil micro-BIC de longue durée applicable aux revenus 2025 (77 700 EUR).",
+        "Le calcul micro est donné (18 000 × 50% = 9 000 € de base imposable)",
+        "La réponse explique le principe du réel : amortissements + charges, sans que les amortissements créent un déficit",
+        "La réponse rappelle que le déficit LMNP n'est PAS imputable sur le revenu global",
+        "La réponse signale l'incidence possible des amortissements déduits sur la plus-value lors d'une revente, avec les réserves ou exceptions matérielles, sans exiger un inventaire de tous les cas particuliers.",
+        "La règle de bascule LMP (23 000 € ET recettes \u003e total des autres revenus d'activité du foyer, pensions comprises, pas 50 %) est mentionnée",
+        "La recommandation est nuancée : ça dépend de la valeur du bien et des charges réelles"
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Clarify missing facts or calculation scope in the prompt's final paragraph before running any comparison.",
+          "Replace an ambiguous, tool-specific or out-of-scope criterion; the final assertions are authoritative.",
+          "Replace an ambiguous, tool-specific or out-of-scope criterion; the final assertions are authoritative.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "tax",
+        "reviewed_on": "2026-11-08"
+      }
+    },
+    {
+      "id": 6,
+      "name": "rsu-vesting-quotient",
+      "prompt": "J'ai reçu un vesting RSU de 100 000 € cette année. Mon salaire habituel est 60 000 €. Je dois payer combien d'impôts et puis-je utiliser le quotient pour revenus exceptionnels ?\n\nCas synthétique : acquisition définitive en 2025 d'actions gratuites dans un plan français qualifiant autorisé en 2020. Célibataire, une part, salaire net imposable 1AJ 60 000 EUR. Aucune action vendue en 2025. Expliquer également la fiscalité conditionnelle si ces actions avaient été vendues en 2025 pour leur valeur d'acquisition, sans autre gain. Ne pas présumer que le quotient est automatiquement acquis. Pour une future plus-value de cession, prendre une cession en 2026.",
+      "expected_output": "Aucun impôt sur le gain d'acquisition du plan qualifiant au seul vesting en 2025, sans cession ; la cession déclenche l'imposition.\nLa réponse ne traite PAS le gain d'un plan qualifiant comme un salaire ordinaire sous 300 000 € : barème après abattement de 50 %\nLes prélèvements sociaux de 18,6 % (revenus du patrimoine) sur le gain avant abattement sont mentionnés, sans CSG d'activité ni contribution salariale\nLa réponse ne confond pas le régime du plan qualifiant précisé avec celui d'un salaire ordinaire ou de la fraction de gain excédant 300 000 EUR. Elle n'a pas à développer un plan non qualifiant hors scénario.\nLe mécanisme du quotient (coefficient 4) est expliqué, avec la réserve sur son caractère exceptionnel\nLa réponse chiffre (ou explique comment chiffrer) les 2 scénarios avec/sans quotient\nLa réponse distingue gain d'acquisition (barème après abattement) et future PV de cession (PFU 31,4 %)",
+      "assertions": [
+        "Aucun impôt sur le gain d'acquisition du plan qualifiant au seul vesting en 2025, sans cession ; la cession déclenche l'imposition.",
+        "La réponse ne traite PAS le gain d'un plan qualifiant comme un salaire ordinaire sous 300 000 € : barème après abattement de 50 %",
+        "Les prélèvements sociaux de 18,6 % (revenus du patrimoine) sur le gain avant abattement sont mentionnés, sans CSG d'activité ni contribution salariale",
+        "La réponse ne confond pas le régime du plan qualifiant précisé avec celui d'un salaire ordinaire ou de la fraction de gain excédant 300 000 EUR. Elle n'a pas à développer un plan non qualifiant hors scénario.",
+        "Le mécanisme du quotient (coefficient 4) est expliqué, avec la réserve sur son caractère exceptionnel",
+        "La réponse chiffre (ou explique comment chiffrer) les 2 scénarios avec/sans quotient",
+        "La réponse distingue gain d'acquisition (barème après abattement) et future PV de cession (PFU 31,4 %)"
+      ],
+      "expectations": [
+        "Aucun impôt sur le gain d'acquisition du plan qualifiant au seul vesting en 2025, sans cession ; la cession déclenche l'imposition.",
+        "La réponse ne traite PAS le gain d'un plan qualifiant comme un salaire ordinaire sous 300 000 € : barème après abattement de 50 %",
+        "Les prélèvements sociaux de 18,6 % (revenus du patrimoine) sur le gain avant abattement sont mentionnés, sans CSG d'activité ni contribution salariale",
+        "La réponse ne confond pas le régime du plan qualifiant précisé avec celui d'un salaire ordinaire ou de la fraction de gain excédant 300 000 EUR. Elle n'a pas à développer un plan non qualifiant hors scénario.",
+        "Le mécanisme du quotient (coefficient 4) est expliqué, avec la réserve sur son caractère exceptionnel",
+        "La réponse chiffre (ou explique comment chiffrer) les 2 scénarios avec/sans quotient",
+        "La réponse distingue gain d'acquisition (barème après abattement) et future PV de cession (PFU 31,4 %)"
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Normalize typographic quotes and dashes to ASCII; preserve upstream amounts and scoring intent.",
+          "Append explicit synthetic facts and dates; see the prompt's final paragraph.",
+          "Criteria 0 and 3 follow the explicitly qualified plan; do not require an irrelevant non-qualified-plan digression.",
+          "Derive expected_output from the amended assertions to avoid stale upstream answers.",
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "tax",
+        "reviewed_on": "2026-11-08"
+      }
+    },
+    {
+      "id": 7,
+      "name": "crypto-pamc-exoneration",
+      "prompt": "J'ai vendu 250 € de Bitcoin cette année avec une PV de 40 €. Je dois déclarer ?\n\nPrécisions : gestion privée non professionnelle, cessions imposables au sens du régime des actifs numériques de 250 EUR au total pour le foyer pendant toute l'année 2025 ; aucune autre cession.",
+      "expected_output": "La réponse identifie le seuil d'exonération de 305 € de cessions annuelles\nLa réponse confirme l'exonération totale dans ce cas (250 € ≤ 305 €)\nLa réponse précise que le seuil s'applique sur le montant brut des cessions, pas sur la PV\nLa réponse avertit que dépasser 305 € déclencherait l'imposition sur TOUT (pas seulement l'excédent)",
+      "assertions": [
+        "La réponse identifie le seuil d'exonération de 305 € de cessions annuelles",
+        "La réponse confirme l'exonération totale dans ce cas (250 € ≤ 305 €)",
+        "La réponse précise que le seuil s'applique sur le montant brut des cessions, pas sur la PV",
+        "La réponse avertit que dépasser 305 € déclencherait l'imposition sur TOUT (pas seulement l'excédent)"
+      ],
+      "expectations": [
+        "La réponse identifie le seuil d'exonération de 305 € de cessions annuelles",
+        "La réponse confirme l'exonération totale dans ce cas (250 € ≤ 305 €)",
+        "La réponse précise que le seuil s'applique sur le montant brut des cessions, pas sur la PV",
+        "La réponse avertit que dépasser 305 € déclencherait l'imposition sur TOUT (pas seulement l'excédent)"
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Clarify missing facts or calculation scope in the prompt's final paragraph before running any comparison.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "tax",
+        "reviewed_on": "2026-11-08"
+      }
+    },
+    {
+      "id": 8,
+      "name": "ifi-assujettissement-decote",
+      "prompt": "Mon patrimoine immobilier net au 1er janvier : résidence principale 900 000 € + appartement locatif 500 000 €, emprunt restant 200 000 € sur le locatif. Dois-je payer l'IFI ?\n\nPrécisions : situation au 1er janvier 2026 ; les 900 000 et 500 000 EUR sont les valeurs vénales AVANT abattement et déduction de dette. Détention directe, dette locative déductible de 200 000 EUR, aucun autre actif immobilier taxable du foyer.",
+      "expected_output": "L'abattement 30% sur la résidence principale est appliqué (630 000 € pris en compte)\nL'emprunt est déduit de la valeur du bien locatif\nLe total patrimoine net taxable est calculé (930 000 €)\nLa réponse conclut que le seuil d'assujettissement (1 300 000 €) n'est pas atteint\nPas d'IFI dû, pas de déclaration 2042-IFI\nLe seuil d'assujettissement IFI 1 300 000 € est correctement cité",
+      "assertions": [
+        "L'abattement 30% sur la résidence principale est appliqué (630 000 € pris en compte)",
+        "L'emprunt est déduit de la valeur du bien locatif",
+        "Le total patrimoine net taxable est calculé (930 000 €)",
+        "La réponse conclut que le seuil d'assujettissement (1 300 000 €) n'est pas atteint",
+        "Pas d'IFI dû, pas de déclaration 2042-IFI",
+        "Le seuil d'assujettissement IFI 1 300 000 € est correctement cité"
+      ],
+      "expectations": [
+        "L'abattement 30% sur la résidence principale est appliqué (630 000 € pris en compte)",
+        "L'emprunt est déduit de la valeur du bien locatif",
+        "Le total patrimoine net taxable est calculé (930 000 €)",
+        "La réponse conclut que le seuil d'assujettissement (1 300 000 €) n'est pas atteint",
+        "Pas d'IFI dû, pas de déclaration 2042-IFI",
+        "Le seuil d'assujettissement IFI 1 300 000 € est correctement cité"
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Clarify missing facts or calculation scope in the prompt's final paragraph before running any comparison.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "tax",
+        "reviewed_on": "2026-11-08"
+      }
+    },
+    {
+      "id": 9,
+      "name": "redirection-succession-vers-notaire",
+      "prompt": "Mon père est décédé. Comment calcule-t-on les droits de succession pour ses héritiers ?",
+      "expected_output": "La réponse explique que les droits dépendent notamment du lien de parenté, de l'actif net transmis, des donations antérieures et des abattements applicables.\nLa réponse propose les informations nécessaires ou l'intervention d'un notaire ; elle n'a pas à nommer un skill particulier.\nLa réponse ne fabrique pas un montant personnalisé de droits sans données ; une explication générale ou un exemple explicitement fictif sont acceptables.",
+      "assertions": [
+        "La réponse explique que les droits dépendent notamment du lien de parenté, de l'actif net transmis, des donations antérieures et des abattements applicables.",
+        "La réponse propose les informations nécessaires ou l'intervention d'un notaire ; elle n'a pas à nommer un skill particulier.",
+        "La réponse ne fabrique pas un montant personnalisé de droits sans données ; une explication générale ou un exemple explicitement fictif sont acceptables."
+      ],
+      "expectations": [
+        "La réponse explique que les droits dépendent notamment du lien de parenté, de l'actif net transmis, des donations antérieures et des abattements applicables.",
+        "La réponse propose les informations nécessaires ou l'intervention d'un notaire ; elle n'a pas à nommer un skill particulier.",
+        "La réponse ne fabrique pas un montant personnalisé de droits sans données ; une explication générale ou un exemple explicitement fictif sont acceptables."
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Replace Paperasse-specific routing obligations with neutral criteria for framing an under-specified inheritance question.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "orientation",
+        "reviewed_on": "2026-11-08"
+      }
+    },
+    {
+      "id": 10,
+      "name": "redirection-sasu-vers-comptable",
+      "prompt": "Je veux comparer rémunération en salaire vs dividendes dans ma SASU. Peux-tu m'aider ?\n\nL'objectif est de cadrer une comparaison pour les revenus 2025 ; les comptes, le montant à distribuer et la situation fiscale personnelle ne sont pas encore fournis.",
+      "expected_output": "La réponse distingue le coût et la fiscalité de la société des cotisations et de l'impôt personnel du dirigeant.\nLa réponse indique les données nécessaires pour comparer et peut orienter vers un expert-comptable, sans devoir invoquer un autre skill.\nLa réponse ne promet pas un arbitrage optimal chiffré sans les faits nécessaires ; un cadre conditionnel est acceptable.",
+      "assertions": [
+        "La réponse distingue le coût et la fiscalité de la société des cotisations et de l'impôt personnel du dirigeant.",
+        "La réponse indique les données nécessaires pour comparer et peut orienter vers un expert-comptable, sans devoir invoquer un autre skill.",
+        "La réponse ne promet pas un arbitrage optimal chiffré sans les faits nécessaires ; un cadre conditionnel est acceptable."
+      ],
+      "expectations": [
+        "La réponse distingue le coût et la fiscalité de la société des cotisations et de l'impôt personnel du dirigeant.",
+        "La réponse indique les données nécessaires pour comparer et peut orienter vers un expert-comptable, sans devoir invoquer un autre skill.",
+        "La réponse ne promet pas un arbitrage optimal chiffré sans les faits nécessaires ; un cadre conditionnel est acceptable."
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Clarify missing facts or calculation scope in the prompt's final paragraph before running any comparison.",
+          "Replace skill-specific routing demands with neutral scoping and missing-fact criteria.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "orientation",
+        "reviewed_on": "2026-11-08"
+      }
+    },
+    {
+      "id": 11,
+      "name": "cehr-couple-haut-revenu",
+      "prompt": "Couple marié, RFR 2025 de 780 000 €. Quelle est la CEHR due en plus de notre IR ?\n\nHors mécanisme de lissage : les revenus des deux années précédentes ne permettent pas son application. La question porte uniquement sur la CEHR.",
+      "expected_output": "La réponse utilise le RFR (pas le RNI) comme base de la CEHR\nLes seuils couple sont corrects (500 000 € / 1 000 000 €)\nLe calcul tranche par tranche est correct : (780 000 − 500 000) × 3 % = 8 400 €\nLa réponse précise que la CEHR s'AJOUTE à l'IR net (ne se déduit pas)",
+      "assertions": [
+        "La réponse utilise le RFR (pas le RNI) comme base de la CEHR",
+        "Les seuils couple sont corrects (500 000 € / 1 000 000 €)",
+        "Le calcul tranche par tranche est correct : (780 000 − 500 000) × 3 % = 8 400 €",
+        "La réponse précise que la CEHR s'AJOUTE à l'IR net (ne se déduit pas)"
+      ],
+      "expectations": [
+        "La réponse utilise le RFR (pas le RNI) comme base de la CEHR",
+        "Les seuils couple sont corrects (500 000 € / 1 000 000 €)",
+        "Le calcul tranche par tranche est correct : (780 000 − 500 000) × 3 % = 8 400 €",
+        "La réponse précise que la CEHR s'AJOUTE à l'IR net (ne se déduit pas)"
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Normalize typographic quotes and dashes to ASCII; preserve upstream amounts and scoring intent.",
+          "Append explicit synthetic facts and dates; see the prompt's final paragraph.",
+          "Remove the optional smoothing discussion criterion: the scenario explicitly excludes smoothing.",
+          "Derive expected_output from the amended assertions to avoid stale upstream answers.",
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "tax",
+        "reviewed_on": "2026-11-08"
+      }
+    },
+    {
+      "id": 12,
+      "name": "deficit-foncier-imputation",
+      "prompt": "Foncier nu au réel : loyers bruts 15 000 €, charges courantes 4 000 €, travaux déductibles 18 000 €, intérêts d'emprunt 6 000 €. Quel est mon déficit foncier et combien s'impute sur mon revenu global ?\n\nRevenus de 2025. Travaux déductibles ordinaires, hors dispositif temporaire de rénovation énergétique et hors dispositif spécial. Aucun déficit antérieur.",
+      "expected_output": "Le déficit foncier est calculé correctement (−13 000 €)\nLa réponse impute les loyers d'abord sur les intérêts d'emprunt et conclut qu'aucune part du déficit ne provient des intérêts\nLa limite de 10 700 € d'imputation sur revenu global est citée\nLa réponse impute 10 700 € sur le revenu global et reporte 2 300 € sur les revenus fonciers\nLe report 10 ans sur revenus fonciers uniquement est mentionné pour la part non imputée\nLa condition de location nue jusqu'au 31 décembre de la troisième année suivant l'imputation est rappelée",
+      "assertions": [
+        "Le déficit foncier est calculé correctement (−13 000 €)",
+        "La réponse impute les loyers d'abord sur les intérêts d'emprunt et conclut qu'aucune part du déficit ne provient des intérêts",
+        "La limite de 10 700 € d'imputation sur revenu global est citée",
+        "La réponse impute 10 700 € sur le revenu global et reporte 2 300 € sur les revenus fonciers",
+        "Le report 10 ans sur revenus fonciers uniquement est mentionné pour la part non imputée",
+        "La condition de location nue jusqu'au 31 décembre de la troisième année suivant l'imputation est rappelée"
+      ],
+      "expectations": [
+        "Le déficit foncier est calculé correctement (−13 000 €)",
+        "La réponse impute les loyers d'abord sur les intérêts d'emprunt et conclut qu'aucune part du déficit ne provient des intérêts",
+        "La limite de 10 700 € d'imputation sur revenu global est citée",
+        "La réponse impute 10 700 € sur le revenu global et reporte 2 300 € sur les revenus fonciers",
+        "Le report 10 ans sur revenus fonciers uniquement est mentionné pour la part non imputée",
+        "La condition de location nue jusqu'au 31 décembre de la troisième année suivant l'imputation est rappelée"
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Normalize typographic quotes and dashes to ASCII; preserve upstream amounts and scoring intent.",
+          "Append explicit synthetic facts and dates; see the prompt's final paragraph.",
+          "Derive expected_output from the amended assertions to avoid stale upstream answers.",
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "tax",
+        "reviewed_on": "2026-11-08"
+      }
+    },
+    {
+      "id": 13,
+      "name": "pea-retrait-avant-5-ans",
+      "prompt": "J'ai ouvert mon PEA il y a 3 ans, valorisation 40 000 € pour 30 000 € de versements. Si je retire maintenant (en 2026), quelle fiscalité ?\n\nRetrait total en 2026. Pour ce calcul synthétique, les 10 000 EUR de gains ont tous été acquis en 2026. Aucune exception liée à la situation personnelle n'est applicable ; les présenter seulement comme réserves générales.",
+      "expected_output": "La réponse identifie le retrait avant 5 ans comme entraînant clôture du PEA, hors exceptions\nL'imposition à 12,8 % + 18,6 % (31,4 %) sur les gains (10 000 €) est calculée pour un retrait en 2026\nLa réponse mentionne au moins l'exception création ou reprise d'entreprise (exonération d'IR sans clôture)\nLa réponse recommande d'attendre 5 ans pour économiser 12,8 % d'IR\nLa réponse précise qu'après 5 ans les PS (18,6 % depuis 2026) restent dus (pas d'exonération totale)",
+      "assertions": [
+        "La réponse identifie le retrait avant 5 ans comme entraînant clôture du PEA, hors exceptions",
+        "L'imposition à 12,8 % + 18,6 % (31,4 %) sur les gains (10 000 €) est calculée pour un retrait en 2026",
+        "La réponse mentionne au moins l'exception création ou reprise d'entreprise (exonération d'IR sans clôture)",
+        "La réponse recommande d'attendre 5 ans pour économiser 12,8 % d'IR",
+        "La réponse précise qu'après 5 ans les PS (18,6 % depuis 2026) restent dus (pas d'exonération totale)"
+      ],
+      "expectations": [
+        "La réponse identifie le retrait avant 5 ans comme entraînant clôture du PEA, hors exceptions",
+        "L'imposition à 12,8 % + 18,6 % (31,4 %) sur les gains (10 000 €) est calculée pour un retrait en 2026",
+        "La réponse mentionne au moins l'exception création ou reprise d'entreprise (exonération d'IR sans clôture)",
+        "La réponse recommande d'attendre 5 ans pour économiser 12,8 % d'IR",
+        "La réponse précise qu'après 5 ans les PS (18,6 % depuis 2026) restent dus (pas d'exonération totale)"
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Normalize typographic quotes and dashes to ASCII; preserve upstream amounts and scoring intent.",
+          "Append explicit synthetic facts and dates; see the prompt's final paragraph.",
+          "Remove the pre-2026 gains caveat criterion: all gains in this synthetic scenario were earned in 2026.",
+          "Derive expected_output from the amended assertions to avoid stale upstream answers.",
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "tax",
+        "reviewed_on": "2026-11-08"
+      }
+    },
+    {
+      "id": 14,
+      "name": "assurance-vie-rachat-apres-8-ans-couple",
+      "prompt": "Couple pacsé, rachat partiel sur une assurance-vie ouverte il y a 10 ans : 25 000 € dont 8 000 € de gains. Versements totaux 100 000 €. Quelle fiscalité ?\n\nRachat en 2026. Tous les versements ont été effectués en 2016, contrat en unités de compte, aucun prélèvement social déjà payé sur les gains, aucun autre rachat cette année, abattement annuel intégralement disponible.",
+      "expected_output": "La réponse applique l'abattement 9 200 € couple (\u003e 8 ans)\nLa réponse respecte la date des primes (2016) et n'impose pas le seuil de 150 000 EUR des primes postérieures au 27 septembre 2017 comme condition de l'abattement annuel.\nLes gains imposables à l'IR ressortent à 0 € grâce à l'abattement\nLes PS 17,2 % sont calculés SUR LES GAINS (sans abattement applicable aux PS)\nLa réponse distingue clairement IR et PS (piège classique)",
+      "assertions": [
+        "La réponse applique l'abattement 9 200 € couple (\u003e 8 ans)",
+        "La réponse respecte la date des primes (2016) et n'impose pas le seuil de 150 000 EUR des primes postérieures au 27 septembre 2017 comme condition de l'abattement annuel.",
+        "Les gains imposables à l'IR ressortent à 0 € grâce à l'abattement",
+        "Les PS 17,2 % sont calculés SUR LES GAINS (sans abattement applicable aux PS)",
+        "La réponse distingue clairement IR et PS (piège classique)"
+      ],
+      "expectations": [
+        "La réponse applique l'abattement 9 200 € couple (\u003e 8 ans)",
+        "La réponse respecte la date des primes (2016) et n'impose pas le seuil de 150 000 EUR des primes postérieures au 27 septembre 2017 comme condition de l'abattement annuel.",
+        "Les gains imposables à l'IR ressortent à 0 € grâce à l'abattement",
+        "Les PS 17,2 % sont calculés SUR LES GAINS (sans abattement applicable aux PS)",
+        "La réponse distingue clairement IR et PS (piège classique)"
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Normalize typographic quotes and dashes to ASCII; preserve upstream amounts and scoring intent.",
+          "Append explicit synthetic facts and dates; see the prompt's final paragraph.",
+          "Derive expected_output from the amended assertions to avoid stale upstream answers.",
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Replace an ambiguous, tool-specific or out-of-scope criterion; the final assertions are authoritative.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "tax",
+        "reviewed_on": "2026-11-08"
+      }
+    },
+    {
+      "id": 15,
+      "name": "bspce-anciennete-penalite",
+      "prompt": "J'ai exercé des BSPCE et cédé les actions avec 50 000 € de plus-value. Je suis dans la société depuis 2 ans seulement. Quelle fiscalité ?\n\nPrécisions : BSPCE valablement attribués en 2023, titres souscrits par exercice en décembre 2024 puis vendus en 2025, après deux ans d'activité dans la société. Le gain net de 50 000 EUR porte sur ces titres, sans moins-value imputable. Comparer aussi, à titre contrefactuel et à gain constant, une cession après trois ans ; une vente déjà réalisée ne peut pas être annulée pour ce motif.",
+      "expected_output": "La réponse identifie l'ancienneté \u003c 3 ans comme déclenchant la pénalité\nLe taux de 48,6 % (30 % IR + 18,6 % PS) est appliqué, sans prélèvement de 20 %\nLa réponse chiffre l'écart avec le régime à 31,4 % (12,8 % + 18,6 %)\nLa réponse explique, comme comparaison hypothétique, l'effet d'une durée d'activité d'au moins trois ans ; elle ne suggère pas de défaire une vente déjà réalisée.\nLa réponse rattache le traitement au régime BSPCE qualifiant et aux dates d'attribution, d'exercice et de cession précisées, sans appliquer rétroactivement la séparation des gains des titres souscrits depuis 2025.",
+      "assertions": [
+        "La réponse identifie l'ancienneté \u003c 3 ans comme déclenchant la pénalité",
+        "Le taux de 48,6 % (30 % IR + 18,6 % PS) est appliqué, sans prélèvement de 20 %",
+        "La réponse chiffre l'écart avec le régime à 31,4 % (12,8 % + 18,6 %)",
+        "La réponse explique, comme comparaison hypothétique, l'effet d'une durée d'activité d'au moins trois ans ; elle ne suggère pas de défaire une vente déjà réalisée.",
+        "La réponse rattache le traitement au régime BSPCE qualifiant et aux dates d'attribution, d'exercice et de cession précisées, sans appliquer rétroactivement la séparation des gains des titres souscrits depuis 2025."
+      ],
+      "expectations": [
+        "La réponse identifie l'ancienneté \u003c 3 ans comme déclenchant la pénalité",
+        "Le taux de 48,6 % (30 % IR + 18,6 % PS) est appliqué, sans prélèvement de 20 %",
+        "La réponse chiffre l'écart avec le régime à 31,4 % (12,8 % + 18,6 %)",
+        "La réponse explique, comme comparaison hypothétique, l'effet d'une durée d'activité d'au moins trois ans ; elle ne suggère pas de défaire une vente déjà réalisée.",
+        "La réponse rattache le traitement au régime BSPCE qualifiant et aux dates d'attribution, d'exercice et de cession précisées, sans appliquer rétroactivement la séparation des gains des titres souscrits depuis 2025."
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Clarify missing facts or calculation scope in the prompt's final paragraph before running any comparison.",
+          "Replace an ambiguous, tool-specific or out-of-scope criterion; the final assertions are authoritative.",
+          "Replace an ambiguous, tool-specific or out-of-scope criterion; the final assertions are authoritative.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "tax",
+        "reviewed_on": "2026-11-08"
+      }
+    },
+    {
+      "id": 16,
+      "name": "per-mutualisation-couple",
+      "prompt": "Mon conjoint ne travaille pas (parent au foyer), moi je gagne 70 000 € (salaire net imposable). Mon plafond PER est déjà bien utilisé. Peut-il verser sur son PER en 2025 et déduire quand même ?\n\nPrécisions : couple marié imposé ensemble en 2025 ; aucun plafond reportable ni cotisation professionnelle à retrancher pour le conjoint sans emploi. Le montant des versements déjà effectués par l'autre conjoint n'est pas fourni : ne pas inventer une économie d'impôt exacte sans l'expliciter.",
+      "expected_output": "La réponse identifie le plafond propre du conjoint sans revenu (plancher), déductible sans mutualisation\nLe plafond plancher 4 637 € (versements 2025, PASS 2024) est cité, et non 4 710 €\nLa réponse situe correctement la mutualisation (case 6QR) : utile seulement au-delà du plafond propre du conjoint\nLa réponse explique que l'économie dépend du barème effectif du foyer après les déductions déjà utilisées ; un calcul chiffré doit expliciter ses hypothèses et tenir compte d'un éventuel franchissement de tranche.\nLa réponse recommande de vérifier l'avis d'imposition N-1 pour le plafond officiel DGFIP",
+      "assertions": [
+        "La réponse identifie le plafond propre du conjoint sans revenu (plancher), déductible sans mutualisation",
+        "Le plafond plancher 4 637 € (versements 2025, PASS 2024) est cité, et non 4 710 €",
+        "La réponse situe correctement la mutualisation (case 6QR) : utile seulement au-delà du plafond propre du conjoint",
+        "La réponse explique que l'économie dépend du barème effectif du foyer après les déductions déjà utilisées ; un calcul chiffré doit expliciter ses hypothèses et tenir compte d'un éventuel franchissement de tranche.",
+        "La réponse recommande de vérifier l'avis d'imposition N-1 pour le plafond officiel DGFIP"
+      ],
+      "expectations": [
+        "La réponse identifie le plafond propre du conjoint sans revenu (plancher), déductible sans mutualisation",
+        "Le plafond plancher 4 637 € (versements 2025, PASS 2024) est cité, et non 4 710 €",
+        "La réponse situe correctement la mutualisation (case 6QR) : utile seulement au-delà du plafond propre du conjoint",
+        "La réponse explique que l'économie dépend du barème effectif du foyer après les déductions déjà utilisées ; un calcul chiffré doit expliciter ses hypothèses et tenir compte d'un éventuel franchissement de tranche.",
+        "La réponse recommande de vérifier l'avis d'imposition N-1 pour le plafond officiel DGFIP"
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Clarify missing facts or calculation scope in the prompt's final paragraph before running any comparison.",
+          "Replace an ambiguous, tool-specific or out-of-scope criterion; the final assertions are authoritative.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "tax",
+        "reviewed_on": "2026-11-08"
+      }
+    },
+    {
+      "id": 17,
+      "name": "workflow-declaration-complete",
+      "prompt": "On est en mai 2026, je dois faire ma déclaration des revenus 2025. Quelles étapes dois-je suivre pour ne rien oublier ?",
+      "expected_output": "La réponse propose un workflow structuré étape par étape\nLes principales cases 2042 sont citées (1AJ, 2DC, 3VG, 4BE, 6NS)\nLe formulaire 2086 crypto est rappelé (seuil 305 €)\nLe formulaire 2042-IFI est mentionné pour les patrimoines \u003e 1,3 M€\nL'option PFU/barème est mentionnée comme choix à faire\nLes dates limites selon département sont évoquées\nLa vérification de la situation familiale avant tout est mise en avant",
+      "assertions": [
+        "La réponse propose un workflow structuré étape par étape",
+        "Les principales cases 2042 sont citées (1AJ, 2DC, 3VG, 4BE, 6NS)",
+        "Le formulaire 2086 crypto est rappelé (seuil 305 €)",
+        "Le formulaire 2042-IFI est mentionné pour les patrimoines \u003e 1,3 M€",
+        "L'option PFU/barème est mentionnée comme choix à faire",
+        "Les dates limites selon département sont évoquées",
+        "La vérification de la situation familiale avant tout est mise en avant"
+      ],
+      "expectations": [
+        "La réponse propose un workflow structuré étape par étape",
+        "Les principales cases 2042 sont citées (1AJ, 2DC, 3VG, 4BE, 6NS)",
+        "Le formulaire 2086 crypto est rappelé (seuil 305 €)",
+        "Le formulaire 2042-IFI est mentionné pour les patrimoines \u003e 1,3 M€",
+        "L'option PFU/barème est mentionnée comme choix à faire",
+        "Les dates limites selon département sont évoquées",
+        "La vérification de la situation familiale avant tout est mise en avant"
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "tax",
+        "reviewed_on": "2026-11-08"
+      }
+    },
+    {
+      "id": 18,
+      "name": "pas-modulation-baisse-revenus",
+      "prompt": "J'ai perdu mon emploi en mars. Mon taux PAS est calculé sur mes revenus de l'an dernier, trop élevé. Que puis-je faire ?\n\nPrécisions : perte d'emploi en mars 2026, situation familiale inchangée. Prendre en compte tous les revenus annuels estimés, y compris les allocations éventuelles.",
+      "expected_output": "La réponse propose la modulation à la baisse via l'espace impots.gouv.fr\nLe seuil de 5 % d'écart estimé est cité\nLa réponse avertit d'une possible majoration en cas de modulation excessivement faible injustifiée, en distinguant le seuil de modulation et les conditions de sanction ; elle ne présente pas toute erreur d'estimation comme automatiquement sanctionnée.\nLa réponse évoque la possibilité d'un taux 0 % si revenus nuls anticipés",
+      "assertions": [
+        "La réponse propose la modulation à la baisse via l'espace impots.gouv.fr",
+        "Le seuil de 5 % d'écart estimé est cité",
+        "La réponse avertit d'une possible majoration en cas de modulation excessivement faible injustifiée, en distinguant le seuil de modulation et les conditions de sanction ; elle ne présente pas toute erreur d'estimation comme automatiquement sanctionnée.",
+        "La réponse évoque la possibilité d'un taux 0 % si revenus nuls anticipés"
+      ],
+      "expectations": [
+        "La réponse propose la modulation à la baisse via l'espace impots.gouv.fr",
+        "Le seuil de 5 % d'écart estimé est cité",
+        "La réponse avertit d'une possible majoration en cas de modulation excessivement faible injustifiée, en distinguant le seuil de modulation et les conditions de sanction ; elle ne présente pas toute erreur d'estimation comme automatiquement sanctionnée.",
+        "La réponse évoque la possibilité d'un taux 0 % si revenus nuls anticipés"
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Clarify missing facts or calculation scope in the prompt's final paragraph before running any comparison.",
+          "Replace an ambiguous, tool-specific or out-of-scope criterion; the final assertions are authoritative.",
+          "Do not require an unrelated family-change reporting deadline when the family situation is unchanged.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "tax",
+        "reviewed_on": "2026-11-08"
+      }
+    },
+    {
+      "id": 19,
+      "name": "plafond-niches-global",
+      "prompt": "En 2025 j'ai : 4 000 € de dons (réduction 66 %), 6 000 € d'emploi à domicile (crédit 50 %), 3 000 € de versements FCPI (réduction 25 %), 5 000 € de réduction Pinel. Ai-je un problème avec le plafond global ?\n\nPrécisions : les conditions des avantages annoncés sont remplies. Pour le FCPI, la base éligible après frais et quote-part est bien 3 000 EUR et le taux applicable donné dans le cas est 25 %. Aucun autre avantage fiscal ni report.",
+      "expected_output": "La réponse distingue niches DANS plafond (Pinel, FCPI, emploi à domicile) et HORS plafond (dons)\nLes montants des réductions/crédits sont correctement calculés\nLa réponse additionne uniquement les niches dans le plafond pour vérifier les 10 000 €\nLa réponse conclut correctement sur le respect du plafond (8 750 € \u003c 10 000 €)\nLa réponse distingue la marge disponible sous le plafond (1 250 EUR) d'un éventuel excédent ; elle ne généralise pas l'absence de report à tous les dispositifs fiscaux.",
+      "assertions": [
+        "La réponse distingue niches DANS plafond (Pinel, FCPI, emploi à domicile) et HORS plafond (dons)",
+        "Les montants des réductions/crédits sont correctement calculés",
+        "La réponse additionne uniquement les niches dans le plafond pour vérifier les 10 000 €",
+        "La réponse conclut correctement sur le respect du plafond (8 750 € \u003c 10 000 €)",
+        "La réponse distingue la marge disponible sous le plafond (1 250 EUR) d'un éventuel excédent ; elle ne généralise pas l'absence de report à tous les dispositifs fiscaux."
+      ],
+      "expectations": [
+        "La réponse distingue niches DANS plafond (Pinel, FCPI, emploi à domicile) et HORS plafond (dons)",
+        "Les montants des réductions/crédits sont correctement calculés",
+        "La réponse additionne uniquement les niches dans le plafond pour vérifier les 10 000 €",
+        "La réponse conclut correctement sur le respect du plafond (8 750 € \u003c 10 000 €)",
+        "La réponse distingue la marge disponible sous le plafond (1 250 EUR) d'un éventuel excédent ; elle ne généralise pas l'absence de report à tous les dispositifs fiscaux."
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Clarify missing facts or calculation scope in the prompt's final paragraph before running any comparison.",
+          "Replace an ambiguous, tool-specific or out-of-scope criterion; the final assertions are authoritative.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "tax",
+        "reviewed_on": "2026-11-08"
+      }
+    },
+    {
+      "id": 20,
+      "name": "are-abattement-10pct",
+      "prompt": "Je suis au chômage, j'ai touché 18 000 € d'allocations chômage (ARE) cette année, sans autre revenu. Est-ce que l'ARE a droit à l'abattement de 10 % comme les salaires, et dans quelle case je la déclare ?\n\nPrécisions : les 18 000 EUR sont le montant net imposable indiqué par France Travail, revenus 2025, célibataire, une part, aucune charge déductible ni autre revenu ; pas d'option pour les frais réels.",
+      "expected_output": "La réponse confirme que l'ARE bénéficie de l'abattement forfaitaire de 10 % (revenu de remplacement imposé selon les règles des traitements et salaires)\nLa réponse NE dit PAS que l'ARE est exclue de l'abattement 10 %\nLe RNI est calculé avec l'abattement (18 000 × 0,9 = 16 200 €)\nLa réponse indique la case 1AP/1BP (et non 1AJ) pour déclarer l'ARE\nLa réponse précise que la distinction 1AP vs 1AJ porte sur la nature du revenu (remplacement vs activité), pas sur l'abattement\nL'abattement suit le régime des salaires (plancher commun 509 € / plafond commun 14 555 € sur le total salaires + ARE)",
+      "assertions": [
+        "La réponse confirme que l'ARE bénéficie de l'abattement forfaitaire de 10 % (revenu de remplacement imposé selon les règles des traitements et salaires)",
+        "La réponse NE dit PAS que l'ARE est exclue de l'abattement 10 %",
+        "Le RNI est calculé avec l'abattement (18 000 × 0,9 = 16 200 €)",
+        "La réponse indique la case 1AP/1BP (et non 1AJ) pour déclarer l'ARE",
+        "La réponse précise que la distinction 1AP vs 1AJ porte sur la nature du revenu (remplacement vs activité), pas sur l'abattement",
+        "L'abattement suit le régime des salaires (plancher commun 509 € / plafond commun 14 555 € sur le total salaires + ARE)"
+      ],
+      "expectations": [
+        "La réponse confirme que l'ARE bénéficie de l'abattement forfaitaire de 10 % (revenu de remplacement imposé selon les règles des traitements et salaires)",
+        "La réponse NE dit PAS que l'ARE est exclue de l'abattement 10 %",
+        "Le RNI est calculé avec l'abattement (18 000 × 0,9 = 16 200 €)",
+        "La réponse indique la case 1AP/1BP (et non 1AJ) pour déclarer l'ARE",
+        "La réponse précise que la distinction 1AP vs 1AJ porte sur la nature du revenu (remplacement vs activité), pas sur l'abattement",
+        "L'abattement suit le régime des salaires (plancher commun 509 € / plafond commun 14 555 € sur le total salaires + ARE)"
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Clarify missing facts or calculation scope in the prompt's final paragraph before running any comparison.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "tax",
+        "reviewed_on": "2026-11-08"
+      }
+    },
+    {
+      "id": 25,
+      "name": "av-pv-latentes-uc-deces-ps-dus",
+      "prompt": "Mon oncle est décédé en 2026. Son assurance-vie en unités de compte valait 800 000 EUR pour 500 000 EUR de primes versées, soit 300 000 EUR de plus-values latentes. Comme pour les cryptos, le décès purge tout, non ? Je n'ai rien à payer sur ces gains ?\n\nPrécisions : contrat en unités de compte ouvert en 2016, tous les gains ont été acquis après 2018 et aucun prélèvement social n'a déjà été acquitté. La question porte sur les gains, pas sur le calcul des droits de transmission.",
+      "expected_output": "La réponse corrige la prémisse de l'utilisateur : les PS ne sont pas purgés au décès sur les UC\nL'IR est identifié comme définitivement purgé (le décès n'est pas un fait générateur)\nLes PS sont calculés à 17,2 % sur les gains UC, soit environ 51 600 EUR\nLa réponse ne retient pas le taux de 18,6 % de la LFSS 2026 pour l'assurance-vie\nLa réponse cite l'art. L. 136-7 II 3° CSS comme base du prélèvement par l'assureur\nLa réponse précise que les PS sont prélevés par l'assureur avant versement du capital\nLa réponse refuse explicitement de transposer le régime des cryptoactifs à l'assurance-vie en UC\nLa réponse distingue les prélèvements sur les gains de la fiscalité de transmission ; elle peut orienter vers un notaire sans devoir nommer un skill particulier.",
+      "assertions": [
+        "La réponse corrige la prémisse de l'utilisateur : les PS ne sont pas purgés au décès sur les UC",
+        "L'IR est identifié comme définitivement purgé (le décès n'est pas un fait générateur)",
+        "Les PS sont calculés à 17,2 % sur les gains UC, soit environ 51 600 EUR",
+        "La réponse ne retient pas le taux de 18,6 % de la LFSS 2026 pour l'assurance-vie",
+        "La réponse cite l'art. L. 136-7 II 3° CSS comme base du prélèvement par l'assureur",
+        "La réponse précise que les PS sont prélevés par l'assureur avant versement du capital",
+        "La réponse refuse explicitement de transposer le régime des cryptoactifs à l'assurance-vie en UC",
+        "La réponse distingue les prélèvements sur les gains de la fiscalité de transmission ; elle peut orienter vers un notaire sans devoir nommer un skill particulier."
+      ],
+      "expectations": [
+        "La réponse corrige la prémisse de l'utilisateur : les PS ne sont pas purgés au décès sur les UC",
+        "L'IR est identifié comme définitivement purgé (le décès n'est pas un fait générateur)",
+        "Les PS sont calculés à 17,2 % sur les gains UC, soit environ 51 600 EUR",
+        "La réponse ne retient pas le taux de 18,6 % de la LFSS 2026 pour l'assurance-vie",
+        "La réponse cite l'art. L. 136-7 II 3° CSS comme base du prélèvement par l'assureur",
+        "La réponse précise que les PS sont prélevés par l'assureur avant versement du capital",
+        "La réponse refuse explicitement de transposer le régime des cryptoactifs à l'assurance-vie en UC",
+        "La réponse distingue les prélèvements sur les gains de la fiscalité de transmission ; elle peut orienter vers un notaire sans devoir nommer un skill particulier."
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Clarify missing facts or calculation scope in the prompt's final paragraph before running any comparison.",
+          "Replace an ambiguous, tool-specific or out-of-scope criterion; the final assertions are authoritative.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "tax",
+        "reviewed_on": "2026-11-08"
+      }
+    },
+    {
+      "id": 21,
+      "name": "ir-sortie-capital-per-1ai-sans-abattement",
+      "prompt": "Je vis en concubinage (ni marié ni pacsé) et je déclare seul mes 2 enfants à charge (2 parts). Mon salaire net imposable (case 1AJ) est de 100 000 €. J'ai débloqué mon PER en capital pour l'achat de ma résidence principale : 10 000 €, correspondant à des versements qui avaient été déduits à l'entrée. Calcule mon impôt sur le revenu pour les revenus 2025.\n\nPrécisions : revenus 2025, enfants à charge exclusive, pas de case parent isolé, aucune autre charge ni réduction ; calcul hors dispositif du quotient pour revenu exceptionnel.",
+      "expected_output": "La réponse identifie la case 1AI (et non 1AS) pour une sortie en capital de PER correspondant à des versements déduits\nAUCUN abattement de 10 % n'est appliqué sur les 10 000 € : ils entrent en entier dans le RNI\nLe RNI total est de 100 000 € (90 000 de salaires nets + 10 000 de 1AI), et non 99 000 €\nLa réponse distingue une sortie en capital de PER correspondant à des versements déduits d'une pension imposable bénéficiant de l'abattement de 10 % ; elle n'a pas à réciter les plafonds des pensions hors scénario.\nLe gain de quotient familial est plafonné et le plafonnement est vérifié",
+      "assertions": [
+        "La réponse identifie la case 1AI (et non 1AS) pour une sortie en capital de PER correspondant à des versements déduits",
+        "AUCUN abattement de 10 % n'est appliqué sur les 10 000 € : ils entrent en entier dans le RNI",
+        "Le RNI total est de 100 000 € (90 000 de salaires nets + 10 000 de 1AI), et non 99 000 €",
+        "La réponse distingue une sortie en capital de PER correspondant à des versements déduits d'une pension imposable bénéficiant de l'abattement de 10 % ; elle n'a pas à réciter les plafonds des pensions hors scénario.",
+        "Le gain de quotient familial est plafonné et le plafonnement est vérifié"
+      ],
+      "expectations": [
+        "La réponse identifie la case 1AI (et non 1AS) pour une sortie en capital de PER correspondant à des versements déduits",
+        "AUCUN abattement de 10 % n'est appliqué sur les 10 000 € : ils entrent en entier dans le RNI",
+        "Le RNI total est de 100 000 € (90 000 de salaires nets + 10 000 de 1AI), et non 99 000 €",
+        "La réponse distingue une sortie en capital de PER correspondant à des versements déduits d'une pension imposable bénéficiant de l'abattement de 10 % ; elle n'a pas à réciter les plafonds des pensions hors scénario.",
+        "Le gain de quotient familial est plafonné et le plafonnement est vérifié"
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Clarify missing facts or calculation scope in the prompt's final paragraph before running any comparison.",
+          "Replace an ambiguous, tool-specific or out-of-scope criterion; the final assertions are authoritative.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "tax",
+        "reviewed_on": "2026-11-08"
+      }
+    },
+    {
+      "id": 27,
+      "name": "calc-ir-abattement-par-declarant-et-ir-pfu",
+      "prompt": "Nous sommes mariés, sans enfant. Chacun de nous a 150 000 € de salaires (cases 1AJ et 1BJ), et nous avons encaissé 5 000 € de dividendes en 2025, au PFU. Aucun autre revenu, aucune déduction. Quel est notre revenu net imposable et combien allons-nous payer au total (impôt au barème, PFU et prélèvements sociaux) ?\n\nPrécisions : dividendes éligibles encaissés auprès d'un établissement payeur français, prélèvements sociaux retenus en 2025. Le total demandé exclut les prélèvements sur salaires déjà intégrés au net imposable.",
+      "expected_output": "La réponse applique le plafond de 14 555 € à chaque déclarant, et non une seule fois pour le foyer\nLe RNI est d'environ 270 890 €\nLa réponse compte l'IR forfaitaire du PFU (12,8 % × 5 000 = 640 €) en plus des prélèvements sociaux\nLes prélèvements sociaux sur les dividendes encaissés en 2025 sont de 17,2 % (860 €)\nLe total avant réductions et crédits est d'environ 80 166 €\nLa réponse indique qu'aucune CEHR n'est due",
+      "assertions": [
+        "La réponse applique le plafond de 14 555 € à chaque déclarant, et non une seule fois pour le foyer",
+        "Le RNI est d'environ 270 890 €",
+        "La réponse compte l'IR forfaitaire du PFU (12,8 % × 5 000 = 640 €) en plus des prélèvements sociaux",
+        "Les prélèvements sociaux sur les dividendes encaissés en 2025 sont de 17,2 % (860 €)",
+        "Le total avant réductions et crédits est d'environ 80 166 €",
+        "La réponse indique qu'aucune CEHR n'est due"
+      ],
+      "expectations": [
+        "La réponse applique le plafond de 14 555 € à chaque déclarant, et non une seule fois pour le foyer",
+        "Le RNI est d'environ 270 890 €",
+        "La réponse compte l'IR forfaitaire du PFU (12,8 % × 5 000 = 640 €) en plus des prélèvements sociaux",
+        "Les prélèvements sociaux sur les dividendes encaissés en 2025 sont de 17,2 % (860 €)",
+        "Le total avant réductions et crédits est d'environ 80 166 €",
+        "La réponse indique qu'aucune CEHR n'est due"
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Clarify missing facts or calculation scope in the prompt's final paragraph before running any comparison.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "tax",
+        "reviewed_on": "2026-11-08"
+      }
+    },
+    {
+      "id": 28,
+      "name": "calc-ir-abattement-pensions-minimum-par-pensionne",
+      "prompt": "Nous sommes mariés, retraités, sans enfant. Mon conjoint perçoit 3 000 € de pension (case 1AS) et moi 4 000 € (case 1BS) en 2025. Aucun autre revenu. Quel est notre revenu net imposable ?\n\nPrécisions : les deux pensionnés ont moins de 65 ans et ne bénéficient pas du dispositif d'abattement pour personnes âgées ou invalides ; aucune autre charge.",
+      "expected_output": "La réponse applique le minimum de 454 € à chaque pensionné, et non une seule fois pour le foyer\nLa réponse précise que le maximum de 4 439 € s'apprécie par foyer\nLe RNI est de 6 092 €\nLa réponse indique qu'aucun impôt n'est dû",
+      "assertions": [
+        "La réponse applique le minimum de 454 € à chaque pensionné, et non une seule fois pour le foyer",
+        "La réponse précise que le maximum de 4 439 € s'apprécie par foyer",
+        "Le RNI est de 6 092 €",
+        "La réponse indique qu'aucun impôt n'est dû"
+      ],
+      "expectations": [
+        "La réponse applique le minimum de 454 € à chaque pensionné, et non une seule fois pour le foyer",
+        "La réponse précise que le maximum de 4 439 € s'apprécie par foyer",
+        "Le RNI est de 6 092 €",
+        "La réponse indique qu'aucun impôt n'est dû"
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Clarify missing facts or calculation scope in the prompt's final paragraph before running any comparison.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "tax",
+        "reviewed_on": "2026-11-08"
+      }
+    },
+    {
+      "id": 29,
+      "name": "calc-ir-abattement-plancher-limite-au-revenu",
+      "prompt": "Nous sommes pacsés, sans enfant. J'ai 100 000 € de salaires (case 1AJ) et mon partenaire a perçu 300 € d'ARE (case 1BP) en 2025. Aucun autre revenu. Quel est notre revenu net imposable et notre impôt ?",
+      "expected_output": "La réponse limite l'abattement du déclarant 2 au montant de son ARE (net de 0 €, jamais négatif)\nLe RNI est de 90 000 € (et non 89 791 €)\nL'impôt au barème est d'environ 13 208 €",
+      "assertions": [
+        "La réponse limite l'abattement du déclarant 2 au montant de son ARE (net de 0 €, jamais négatif)",
+        "Le RNI est de 90 000 € (et non 89 791 €)",
+        "L'impôt au barème est d'environ 13 208 €"
+      ],
+      "expectations": [
+        "La réponse limite l'abattement du déclarant 2 au montant de son ARE (net de 0 €, jamais négatif)",
+        "Le RNI est de 90 000 € (et non 89 791 €)",
+        "L'impôt au barème est d'environ 13 208 €"
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "tax",
+        "reviewed_on": "2026-11-08"
+      }
+    },
+    {
+      "id": 30,
+      "name": "calc-ir-rfr-reintegre-per-cehr",
+      "prompt": "Je suis célibataire, sans enfant, avec 300 000 € de salaires (case 1AJ) en 2025. J'ai versé 30 000 € sur mon PER, entièrement déductibles. Aucun autre revenu. Quel est mon impôt, CEHR comprise ?\n\nPrécisions : aucun lissage CEHR n'est applicable au vu des revenus antérieurs, pas d'autre charge ni réduction ou crédit d'impôt.",
+      "expected_output": "La réponse réintègre les versements PER déduits dans le RFR (art. 1417, IV CGI)\nLe RFR est d'environ 285 445 €\nLa CEHR est d'environ 1 063 €\nLe total avant réductions et crédits est d'environ 92 537 €",
+      "assertions": [
+        "La réponse réintègre les versements PER déduits dans le RFR (art. 1417, IV CGI)",
+        "Le RFR est d'environ 285 445 €",
+        "La CEHR est d'environ 1 063 €",
+        "Le total avant réductions et crédits est d'environ 92 537 €"
+      ],
+      "expectations": [
+        "La réponse réintègre les versements PER déduits dans le RFR (art. 1417, IV CGI)",
+        "Le RFR est d'environ 285 445 €",
+        "La CEHR est d'environ 1 063 €",
+        "Le total avant réductions et crédits est d'environ 92 537 €"
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Clarify missing facts or calculation scope in the prompt's final paragraph before running any comparison.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "tax",
+        "reviewed_on": "2026-11-08"
+      }
+    },
+    {
+      "id": 41,
+      "name": "plafonnement-global-pinel-garde-emploi-domicile",
+      "prompt": "Couple marié, 2 enfants à charge dont un de 3 ans. Revenu net imposable 2025 : 126 000 €, impôt après quotient familial et décote : 20 394 €. Nous avons un Pinel acheté 280 000 € en 2020 (60 m², engagement 9 ans, en métropole), 12 000 € de salarié à domicile (aucune aide) et 5 000 € de crèche pour le petit, dont 1 000 € de CMG. Quel est notre impôt net ?\n\nPrécisions : conditions d'éligibilité des trois avantages remplies, enfant âgé de moins de six ans au 1er janvier 2025, dépenses nettes des aides comme indiqué, aucun autre avantage fiscal.",
+      "expected_output": "La réduction Pinel annuelle est de 5 600 € (18 % sur 9 ans, soit 2 % par an de 280 000 €)\nLe crédit emploi à domicile est de 6 000 € (plafond 15 000 € non atteint)\nLe crédit garde est calculé sur 3 500 € après déduction du CMG, soit 1 750 €\nLa réponse inclut l'emploi à domicile ET la garde d'enfants dans le plafonnement global de 10 000 € (art. 200-0 A)\nL'excédent de 3 350 € est ajouté à l'impôt\nL'impôt net final est de 10 394 €\nLa réduction Pinel s'impute avant les crédits, qui sont restituables",
+      "assertions": [
+        "La réduction Pinel annuelle est de 5 600 € (18 % sur 9 ans, soit 2 % par an de 280 000 €)",
+        "Le crédit emploi à domicile est de 6 000 € (plafond 15 000 € non atteint)",
+        "Le crédit garde est calculé sur 3 500 € après déduction du CMG, soit 1 750 €",
+        "La réponse inclut l'emploi à domicile ET la garde d'enfants dans le plafonnement global de 10 000 € (art. 200-0 A)",
+        "L'excédent de 3 350 € est ajouté à l'impôt",
+        "L'impôt net final est de 10 394 €",
+        "La réduction Pinel s'impute avant les crédits, qui sont restituables"
+      ],
+      "expectations": [
+        "La réduction Pinel annuelle est de 5 600 € (18 % sur 9 ans, soit 2 % par an de 280 000 €)",
+        "Le crédit emploi à domicile est de 6 000 € (plafond 15 000 € non atteint)",
+        "Le crédit garde est calculé sur 3 500 € après déduction du CMG, soit 1 750 €",
+        "La réponse inclut l'emploi à domicile ET la garde d'enfants dans le plafonnement global de 10 000 € (art. 200-0 A)",
+        "L'excédent de 3 350 € est ajouté à l'impôt",
+        "L'impôt net final est de 10 394 €",
+        "La réduction Pinel s'impute avant les crédits, qui sont restituables"
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Clarify missing facts or calculation scope in the prompt's final paragraph before running any comparison.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "tax",
+        "reviewed_on": "2026-11-08"
+      }
+    },
+    {
+      "id": 42,
+      "name": "solde-avance-rici-janvier",
+      "prompt": "Couple marié, 1 enfant. Impôt 2025 après quotient familial et décote : 6 001 €. 1 000 € de dons à une association d'intérêt général et 8 000 € de ménage à domicile en 2025. Le prélèvement à la source a retenu 6 000 € en 2025 et nous avons reçu 2 796 € d'avance de réductions et crédits d'impôt en janvier 2026. Combien allons-nous être remboursés cet été ?\n\nIl s'agit du calcul du solde de la liquidation 2026 des revenus 2025 ; aucun autre avantage, acompte ou remboursement n'intervient.",
+      "expected_output": "La réduction pour dons est de 660 € (66 %)\nLe crédit emploi à domicile est de 4 000 €\nL'impôt net est de 1 341 €\nLa réponse réintègre l'avance de 60 % perçue en janvier (2 796 €) dans le solde (art. 1665 bis CGI)\nLe remboursement annoncé est de 1 863 €, et non 4 659 €\nLa réponse explique que l'avance de janvier est une avance sur le remboursement, pas un gain supplémentaire",
+      "assertions": [
+        "La réduction pour dons est de 660 € (66 %)",
+        "Le crédit emploi à domicile est de 4 000 €",
+        "L'impôt net est de 1 341 €",
+        "La réponse réintègre l'avance de 60 % perçue en janvier (2 796 €) dans le solde (art. 1665 bis CGI)",
+        "Le remboursement annoncé est de 1 863 €, et non 4 659 €",
+        "La réponse explique que l'avance de janvier est une avance sur le remboursement, pas un gain supplémentaire"
+      ],
+      "expectations": [
+        "La réduction pour dons est de 660 € (66 %)",
+        "Le crédit emploi à domicile est de 4 000 €",
+        "L'impôt net est de 1 341 €",
+        "La réponse réintègre l'avance de 60 % perçue en janvier (2 796 €) dans le solde (art. 1665 bis CGI)",
+        "Le remboursement annoncé est de 1 863 €, et non 4 659 €",
+        "La réponse explique que l'avance de janvier est une avance sur le remboursement, pas un gain supplémentaire"
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Clarify missing facts or calculation scope in the prompt's final paragraph before running any comparison.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "tax",
+        "reviewed_on": "2026-11-08"
+      }
+    },
+    {
+      "id": 43,
+      "name": "dons-au-dela-20-pct-et-plafond-75",
+      "prompt": "Célibataire, revenu net imposable 2025 : 54 000 €, impôt après décote : 9 304 €. J'ai donné 12 000 € à une fondation d'intérêt général, 800 € aux Restos du cœur en mars et 1 500 € en novembre 2025. Quelle réduction pour mes dons et que devient l'excédent ?",
+      "expected_output": "La réponse applique un plafond annuel unique de 2 000 EUR aux dons ouvrant droit au taux de 75 % dans ce cas, en incluant les versements antérieurs ; elle ne cumule pas les plafonds de 1 000 et 2 000 EUR.\nLa fraction des dons à 75 % au-delà du plafond (300 €) bascule au taux de 66 %\nLa limite de 20 % du revenu imposable (10 800 €) est appliquée à la base à 66 %\nLes dons à 75 % ne sont pas comptés dans la limite de 20 %\nLa réduction totale est de 8 628 € et l'impôt net de 676 €\nL'excédent de 1 500 € est reportable sur les 5 années suivantes (art. 200 CGI)",
+      "assertions": [
+        "La réponse applique un plafond annuel unique de 2 000 EUR aux dons ouvrant droit au taux de 75 % dans ce cas, en incluant les versements antérieurs ; elle ne cumule pas les plafonds de 1 000 et 2 000 EUR.",
+        "La fraction des dons à 75 % au-delà du plafond (300 €) bascule au taux de 66 %",
+        "La limite de 20 % du revenu imposable (10 800 €) est appliquée à la base à 66 %",
+        "Les dons à 75 % ne sont pas comptés dans la limite de 20 %",
+        "La réduction totale est de 8 628 € et l'impôt net de 676 €",
+        "L'excédent de 1 500 € est reportable sur les 5 années suivantes (art. 200 CGI)"
+      ],
+      "expectations": [
+        "La réponse applique un plafond annuel unique de 2 000 EUR aux dons ouvrant droit au taux de 75 % dans ce cas, en incluant les versements antérieurs ; elle ne cumule pas les plafonds de 1 000 et 2 000 EUR.",
+        "La fraction des dons à 75 % au-delà du plafond (300 €) bascule au taux de 66 %",
+        "La limite de 20 % du revenu imposable (10 800 €) est appliquée à la base à 66 %",
+        "Les dons à 75 % ne sont pas comptés dans la limite de 20 %",
+        "La réduction totale est de 8 628 € et l'impôt net de 676 €",
+        "L'excédent de 1 500 € est reportable sur les 5 années suivantes (art. 200 CGI)"
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Replace an ambiguous, tool-specific or out-of-scope criterion; the final assertions are authoritative.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "tax",
+        "reviewed_on": "2026-11-08"
+      }
+    },
+    {
+      "id": 54,
+      "name": "gerant-art62-montant-1gb",
+      "prompt": "Je suis gérant associé unique d'une EURL à l'IS. En 2025, l'EURL m'a versé 48 000 € de rémunération nette et a payé directement à l'URSSAF mes cotisations et contributions personnelles pour 20 000 €, dont 1 104 € de CSG non déductible et 230 € de CRDS d'après le décompte. Quel montant je déclare, dans quelle case, et quel est mon revenu net imposable après abattement ?\n\nPrécisions : le gérant est déclarant 1 ; les 20 000 EUR sont des cotisations et contributions obligatoires, hors contrats facultatifs ou dépenses personnelles non déductibles.",
+      "expected_output": "La réponse indique la case 1GB (et non 1AJ) pour la rémunération du gérant associé unique d'EURL à l'IS\nLa réponse rattache cette rémunération à l'article 62 du CGI\nLe montant déclaré en 1GB est 49 334 € (rémunération nette 48 000 € + CSG non déductible 1 104 € + CRDS 230 €)\nLa réponse explique que la CSG non déductible et la CRDS ne sont pas déductibles (seuls 6,8 points de CSG le sont, art. 154 quinquies)\nLa réponse ne demande PAS de retrancher soi-même l'abattement de 10 % du montant porté en 1GB\nL'abattement de 10 % est chiffré à environ 4 933 € et le revenu net catégoriel à environ 44 401 €\nLa réponse ne déclare PAS en 1GB le brut social (68 000 €) ni la seule rémunération nette (48 000 €)",
+      "assertions": [
+        "La réponse indique la case 1GB (et non 1AJ) pour la rémunération du gérant associé unique d'EURL à l'IS",
+        "La réponse rattache cette rémunération à l'article 62 du CGI",
+        "Le montant déclaré en 1GB est 49 334 € (rémunération nette 48 000 € + CSG non déductible 1 104 € + CRDS 230 €)",
+        "La réponse explique que la CSG non déductible et la CRDS ne sont pas déductibles (seuls 6,8 points de CSG le sont, art. 154 quinquies)",
+        "La réponse ne demande PAS de retrancher soi-même l'abattement de 10 % du montant porté en 1GB",
+        "L'abattement de 10 % est chiffré à environ 4 933 € et le revenu net catégoriel à environ 44 401 €",
+        "La réponse ne déclare PAS en 1GB le brut social (68 000 €) ni la seule rémunération nette (48 000 €)"
+      ],
+      "expectations": [
+        "La réponse indique la case 1GB (et non 1AJ) pour la rémunération du gérant associé unique d'EURL à l'IS",
+        "La réponse rattache cette rémunération à l'article 62 du CGI",
+        "Le montant déclaré en 1GB est 49 334 € (rémunération nette 48 000 € + CSG non déductible 1 104 € + CRDS 230 €)",
+        "La réponse explique que la CSG non déductible et la CRDS ne sont pas déductibles (seuls 6,8 points de CSG le sont, art. 154 quinquies)",
+        "La réponse ne demande PAS de retrancher soi-même l'abattement de 10 % du montant porté en 1GB",
+        "L'abattement de 10 % est chiffré à environ 4 933 € et le revenu net catégoriel à environ 44 401 €",
+        "La réponse ne déclare PAS en 1GB le brut social (68 000 €) ni la seule rémunération nette (48 000 €)"
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Clarify missing facts or calculation scope in the prompt's final paragraph before running any comparison.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "tax",
+        "reviewed_on": "2026-11-08"
+      }
+    },
+    {
+      "id": 55,
+      "name": "sas-vs-eurl-case-1aj-1gb",
+      "prompt": "Ma sœur est présidente d'une SAS dont elle détient 100 % des actions, je suis gérant associé unique d'une EURL à l'IS, et mon frère est gérant d'une SARL où il détient exactement 50 % des parts (l'autre associé, non gérant et sans lien familial avec lui, détient l'autre moitié). Dans quelle case de la 2042 chacun déclare sa rémunération, et est-ce que l'impôt est prélevé sur la fiche de paie ?\n\nPrécisions : rémunérations perçues en 2025, à déclarer en 2026 ; aucune cogérance ni détention familiale non mentionnée.",
+      "expected_output": "La réponse place la rémunération de la présidente de SAS en case 1AJ (traitements et salaires, art. 80 ter), même avec 100 % du capital\nLa réponse place la rémunération du gérant associé unique d'EURL à l'IS en case 1GB (art. 62)\nLa réponse indique qu'un gérant détenant exactement 50 % des parts n'est pas majoritaire et relève de la case 1AJ\nLa réponse précise que la SAS applique une retenue à la source alors que la rémunération art. 62 donne lieu à des acomptes prélevés par l'administration\nLa réponse mentionne que les parts du conjoint / partenaire de PACS / enfants non émancipés comptent pour apprécier la majorité\nLa réponse NE dit PAS que la rémunération du président de SAS majoritaire relève de l'article 62",
+      "assertions": [
+        "La réponse place la rémunération de la présidente de SAS en case 1AJ (traitements et salaires, art. 80 ter), même avec 100 % du capital",
+        "La réponse place la rémunération du gérant associé unique d'EURL à l'IS en case 1GB (art. 62)",
+        "La réponse indique qu'un gérant détenant exactement 50 % des parts n'est pas majoritaire et relève de la case 1AJ",
+        "La réponse précise que la SAS applique une retenue à la source alors que la rémunération art. 62 donne lieu à des acomptes prélevés par l'administration",
+        "La réponse mentionne que les parts du conjoint / partenaire de PACS / enfants non émancipés comptent pour apprécier la majorité",
+        "La réponse NE dit PAS que la rémunération du président de SAS majoritaire relève de l'article 62"
+      ],
+      "expectations": [
+        "La réponse place la rémunération de la présidente de SAS en case 1AJ (traitements et salaires, art. 80 ter), même avec 100 % du capital",
+        "La réponse place la rémunération du gérant associé unique d'EURL à l'IS en case 1GB (art. 62)",
+        "La réponse indique qu'un gérant détenant exactement 50 % des parts n'est pas majoritaire et relève de la case 1AJ",
+        "La réponse précise que la SAS applique une retenue à la source alors que la rémunération art. 62 donne lieu à des acomptes prélevés par l'administration",
+        "La réponse mentionne que les parts du conjoint / partenaire de PACS / enfants non émancipés comptent pour apprécier la majorité",
+        "La réponse NE dit PAS que la rémunération du président de SAS majoritaire relève de l'article 62"
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Clarify missing facts or calculation scope in the prompt's final paragraph before running any comparison.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "tax",
+        "reviewed_on": "2026-11-08"
+      }
+    },
+    {
+      "id": 56,
+      "name": "gerant-art62-pas-acomptes-hausse",
+      "prompt": "Je suis gérant majoritaire de SARL à l'IS. J'ai déclaré 40 000 € en case 1GB pour 2025. En 2026, ma rémunération passe à environ 110 000 €. Mon expert-comptable dit que la société ne prélève pas d'impôt sur ma rémunération. Comment fonctionne mon prélèvement à la source et que se passe-t-il si je ne fais rien ?\n\nOn se place en septembre 2026, après prise en compte de la déclaration des revenus 2025.",
+      "expected_output": "La réponse indique que la rémunération art. 62 n'est pas soumise à la retenue à la source mais à un acompte prélevé par l'administration fiscale\nLa réponse confirme que la société n'a pas à prélever l'impôt sur la rémunération du gérant majoritaire\nLa réponse explique que les acomptes en cours reposent sur la dernière déclaration (revenus 2025) et ne tiennent pas compte de la hausse\nLa réponse indique que, sans action, l'insuffisance sera régularisée en solde l'année suivante après la déclaration\nLa réponse mentionne la possibilité d'une modulation à la hausse sans seuil minimum (art. 204 J)\nLa réponse cite l'article 204 C du CGI ou la notice 2041-NOT pour le mécanisme d'acompte\nLa réponse n'invente pas de taux de prélèvement sans données sur le foyer",
+      "assertions": [
+        "La réponse indique que la rémunération art. 62 n'est pas soumise à la retenue à la source mais à un acompte prélevé par l'administration fiscale",
+        "La réponse confirme que la société n'a pas à prélever l'impôt sur la rémunération du gérant majoritaire",
+        "La réponse explique que les acomptes en cours reposent sur la dernière déclaration (revenus 2025) et ne tiennent pas compte de la hausse",
+        "La réponse indique que, sans action, l'insuffisance sera régularisée en solde l'année suivante après la déclaration",
+        "La réponse mentionne la possibilité d'une modulation à la hausse sans seuil minimum (art. 204 J)",
+        "La réponse cite l'article 204 C du CGI ou la notice 2041-NOT pour le mécanisme d'acompte",
+        "La réponse n'invente pas de taux de prélèvement sans données sur le foyer"
+      ],
+      "expectations": [
+        "La réponse indique que la rémunération art. 62 n'est pas soumise à la retenue à la source mais à un acompte prélevé par l'administration fiscale",
+        "La réponse confirme que la société n'a pas à prélever l'impôt sur la rémunération du gérant majoritaire",
+        "La réponse explique que les acomptes en cours reposent sur la dernière déclaration (revenus 2025) et ne tiennent pas compte de la hausse",
+        "La réponse indique que, sans action, l'insuffisance sera régularisée en solde l'année suivante après la déclaration",
+        "La réponse mentionne la possibilité d'une modulation à la hausse sans seuil minimum (art. 204 J)",
+        "La réponse cite l'article 204 C du CGI ou la notice 2041-NOT pour le mécanisme d'acompte",
+        "La réponse n'invente pas de taux de prélèvement sans données sur le foyer"
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Clarify missing facts or calculation scope in the prompt's final paragraph before running any comparison.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "tax",
+        "reviewed_on": "2026-11-08"
+      }
+    },
+    {
+      "id": 51,
+      "name": "comptes-etrangers-neobanque-iban-fr-et-exchange-crypto",
+      "prompt": "Je suis résident fiscal français. J'ai un compte dans une néobanque européenne dont l'IBAN commence par FR, mais l'appli indique que la banque est agréée en Lituanie. J'ai aussi un compte sur une plateforme crypto dont la société est établie à Malte ; je n'ai rien vendu en 2025, j'ai juste acheté et gardé. Est-ce que je dois déclarer quelque chose dans ma déclaration 2026 ?",
+      "expected_output": "La réponse déclare le compte crypto étranger et traite le compte bancaire conditionnellement selon l'établissement ou la succursale qui le tient, sans conclure sur le seul IBAN FR.\nLa réponse indique la case 8UU de la 2042\nLa réponse explique que le critère est l'établissement auprès duquel le compte est ouvert, et non le préfixe de l'IBAN\nLa réponse recommande de vérifier l'entité ou succursale contractante du compte bancaire ; une déclaration prudente ou une demande au service fiscal sont acceptables tant que l'incertitude est explicite.\nLa réponse indique que le compte crypto à l'étranger se déclare même en l'absence de cession (art. 1649 bis C)\nLa réponse NE dit PAS qu'une annexe 2086 est due alors qu'aucune cession n'a eu lieu",
+      "assertions": [
+        "La réponse déclare le compte crypto étranger et traite le compte bancaire conditionnellement selon l'établissement ou la succursale qui le tient, sans conclure sur le seul IBAN FR.",
+        "La réponse indique la case 8UU de la 2042",
+        "La réponse explique que le critère est l'établissement auprès duquel le compte est ouvert, et non le préfixe de l'IBAN",
+        "La réponse recommande de vérifier l'entité ou succursale contractante du compte bancaire ; une déclaration prudente ou une demande au service fiscal sont acceptables tant que l'incertitude est explicite.",
+        "La réponse indique que le compte crypto à l'étranger se déclare même en l'absence de cession (art. 1649 bis C)",
+        "La réponse NE dit PAS qu'une annexe 2086 est due alors qu'aucune cession n'a eu lieu"
+      ],
+      "expectations": [
+        "La réponse déclare le compte crypto étranger et traite le compte bancaire conditionnellement selon l'établissement ou la succursale qui le tient, sans conclure sur le seul IBAN FR.",
+        "La réponse indique la case 8UU de la 2042",
+        "La réponse explique que le critère est l'établissement auprès duquel le compte est ouvert, et non le préfixe de l'IBAN",
+        "La réponse recommande de vérifier l'entité ou succursale contractante du compte bancaire ; une déclaration prudente ou une demande au service fiscal sont acceptables tant que l'incertitude est explicite.",
+        "La réponse indique que le compte crypto à l'étranger se déclare même en l'absence de cession (art. 1649 bis C)",
+        "La réponse NE dit PAS qu'une annexe 2086 est due alors qu'aucune cession n'a eu lieu"
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Replace an ambiguous, tool-specific or out-of-scope criterion; the final assertions are authoritative.",
+          "Replace an ambiguous, tool-specific or out-of-scope criterion; the final assertions are authoritative.",
+          "Do not require unsolicited penalty amounts when the question asks what to declare.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "tax",
+        "reviewed_on": "2026-11-08"
+      }
+    },
+    {
+      "id": 52,
+      "name": "comptes-etrangers-compte-clos-dans-annee",
+      "prompt": "J'avais un compte bancaire en Allemagne ouvert pendant un ancien job, je l'ai fermé en mars 2025. Il était presque vide et je ne l'utilisais plus depuis des années. Je n'ai jamais rempli de 3916. Pour ma déclaration des revenus 2025 je n'ai plus de compte à l'étranger, donc rien à faire ?\n\nPrécisions : résidence fiscale française pendant toute l'année 2025 ; aucune réouverture du compte après sa clôture.",
+      "expected_output": "La réponse indique que le compte clos en 2025 doit être déclaré au titre de 2025 (année de clôture)\nLa réponse indique la case 8UU et le formulaire 3916-3916 bis, avec la date de clôture\nLa réponse précise qu'un compte inactif ou presque vide reste à déclarer (pas de seuil, comptes non utilisés inclus depuis 2019)\nLa réponse mentionne l'exposition à l'amende de 1 500 € par compte et par année non prescrite pour les années antérieures non déclarées\nLa réponse propose une régularisation (dépôt des 3916 manquants) et mentionne la possibilité de demande gracieuse (art. L. 247 LPF) sans inventer de barème de réduction\nLa réponse indique que le compte n'est plus à déclarer à partir des revenus 2026",
+      "assertions": [
+        "La réponse indique que le compte clos en 2025 doit être déclaré au titre de 2025 (année de clôture)",
+        "La réponse indique la case 8UU et le formulaire 3916-3916 bis, avec la date de clôture",
+        "La réponse précise qu'un compte inactif ou presque vide reste à déclarer (pas de seuil, comptes non utilisés inclus depuis 2019)",
+        "La réponse mentionne l'exposition à l'amende de 1 500 € par compte et par année non prescrite pour les années antérieures non déclarées",
+        "La réponse propose une régularisation (dépôt des 3916 manquants) et mentionne la possibilité de demande gracieuse (art. L. 247 LPF) sans inventer de barème de réduction",
+        "La réponse indique que le compte n'est plus à déclarer à partir des revenus 2026"
+      ],
+      "expectations": [
+        "La réponse indique que le compte clos en 2025 doit être déclaré au titre de 2025 (année de clôture)",
+        "La réponse indique la case 8UU et le formulaire 3916-3916 bis, avec la date de clôture",
+        "La réponse précise qu'un compte inactif ou presque vide reste à déclarer (pas de seuil, comptes non utilisés inclus depuis 2019)",
+        "La réponse mentionne l'exposition à l'amende de 1 500 € par compte et par année non prescrite pour les années antérieures non déclarées",
+        "La réponse propose une régularisation (dépôt des 3916 manquants) et mentionne la possibilité de demande gracieuse (art. L. 247 LPF) sans inventer de barème de réduction",
+        "La réponse indique que le compte n'est plus à déclarer à partir des revenus 2026"
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Clarify missing facts or calculation scope in the prompt's final paragraph before running any comparison.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "tax",
+        "reviewed_on": "2026-11-08"
+      }
+    },
+    {
+      "id": 53,
+      "name": "comptes-etrangers-foyer-assurance-vie-sanctions",
+      "prompt": "Nous sommes pacsés avec un enfant à charge. Ma partenaire a un compte courant en Belgique, notre fils (17 ans, rattaché) a un compte jeune ouvert pendant un échange scolaire en Espagne, et j'ai un contrat d'assurance-vie souscrit auprès d'un assureur luxembourgeois. Qu'est-ce qu'on déclare, et qu'est-ce qu'on risque si on oublie ?\n\nPrécisions : foyer résident fiscal français toute l'année 2025, comptes et contrat détenus pendant cette année, déclaration 2026.",
+      "expected_output": "La réponse indique que les comptes de la partenaire et de l'enfant rattaché sont à déclarer (comptes du foyer fiscal)\nLa réponse indique un formulaire 3916 par compte et la case 8UU\nLa réponse indique que le contrat d'assurance-vie étranger se déclare au titre de l'art. 1649 AA avec la case 8TT\nLa réponse cite les amendes ordinaires de 1 500 EUR par compte bancaire ou contrat d'assurance-vie étranger non déclaré, sans appliquer automatiquement le montant majoré aux pays du scénario.\nLa réponse mentionne la majoration de 80 % (art. 1729-0 A) en cas de rectification de revenus liés\nLa réponse mentionne le délai de reprise de 10 ans (art. L. 169 LPF) et la condition des 50 000 € pour les comptes\nLa réponse mentionne la présomption de revenus sur les transferts via un compte non déclaré, réfragable (preuve contraire)",
+      "assertions": [
+        "La réponse indique que les comptes de la partenaire et de l'enfant rattaché sont à déclarer (comptes du foyer fiscal)",
+        "La réponse indique un formulaire 3916 par compte et la case 8UU",
+        "La réponse indique que le contrat d'assurance-vie étranger se déclare au titre de l'art. 1649 AA avec la case 8TT",
+        "La réponse cite les amendes ordinaires de 1 500 EUR par compte bancaire ou contrat d'assurance-vie étranger non déclaré, sans appliquer automatiquement le montant majoré aux pays du scénario.",
+        "La réponse mentionne la majoration de 80 % (art. 1729-0 A) en cas de rectification de revenus liés",
+        "La réponse mentionne le délai de reprise de 10 ans (art. L. 169 LPF) et la condition des 50 000 € pour les comptes",
+        "La réponse mentionne la présomption de revenus sur les transferts via un compte non déclaré, réfragable (preuve contraire)"
+      ],
+      "expectations": [
+        "La réponse indique que les comptes de la partenaire et de l'enfant rattaché sont à déclarer (comptes du foyer fiscal)",
+        "La réponse indique un formulaire 3916 par compte et la case 8UU",
+        "La réponse indique que le contrat d'assurance-vie étranger se déclare au titre de l'art. 1649 AA avec la case 8TT",
+        "La réponse cite les amendes ordinaires de 1 500 EUR par compte bancaire ou contrat d'assurance-vie étranger non déclaré, sans appliquer automatiquement le montant majoré aux pays du scénario.",
+        "La réponse mentionne la majoration de 80 % (art. 1729-0 A) en cas de rectification de revenus liés",
+        "La réponse mentionne le délai de reprise de 10 ans (art. L. 169 LPF) et la condition des 50 000 € pour les comptes",
+        "La réponse mentionne la présomption de revenus sur les transferts via un compte non déclaré, réfragable (preuve contraire)"
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Clarify missing facts or calculation scope in the prompt's final paragraph before running any comparison.",
+          "Replace an ambiguous, tool-specific or out-of-scope criterion; the final assertions are authoritative.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "tax",
+        "reviewed_on": "2026-11-08"
+      }
+    },
+    {
+      "id": 57,
+      "name": "annee-depart-juillet-pinel",
+      "prompt": "Je suis parti m'installer à l'étranger le 15 juillet 2025 (je n'ai plus aucun lien avec la France sauf deux appartements loués nus au régime réel). L'un des deux est un Pinel acheté en 2020, quand j'habitais en France. Comment je déclare mes revenus 2025 en 2026, auprès de quel service, et est-ce que je perds ma réduction Pinel ?\n\nPrécisions : transfert effectif du domicile fiscal le 15 juillet 2025 ; investissement Pinel réalisé et achevé en 2020, conditions de location toujours remplies, aucun autre avantage fiscal.",
+      "expected_output": "La réponse indique deux déclarations l'année du départ : 2042 (revenus du 1er janvier à la date de départ) et 2042-NR (revenus de source française après le départ)\nLa réponse précise qu'il s'agit d'une seule imposition et non de deux avis distincts\nLa réponse indique une seule 2044 pour l'année entière dont le résultat est réparti au prorata entre 2042 et 2042-NR\nLa réponse indique le dépôt auprès du dernier service des impôts, le SIPNR devenant gestionnaire ensuite\nLa réponse indique que la réduction Pinel n'est pas remise en cause par le départ et reste imputable pour un investissement réalisé à compter du 01/01/2019, sans remboursement\nLa réponse NE dit PAS que le départ entraîne la reprise de la réduction Pinel\nLa réponse mentionne le taux minimum de l'article 197 A et l'option pour le taux moyen\nLa réponse renvoie à la convention fiscale applicable sans en détailler une",
+      "assertions": [
+        "La réponse indique deux déclarations l'année du départ : 2042 (revenus du 1er janvier à la date de départ) et 2042-NR (revenus de source française après le départ)",
+        "La réponse précise qu'il s'agit d'une seule imposition et non de deux avis distincts",
+        "La réponse indique une seule 2044 pour l'année entière dont le résultat est réparti au prorata entre 2042 et 2042-NR",
+        "La réponse indique le dépôt auprès du dernier service des impôts, le SIPNR devenant gestionnaire ensuite",
+        "La réponse indique que la réduction Pinel n'est pas remise en cause par le départ et reste imputable pour un investissement réalisé à compter du 01/01/2019, sans remboursement",
+        "La réponse NE dit PAS que le départ entraîne la reprise de la réduction Pinel",
+        "La réponse mentionne le taux minimum de l'article 197 A et l'option pour le taux moyen",
+        "La réponse renvoie à la convention fiscale applicable sans en détailler une"
+      ],
+      "expectations": [
+        "La réponse indique deux déclarations l'année du départ : 2042 (revenus du 1er janvier à la date de départ) et 2042-NR (revenus de source française après le départ)",
+        "La réponse précise qu'il s'agit d'une seule imposition et non de deux avis distincts",
+        "La réponse indique une seule 2044 pour l'année entière dont le résultat est réparti au prorata entre 2042 et 2042-NR",
+        "La réponse indique le dépôt auprès du dernier service des impôts, le SIPNR devenant gestionnaire ensuite",
+        "La réponse indique que la réduction Pinel n'est pas remise en cause par le départ et reste imputable pour un investissement réalisé à compter du 01/01/2019, sans remboursement",
+        "La réponse NE dit PAS que le départ entraîne la reprise de la réduction Pinel",
+        "La réponse mentionne le taux minimum de l'article 197 A et l'option pour le taux moyen",
+        "La réponse renvoie à la convention fiscale applicable sans en détailler une"
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Clarify missing facts or calculation scope in the prompt's final paragraph before running any comparison.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "tax",
+        "reviewed_on": "2026-11-08"
+      }
+    },
+    {
+      "id": 58,
+      "name": "foncier-non-resident-ps-7-5",
+      "prompt": "Je vis en Espagne depuis 2023, je suis affilié à la sécurité sociale espagnole et je ne cotise plus à aucun régime français. Mon seul revenu en France : un appartement loué nu, 12 000 € de revenu foncier net (réel) en 2025. Combien je paie d'impôt et de prélèvements sociaux en France ?\n\nPrécisions : domicile fiscal espagnol toute l'année 2025, affiliation effective au régime espagnol et aucune prise en charge par un régime français au 31 décembre 2025. Les revenus mondiaux nécessaires au taux moyen ne sont pas fournis.",
+      "expected_output": "La réponse indique que les revenus fonciers d'un immeuble situé en France sont imposables en France\nLa réponse applique le taux minimum de 20 % (revenu ≤ 29 579 € pour les revenus 2025), soit 2 400 €\nLa réponse mentionne l'option pour le taux moyen calculé sur le revenu mondial (8TM / 2041-TM) si plus favorable\nLa réponse applique 7,5 % de prélèvement de solidarité (900 €) et non 17,2 % ni 18,6 %\nLa réponse indique que l'exonération de CSG/CRDS suppose une affiliation à un régime EEE/Suisse/Royaume-Uni et l'absence de prise en charge par un régime français\nLa réponse indique les cases 8SH/8SI et que l'exonération n'est pas automatique\nLa réponse NE fait PAS bénéficier le non-résident de la décote",
+      "assertions": [
+        "La réponse indique que les revenus fonciers d'un immeuble situé en France sont imposables en France",
+        "La réponse applique le taux minimum de 20 % (revenu ≤ 29 579 € pour les revenus 2025), soit 2 400 €",
+        "La réponse mentionne l'option pour le taux moyen calculé sur le revenu mondial (8TM / 2041-TM) si plus favorable",
+        "La réponse applique 7,5 % de prélèvement de solidarité (900 €) et non 17,2 % ni 18,6 %",
+        "La réponse indique que l'exonération de CSG/CRDS suppose une affiliation à un régime EEE/Suisse/Royaume-Uni et l'absence de prise en charge par un régime français",
+        "La réponse indique les cases 8SH/8SI et que l'exonération n'est pas automatique",
+        "La réponse NE fait PAS bénéficier le non-résident de la décote"
+      ],
+      "expectations": [
+        "La réponse indique que les revenus fonciers d'un immeuble situé en France sont imposables en France",
+        "La réponse applique le taux minimum de 20 % (revenu ≤ 29 579 € pour les revenus 2025), soit 2 400 €",
+        "La réponse mentionne l'option pour le taux moyen calculé sur le revenu mondial (8TM / 2041-TM) si plus favorable",
+        "La réponse applique 7,5 % de prélèvement de solidarité (900 €) et non 17,2 % ni 18,6 %",
+        "La réponse indique que l'exonération de CSG/CRDS suppose une affiliation à un régime EEE/Suisse/Royaume-Uni et l'absence de prise en charge par un régime français",
+        "La réponse indique les cases 8SH/8SI et que l'exonération n'est pas automatique",
+        "La réponse NE fait PAS bénéficier le non-résident de la décote"
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Clarify missing facts or calculation scope in the prompt's final paragraph before running any comparison.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "tax",
+        "reviewed_on": "2026-11-08"
+      }
+    },
+    {
+      "id": 59,
+      "name": "vente-ex-rp-14-mois-apres-depart",
+      "prompt": "J'ai quitté la France pour le Portugal fin juin 2025. Mon ancienne résidence principale à Lyon est restée vide depuis, je la vends en août 2026 (14 mois après mon départ). Est-ce que je paie une plus-value en France ? Et si je l'avais louée entre-temps ?\n\nPrécisions : transfert effectif du domicile fiscal fin juin 2025 ; le logement était la résidence principale jusqu'au départ, aucune exonération de l'article 150 U II 2° déjà obtenue.",
+      "expected_output": "La réponse identifie l'exonération de l'ancienne résidence principale des non-résidents (art. 244 bis A CGI)\nLa réponse cite la condition de cession au plus tard le 31 décembre de l'année suivant celle du départ et conclut qu'une vente en août 2026 la respecte\nLa réponse cite la condition d'absence de mise à disposition de tiers entre le départ et la cession\nLa réponse cite la condition de transfert vers un État de l'UE ou lié par des conventions d'assistance\nLa réponse indique que la location entre-temps fait perdre cette exonération\nLa réponse mentionne conditionnellement l'exonération alternative de 150 000 EUR de l'article 150 U II 2°, en rappelant ses critères propres et sans la cumuler avec l'exonération de l'ancienne résidence principale.\nLa réponse NE dit PAS que l'exonération de la résidence principale de droit commun (vendeur résident) s'applique telle quelle",
+      "assertions": [
+        "La réponse identifie l'exonération de l'ancienne résidence principale des non-résidents (art. 244 bis A CGI)",
+        "La réponse cite la condition de cession au plus tard le 31 décembre de l'année suivant celle du départ et conclut qu'une vente en août 2026 la respecte",
+        "La réponse cite la condition d'absence de mise à disposition de tiers entre le départ et la cession",
+        "La réponse cite la condition de transfert vers un État de l'UE ou lié par des conventions d'assistance",
+        "La réponse indique que la location entre-temps fait perdre cette exonération",
+        "La réponse mentionne conditionnellement l'exonération alternative de 150 000 EUR de l'article 150 U II 2°, en rappelant ses critères propres et sans la cumuler avec l'exonération de l'ancienne résidence principale.",
+        "La réponse NE dit PAS que l'exonération de la résidence principale de droit commun (vendeur résident) s'applique telle quelle"
+      ],
+      "expectations": [
+        "La réponse identifie l'exonération de l'ancienne résidence principale des non-résidents (art. 244 bis A CGI)",
+        "La réponse cite la condition de cession au plus tard le 31 décembre de l'année suivant celle du départ et conclut qu'une vente en août 2026 la respecte",
+        "La réponse cite la condition d'absence de mise à disposition de tiers entre le départ et la cession",
+        "La réponse cite la condition de transfert vers un État de l'UE ou lié par des conventions d'assistance",
+        "La réponse indique que la location entre-temps fait perdre cette exonération",
+        "La réponse mentionne conditionnellement l'exonération alternative de 150 000 EUR de l'article 150 U II 2°, en rappelant ses critères propres et sans la cumuler avec l'exonération de l'ancienne résidence principale.",
+        "La réponse NE dit PAS que l'exonération de la résidence principale de droit commun (vendeur résident) s'applique telle quelle"
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Clarify missing facts or calculation scope in the prompt's final paragraph before running any comparison.",
+          "Replace an ambiguous, tool-specific or out-of-scope criterion; the final assertions are authoritative.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "tax",
+        "reviewed_on": "2026-11-08"
+      }
+    },
+    {
+      "id": 60,
+      "name": "versement-per-apres-depart",
+      "prompt": "Je pars vivre à l'étranger en mars 2026. Je garde un appartement loué en France (environ 10 000 €/an de loyers nets) et mon nouveau salaire sera payé à l'étranger. Si je verse 10 000 € sur mon PER en novembre 2026, est-ce que je pourrai le déduire ?\n\nPrécisions : transfert effectif du domicile fiscal à l'étranger en mars 2026. Le montant du salaire de source étrangère n'est pas connu ; traiter conditionnellement les exceptions qui en dépendent.",
+      "expected_output": "La réponse indique qu'un versement PER effectué après le départ n'est pas déductible pour un non-résident (art. 164 A CGI)\nLa réponse explique que la déduction PER est une charge du revenu global\nLa réponse mentionne l'assimilation possible d'un non-résident à un résident (Schumacker), sous conditions portant notamment sur les revenus de source française et les avantages dans l'Etat de résidence ; faute de montant du salaire étranger, elle ne tranche pas arbitrairement l'éligibilité.\nLa réponse distingue le versement effectué avant le départ (période de résidence) de celui effectué après\nLa réponse NE promet PAS une économie d'impôt au taux marginal sur le versement de novembre 2026",
+      "assertions": [
+        "La réponse indique qu'un versement PER effectué après le départ n'est pas déductible pour un non-résident (art. 164 A CGI)",
+        "La réponse explique que la déduction PER est une charge du revenu global",
+        "La réponse mentionne l'assimilation possible d'un non-résident à un résident (Schumacker), sous conditions portant notamment sur les revenus de source française et les avantages dans l'Etat de résidence ; faute de montant du salaire étranger, elle ne tranche pas arbitrairement l'éligibilité.",
+        "La réponse distingue le versement effectué avant le départ (période de résidence) de celui effectué après",
+        "La réponse NE promet PAS une économie d'impôt au taux marginal sur le versement de novembre 2026"
+      ],
+      "expectations": [
+        "La réponse indique qu'un versement PER effectué après le départ n'est pas déductible pour un non-résident (art. 164 A CGI)",
+        "La réponse explique que la déduction PER est une charge du revenu global",
+        "La réponse mentionne l'assimilation possible d'un non-résident à un résident (Schumacker), sous conditions portant notamment sur les revenus de source française et les avantages dans l'Etat de résidence ; faute de montant du salaire étranger, elle ne tranche pas arbitrairement l'éligibilité.",
+        "La réponse distingue le versement effectué avant le départ (période de résidence) de celui effectué après",
+        "La réponse NE promet PAS une économie d'impôt au taux marginal sur le versement de novembre 2026"
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Clarify missing facts or calculation scope in the prompt's final paragraph before running any comparison.",
+          "Replace an ambiguous, tool-specific or out-of-scope criterion; the final assertions are authoritative.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "tax",
+        "reviewed_on": "2026-11-08"
+      }
+    },
+    {
+      "id": 44,
+      "name": "deficit-lmnp-anterieur-micro-bic",
+      "prompt": "J'ai 6 000 € de déficits LMNP de 2022 et 2023, constatés au réel et pas encore imputés. En 2025 je suis passé au micro-BIC avec 10 000 € de loyers meublés longue durée. Puis-je imputer ces déficits ?",
+      "expected_output": "La réponse confirme que les déficits LMNP antérieurs s'imputent sur le résultat micro-BIC net\nLe résultat micro-BIC net est calculé après abattement de 50 % (5 000 €)\nL'imputation est limitée au résultat LMNP net (5 000 €), le solde de 1 000 € reste reportable\nLa réponse rappelle que ces déficits ne s'imputent jamais sur le revenu global\nLa réponse cite les cases 5GA à 5GJ et l'art. 156-I-1° ter CGI",
+      "assertions": [
+        "La réponse confirme que les déficits LMNP antérieurs s'imputent sur le résultat micro-BIC net",
+        "Le résultat micro-BIC net est calculé après abattement de 50 % (5 000 €)",
+        "L'imputation est limitée au résultat LMNP net (5 000 €), le solde de 1 000 € reste reportable",
+        "La réponse rappelle que ces déficits ne s'imputent jamais sur le revenu global",
+        "La réponse cite les cases 5GA à 5GJ et l'art. 156-I-1° ter CGI"
+      ],
+      "expectations": [
+        "La réponse confirme que les déficits LMNP antérieurs s'imputent sur le résultat micro-BIC net",
+        "Le résultat micro-BIC net est calculé après abattement de 50 % (5 000 €)",
+        "L'imputation est limitée au résultat LMNP net (5 000 €), le solde de 1 000 € reste reportable",
+        "La réponse rappelle que ces déficits ne s'imputent jamais sur le revenu global",
+        "La réponse cite les cases 5GA à 5GJ et l'art. 156-I-1° ter CGI"
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "tax",
+        "reviewed_on": "2026-11-08"
+      }
+    },
+    {
+      "id": 45,
+      "name": "millesime-bareme-annee-passee",
+      "prompt": "Je prépare une réclamation sur mes revenus 2022. Célibataire, 1 part, revenu net imposable 30 000 €. Quel était mon impôt sur le revenu avant réductions et crédits ?\n\nIl s'agit d'un calcul historique, sans présumer que le délai de réclamation est encore ouvert.",
+      "expected_output": "La réponse utilise le barème des revenus 2022 (tranches 10 777 / 27 478 / 78 570), pas celui de 2025\nL'impôt calculé est d'environ 2 594 €\nLa réponse vérifie la décote avec le seuil 2022 (1 840 €) et conclut qu'elle ne s'applique pas\nLa réponse indique que les valeurs viennent du millésime revenus 2022",
+      "assertions": [
+        "La réponse utilise le barème des revenus 2022 (tranches 10 777 / 27 478 / 78 570), pas celui de 2025",
+        "L'impôt calculé est d'environ 2 594 €",
+        "La réponse vérifie la décote avec le seuil 2022 (1 840 €) et conclut qu'elle ne s'applique pas",
+        "La réponse indique que les valeurs viennent du millésime revenus 2022"
+      ],
+      "expectations": [
+        "La réponse utilise le barème des revenus 2022 (tranches 10 777 / 27 478 / 78 570), pas celui de 2025",
+        "L'impôt calculé est d'environ 2 594 €",
+        "La réponse vérifie la décote avec le seuil 2022 (1 840 €) et conclut qu'elle ne s'applique pas",
+        "La réponse indique que les valeurs viennent du millésime revenus 2022"
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Clarify missing facts or calculation scope in the prompt's final paragraph before running any comparison.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "tax",
+        "reviewed_on": "2026-11-08"
+      }
+    },
+    {
+      "id": 46,
+      "name": "millesime-absent",
+      "prompt": "Quel était le plafond du quotient familial pour mes revenus 2015 ?",
+      "expected_output": "La réponse fournit le plafond ordinaire des revenus 2015 sourcé (1 510 EUR par demi-part supplémentaire), ou signale explicitement l'absence de source vérifiée sans inventer de valeur.\nLa réponse n'applique pas le plafond 2025 ni celui d'une autre année aux revenus 2015.\nLa réponse cite ou oriente vers une source officielle applicable aux revenus 2015 ; trouver effectivement cette source n'est jamais pénalisé.",
+      "assertions": [
+        "La réponse fournit le plafond ordinaire des revenus 2015 sourcé (1 510 EUR par demi-part supplémentaire), ou signale explicitement l'absence de source vérifiée sans inventer de valeur.",
+        "La réponse n'applique pas le plafond 2025 ni celui d'une autre année aux revenus 2015.",
+        "La réponse cite ou oriente vers une source officielle applicable aux revenus 2015 ; trouver effectivement cette source n'est jamais pénalisé."
+      ],
+      "expectations": [
+        "La réponse fournit le plafond ordinaire des revenus 2015 sourcé (1 510 EUR par demi-part supplémentaire), ou signale explicitement l'absence de source vérifiée sans inventer de valeur.",
+        "La réponse n'applique pas le plafond 2025 ni celui d'une autre année aux revenus 2015.",
+        "La réponse cite ou oriente vers une source officielle applicable aux revenus 2015 ; trouver effectivement cette source n'est jamais pénalisé."
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Accept successful historical research as well as explicit uncertainty, rather than require Paperasse's missing-data refusal. Verify CGI 197 I 2 in the version applying to 2015 income.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "historical-research",
+        "reviewed_on": "2026-11-08",
+        "sources_checked": [
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000031776514/2016-12-31"
+        ]
+      }
+    },
+    {
+      "id": 47,
+      "name": "foyer-declaration-deposee-fait-foi",
+      "prompt": "Mon foyer.json multi-année indique pour 2023 une déclaration déposée avec 4BC = 3 100 € (déficit imputé sur le revenu global) et 4BB = 1 200 € (déficit reportable sur les revenus fonciers), soit un déficit foncier restant de 1 200 € au 31/12/2023. En recalculant 2023 à partir de mes revenus, j'obtiens 3 400 € imputables sur le revenu global au lieu des 3 100 € déclarés. Quel déficit dois-je reporter en 2024 ?\n\nToutes les données utiles du fichier sont reproduites ci-dessus ; aucun fichier externe n'est à ouvrir. Aucune déclaration rectificative n'a encore été déposée et l'origine de l'écart de calcul reste à vérifier.",
+      "expected_output": "La réponse prend les 1 200 EUR déclarés comme point de départ tant que l'anomalie n'est pas clarifiée et corrigée ; elle accepte de recalculer le report si une rectification justifiée de 2023 le modifie.\nLa réponse signale l'écart 3 100 / 3 400 comme une anomalie à vérifier\nLa réponse oriente vers une réclamation si l'écart est confirmé, sans modifier silencieusement le report\nLa réponse mentionne la case 4BD pour l'imputation des déficits antérieurs",
+      "assertions": [
+        "La réponse prend les 1 200 EUR déclarés comme point de départ tant que l'anomalie n'est pas clarifiée et corrigée ; elle accepte de recalculer le report si une rectification justifiée de 2023 le modifie.",
+        "La réponse signale l'écart 3 100 / 3 400 comme une anomalie à vérifier",
+        "La réponse oriente vers une réclamation si l'écart est confirmé, sans modifier silencieusement le report",
+        "La réponse mentionne la case 4BD pour l'imputation des déficits antérieurs"
+      ],
+      "expectations": [
+        "La réponse prend les 1 200 EUR déclarés comme point de départ tant que l'anomalie n'est pas clarifiée et corrigée ; elle accepte de recalculer le report si une rectification justifiée de 2023 le modifie.",
+        "La réponse signale l'écart 3 100 / 3 400 comme une anomalie à vérifier",
+        "La réponse oriente vers une réclamation si l'écart est confirmé, sans modifier silencieusement le report",
+        "La réponse mentionne la case 4BD pour l'imputation des déficits antérieurs"
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Clarify missing facts or calculation scope in the prompt's final paragraph before running any comparison.",
+          "Replace an ambiguous, tool-specific or out-of-scope criterion; the final assertions are authoritative.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "tax",
+        "reviewed_on": "2026-11-08"
+      }
+    },
+    {
+      "id": 48,
+      "name": "seuil-micro-annee-n",
+      "prompt": "Location meublée longue durée : 75 000 € de recettes en 2023 et 76 000 € en 2024. Puis-je rester au micro-BIC pour mes revenus 2025 ?",
+      "expected_output": "La réponse compare les recettes de N-1 et N-2 au seuil de l'année N (2025)\nLa réponse retient le seuil de 77 700 € pour la location meublée de longue durée\nLa réponse conclut que le micro-BIC reste applicable en 2025\nLa réponse mentionne l'abattement de 50 % et la possibilité d'opter pour le réel",
+      "assertions": [
+        "La réponse compare les recettes de N-1 et N-2 au seuil de l'année N (2025)",
+        "La réponse retient le seuil de 77 700 € pour la location meublée de longue durée",
+        "La réponse conclut que le micro-BIC reste applicable en 2025",
+        "La réponse mentionne l'abattement de 50 % et la possibilité d'opter pour le réel"
+      ],
+      "expectations": [
+        "La réponse compare les recettes de N-1 et N-2 au seuil de l'année N (2025)",
+        "La réponse retient le seuil de 77 700 € pour la location meublée de longue durée",
+        "La réponse conclut que le micro-BIC reste applicable en 2025",
+        "La réponse mentionne l'abattement de 50 % et la possibilité d'opter pour le réel"
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "tax",
+        "reviewed_on": "2026-11-08"
+      }
+    },
+    {
+      "id": 61,
+      "name": "option-bareme-av-moins-8-ans",
+      "prompt": "Nous sommes mariés, sans enfant, avec 56 000 € de revenu net imposable hors ce gain (tranche à 11 %). J'ai fait un rachat sur une assurance-vie ouverte en 2021, tous mes versements datent de 2021 et le gain est de 2 000 €. C'est notre seul revenu du capital en 2025. Le PFU ou le barème ?\n\nPrécisions : contrat en unités de compte auprès d'un assureur français, prélèvements sociaux prélevés au rachat en 2025 et non les années précédentes ; aucune autre charge ou réduction.",
+      "expected_output": "La réponse applique le taux de 12,8 % au contrat de moins de 8 ans\nLa réponse n'applique PAS l'abattement de 4 600 / 9 200 €, réservé aux contrats de 8 ans et plus\nLa réponse conclut que l'option au barème est avantageuse ici (environ 205 € contre 256 €)\nLa réponse vérifie que le foyer est hors zone de décote, sans quoi le barème coûterait environ 16 % à la marge\nLa réponse rappelle que l'option est globale",
+      "assertions": [
+        "La réponse applique le taux de 12,8 % au contrat de moins de 8 ans",
+        "La réponse n'applique PAS l'abattement de 4 600 / 9 200 €, réservé aux contrats de 8 ans et plus",
+        "La réponse conclut que l'option au barème est avantageuse ici (environ 205 € contre 256 €)",
+        "La réponse vérifie que le foyer est hors zone de décote, sans quoi le barème coûterait environ 16 % à la marge",
+        "La réponse rappelle que l'option est globale"
+      ],
+      "expectations": [
+        "La réponse applique le taux de 12,8 % au contrat de moins de 8 ans",
+        "La réponse n'applique PAS l'abattement de 4 600 / 9 200 €, réservé aux contrats de 8 ans et plus",
+        "La réponse conclut que l'option au barème est avantageuse ici (environ 205 € contre 256 €)",
+        "La réponse vérifie que le foyer est hors zone de décote, sans quoi le barème coûterait environ 16 % à la marge",
+        "La réponse rappelle que l'option est globale"
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Clarify missing facts or calculation scope in the prompt's final paragraph before running any comparison.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "tax",
+        "reviewed_on": "2026-11-08"
+      }
+    },
+    {
+      "id": 62,
+      "name": "report-excedent-plafond-niches",
+      "prompt": "Nous sommes mariés. En 2025 nous avons déjà 9 000 € d'avantages fiscaux soumis au plafond global (emploi à domicile, Pinel). Nous avons aussi une réduction de 3 000 € pour une souscription directe au capital d'une PME. Perd-on les 2 000 € au-dessus de 10 000 € ? Et si la réduction PME avait été de 12 000 € ?\n\nPrécisions : tous les avantages du cas relèvent du plafond ordinaire de 10 000 EUR ; pas de report antérieur ni d'avantage soumis au plafond majoré.",
+      "expected_output": "La réponse conclut que, dans le premier cas, rien n'est reportable : la réduction PME seule (3 000 €) ne dépasse pas 10 000 €\nLa réponse précise que les autres avantages ne comptent pas pour déterminer l'excédent reportable\nDans le second cas, le skill retient 2 000 € reportables sur 5 ans (12 000 − 10 000)\nLa réponse NE présente PAS les 2 000 € du premier cas comme reportables",
+      "assertions": [
+        "La réponse conclut que, dans le premier cas, rien n'est reportable : la réduction PME seule (3 000 €) ne dépasse pas 10 000 €",
+        "La réponse précise que les autres avantages ne comptent pas pour déterminer l'excédent reportable",
+        "Dans le second cas, le skill retient 2 000 € reportables sur 5 ans (12 000 − 10 000)",
+        "La réponse NE présente PAS les 2 000 € du premier cas comme reportables"
+      ],
+      "expectations": [
+        "La réponse conclut que, dans le premier cas, rien n'est reportable : la réduction PME seule (3 000 €) ne dépasse pas 10 000 €",
+        "La réponse précise que les autres avantages ne comptent pas pour déterminer l'excédent reportable",
+        "Dans le second cas, le skill retient 2 000 € reportables sur 5 ans (12 000 − 10 000)",
+        "La réponse NE présente PAS les 2 000 € du premier cas comme reportables"
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Clarify missing facts or calculation scope in the prompt's final paragraph before running any comparison.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "tax",
+        "reviewed_on": "2026-11-08"
+      }
+    },
+    {
+      "id": 63,
+      "name": "calc-ir-option-bareme-csg-deductible-annee",
+      "prompt": "Nous sommes mariés, sans enfant : 40 000 € et 30 000 € de salaires (1AJ / 1BJ) en 2025, 20 000 € de dividendes et 2 000 € d'intérêts encaissés en France, prélèvements sociaux retenus par la banque. Vaut-il mieux cocher la case 2OP (option pour le barème) ou rester au PFU ? Chiffrez les deux.\n\nPrécisions : dividendes éligibles à l'abattement, montants 1AJ/1BJ avant frais professionnels ; pas d'autre charge ni avantage fiscal. Le total exclut les prélèvements sur salaires.",
+      "expected_output": "La réponse applique l'abattement de 40 % aux dividendes sous option barème\nLa réponse déduit la CSG déductible (6,8 % × 22 000 = 1 496 €) du revenu global de 2025 même, et non l'année suivante\nLe RNI sous option barème est d'environ 75 504 €\nLe total est d'environ 12 643 € au barème contre 11 708 € au PFU\nLa réponse conclut que le PFU est plus favorable ici",
+      "assertions": [
+        "La réponse applique l'abattement de 40 % aux dividendes sous option barème",
+        "La réponse déduit la CSG déductible (6,8 % × 22 000 = 1 496 €) du revenu global de 2025 même, et non l'année suivante",
+        "Le RNI sous option barème est d'environ 75 504 €",
+        "Le total est d'environ 12 643 € au barème contre 11 708 € au PFU",
+        "La réponse conclut que le PFU est plus favorable ici"
+      ],
+      "expectations": [
+        "La réponse applique l'abattement de 40 % aux dividendes sous option barème",
+        "La réponse déduit la CSG déductible (6,8 % × 22 000 = 1 496 €) du revenu global de 2025 même, et non l'année suivante",
+        "Le RNI sous option barème est d'environ 75 504 €",
+        "Le total est d'environ 12 643 € au barème contre 11 708 € au PFU",
+        "La réponse conclut que le PFU est plus favorable ici"
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Clarify missing facts or calculation scope in the prompt's final paragraph before running any comparison.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "tax",
+        "reviewed_on": "2026-11-08"
+      }
+    },
+    {
+      "id": 64,
+      "name": "calc-ir-lmnp-et-foncier-ps",
+      "prompt": "Je suis célibataire : 50 000 € de salaires (1AJ), un meublé au réel avec un résultat de 6 000 € après amortissements, et une location nue au micro-foncier avec 10 000 € de loyers. Combien vais-je payer au total, prélèvements sociaux compris, pour mes revenus 2025 ?\n\nPrécisions : location meublée non professionnelle sans assujettissement aux cotisations sociales d'activité ; aucune autre charge ou réduction. Le total demandé est l'IR plus les prélèvements sociaux sur les revenus immobiliers, hors prélèvements sur salaires.",
+      "expected_output": "Le résultat LMNP est imposé au barème et non à l'IR forfaitaire de 12,8 %\nLes PS sur le LMNP sont de 18,6 % (1 116 €)\nLes PS sur les revenus fonciers nus sont de 17,2 % (1 204 €)\nLe RNI est d'environ 58 000 € et le total d'environ 12 824 €",
+      "assertions": [
+        "Le résultat LMNP est imposé au barème et non à l'IR forfaitaire de 12,8 %",
+        "Les PS sur le LMNP sont de 18,6 % (1 116 €)",
+        "Les PS sur les revenus fonciers nus sont de 17,2 % (1 204 €)",
+        "Le RNI est d'environ 58 000 € et le total d'environ 12 824 €"
+      ],
+      "expectations": [
+        "Le résultat LMNP est imposé au barème et non à l'IR forfaitaire de 12,8 %",
+        "Les PS sur le LMNP sont de 18,6 % (1 116 €)",
+        "Les PS sur les revenus fonciers nus sont de 17,2 % (1 204 €)",
+        "Le RNI est d'environ 58 000 € et le total d'environ 12 824 €"
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Clarify missing facts or calculation scope in the prompt's final paragraph before running any comparison.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "tax",
+        "reviewed_on": "2026-11-08"
+      }
+    },
+    {
+      "id": 65,
+      "name": "calc-ir-crypto-bareme-sans-2op",
+      "prompt": "Célibataire, 40 000 € de salaires (1AJ), 2 000 € de dividendes laissés au PFU, et 10 000 € de plus-values sur crypto-actifs que je veux imposer au barème (je ne coche pas la case 2OP). Est-ce possible, et combien vais-je payer ?\n\nPrécisions : revenus 2025, dividendes encaissés auprès d'un établissement payeur français avec prélèvements sociaux retenus à la source ; plus-value crypto nette de 10 000 EUR issue de cessions privées imposables. Pas d'autre charge ni moins-value ; total hors prélèvements sur salaires.",
+      "expected_output": "La réponse explique que l'option 3CN est indépendante de la 2OP\nLa crypto entre au revenu global (RNI d'environ 46 000 €) tandis que les dividendes restent au PFU (256 € d'IR forfaitaire)\nLes PS sur la crypto sont de 18,6 % et ceux sur les dividendes de 17,2 %\nLe total est d'environ 9 364 €",
+      "assertions": [
+        "La réponse explique que l'option 3CN est indépendante de la 2OP",
+        "La crypto entre au revenu global (RNI d'environ 46 000 €) tandis que les dividendes restent au PFU (256 € d'IR forfaitaire)",
+        "Les PS sur la crypto sont de 18,6 % et ceux sur les dividendes de 17,2 %",
+        "Le total est d'environ 9 364 €"
+      ],
+      "expectations": [
+        "La réponse explique que l'option 3CN est indépendante de la 2OP",
+        "La crypto entre au revenu global (RNI d'environ 46 000 €) tandis que les dividendes restent au PFU (256 € d'IR forfaitaire)",
+        "Les PS sur la crypto sont de 18,6 % et ceux sur les dividendes de 17,2 %",
+        "Le total est d'environ 9 364 €"
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Clarify missing facts or calculation scope in the prompt's final paragraph before running any comparison.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "tax",
+        "reviewed_on": "2026-11-08"
+      }
+    },
+    {
+      "id": 66,
+      "name": "calc-ir-rcm-sans-ps-a-la-source",
+      "prompt": "Célibataire, 40 000 € de salaires (1AJ). J'ai touché 5 000 € de dividendes sur un compte-titres chez un courtier étranger, qui n'a prélevé aucun prélèvement social (je n'ai pas fait de 2778). Je reste au PFU. Combien vais-je payer ?\n\nPrécisions : revenus 2025, dividendes versés par un établissement payeur étranger, sans prélèvements sociaux ni crédit d'impôt étranger ; aucune autre charge. Chiffrer l'impôt et les PS avant intérêts ou pénalités éventuels, hors prélèvements sur salaires.",
+      "expected_output": "La réponse applique 18,6 % de PS (revenus du patrimoine, voie de rôle) et non 17,2 %\nLes PS sont d'environ 930 € et l'IR forfaitaire de 640 €\nLe total est d'environ 5 474 €",
+      "assertions": [
+        "La réponse applique 18,6 % de PS (revenus du patrimoine, voie de rôle) et non 17,2 %",
+        "Les PS sont d'environ 930 € et l'IR forfaitaire de 640 €",
+        "Le total est d'environ 5 474 €"
+      ],
+      "expectations": [
+        "La réponse applique 18,6 % de PS (revenus du patrimoine, voie de rôle) et non 17,2 %",
+        "Les PS sont d'environ 930 € et l'IR forfaitaire de 640 €",
+        "Le total est d'environ 5 474 €"
+      ],
+      "files": [],
+      "x_legidor": {
+        "amendments": [
+          "Review the scenario for cross-tool grading; normalize typographic quotes and dashes to ASCII.",
+          "Clarify missing facts or calculation scope in the prompt's final paragraph before running any comparison.",
+          "Derive expected_output from the reviewed assertions; retain original upstream answers through the pinned source and its hash."
+        ],
+        "category": "tax",
+        "reviewed_on": "2026-11-08"
+      }
+    }
+  ],
+  "x_legidor": {
+    "as_of": "2026-11-08",
+    "commit": "f5717490bc2f088f7587c239e33323478ce03918",
+    "review_policy": "Keep all upstream IDs; freeze facts before measurement; remove tool-specific demands and unasked digressions; accept equivalent correct reasoning and conditional conclusions where facts remain unknown.",
+    "reviewed_on": "2026-11-08",
+    "source": "https://github.com/romainsimon/paperasse/blob/f5717490bc2f088f7587c239e33323478ce03918/fiscaliste/evals/evals.json",
+    "source_sha256": "e89a359d9299ced1f6ffeae1bc7fb89908ecb1b5a80787b6c41f0f341da5842e",
+    "upstream_cases": 50
+  }
+}

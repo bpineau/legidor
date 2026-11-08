@@ -12,6 +12,41 @@ not its runner or executable scripts.
 
 ## Run
 
+The reviewed full suite is `full.json`: all 50 upstream IDs are retained, with
+270 criteria after the documented amendments. It complements the eight-case pilot.
+Dates, ambiguous facts and tool-specific requirements have been reviewed before
+measurement. In particular, successful historical research must not fail merely
+because Paperasse lacks that year's local data, and naming another Paperasse skill
+is not required. Every case records its review date, amendments and category.
+The two orientation questions remain in the suite, but are identified separately
+from tax calculations; historical research has its own category too.
+
+To run the full three-model comparison and then grade it automatically:
+
+```sh
+make build build-eval
+bin/legidor-eval campaign -corpus evals/full.json \
+  -agents claude,codex \
+  -claude-models claude-sonnet-5-5,claude-opus-5-5 \
+  -codex-model gpt-6.1-sol -arms none,paperasse,legidor,both \
+  -max-samples 600 -workers 3 -repetitions 1 \
+  -paperasse /path/to/paperasse/fiscaliste -legidor "$PWD/bin/legidor" \
+  -judge-agent claude -judge-model claude-sonnet-5-5 \
+  -out /tmp/legidor-full-comparison
+```
+
+This deliberately starts 600 evaluated conversations plus one blinded grading
+conversation per case. It is not a smoke test. `campaign` requires an explicit
+judge model and otherwise uses the same flags and isolation as `run`. It records
+its phase in private `campaign.json`, stops before grading if execution fails,
+and never retries failures automatically. A process lock rejects duplicate
+`campaign` launches into the same directory. Do not run separate `run` or `grade`
+commands against an active campaign. Successful samples and grades are reused
+on an identical resume. A failed sample remains failed: investigate it and use a
+separate run for retries. Keep the executable and all input snapshots fixed while
+a campaign is running. A Sonnet judge is economical but can introduce family bias;
+inspect close or surprising verdicts before drawing conclusions.
+
 For development, start with two Sol samples and an explicit size limit:
 
 ```sh

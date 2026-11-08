@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -37,7 +38,15 @@ func TestMain(m *testing.M) {
 			fmt.Fprintln(f, "call")
 			f.Close()
 		}
-		fmt.Println(`{"type":"item.completed","item":{"type":"agent_message","text":"8400"}}`)
+		answer := "8400"
+		if fixture := os.Getenv("LEGIDOR_EVAL_FAKE_GRADE"); fixture != "" {
+			prompt, _ := io.ReadAll(os.Stdin)
+			if strings.Contains(string(prompt), "Grade independent answers") {
+				answer = fixture
+			}
+		}
+		encoded, _ := json.Marshal(answer)
+		fmt.Printf("{\"type\":\"item.completed\",\"item\":{\"type\":\"agent_message\",\"text\":%s}}\n", encoded)
 		fmt.Println(`{"type":"turn.completed","usage":{"input_tokens":32,"cached_input_tokens":16,"output_tokens":4}}`)
 		os.Exit(0)
 	}

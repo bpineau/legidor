@@ -31,7 +31,7 @@ func list(s string) []string {
 }
 func run() error {
 	if len(os.Args) < 2 {
-		return fmt.Errorf("usage: legidor-eval run|grade|report|list|convert|import-paperasse|export-anthropic|serve [options]")
+		return fmt.Errorf("usage: legidor-eval run|campaign|grade|report|list|convert|import-paperasse|export-anthropic|serve [options]")
 	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
@@ -132,8 +132,15 @@ func run() error {
 			return e
 		}
 		return bench.GradeAnswers(ctx, abs, *corpus, *agent, *model, *timeout)
-	case "run":
+	case "run", "campaign":
 		var o bench.Options
+		var judgeAgent, judgeModel string
+		var gradingTimeout time.Duration
+		if os.Args[1] == "campaign" {
+			f.StringVar(&judgeAgent, "judge-agent", "claude", "judge CLI")
+			f.StringVar(&judgeModel, "judge-model", "", "explicit judge model (required)")
+			f.DurationVar(&gradingTimeout, "grading-timeout", 10*time.Minute, "per-case grading deadline")
+		}
 		f.StringVar(&o.Corpus, "corpus", "evals/pilot.json", "corpus JSON")
 		f.StringVar(&o.Output, "out", "", "output directory (private, outside Git)")
 		f.StringVar(&o.Paperasse, "paperasse", "", "path to Paperasse fiscaliste directory")
@@ -162,6 +169,9 @@ func run() error {
 		o.IDs = list(*ids)
 		o.ClaudeModels = list(*claudeModels)
 		o.CodexModels = list(*codexModels)
+		if os.Args[1] == "campaign" {
+			return bench.Campaign(ctx, o, judgeAgent, judgeModel, gradingTimeout)
+		}
 		return bench.Run(ctx, o)
 	default:
 		return fmt.Errorf("unknown command %q", os.Args[1])

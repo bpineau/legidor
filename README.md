@@ -220,13 +220,16 @@ No anti-bot bypass is attempted. A result absent from a corpus does not establis
 The [Go evaluation runner](evals/README.md) compares Claude Opus 5.5, Sonnet 5.5,
 Codex Sol 6.1 and Astra 6
 with no skill, Paperasse fiscaliste, Legidor, or both. It reuses eight public
-Paperasse scenarios with explicit provenance and amendments, and records fiscal
+Paperasse scenarios in its pilot and all 50 in its reviewed full suite, with
+explicit provenance and amendments. It records fiscal
 correctness, evidence, dates, tokens, cache usage and elapsed time. No JavaScript
 or Python tooling is required. Live model evaluations are opt-in and separate
 from ordinary Go tests.
 Scenario files follow the Anthropic skill-creator format with Legidor metadata
 extensions. The Go tooling can import all 50 upstream fiscal scenarios and export
 completed model/arm pairs as compatible benchmark and grading JSON.
+The `campaign` command can run a fixed matrix and then produce blinded grades
+and reports without manual coordination, stopping on execution errors.
 
 ### Tests
 
