@@ -2,7 +2,12 @@
 
 ## Dates and sources
 
-`--date` means the version in force on that calendar date. A law enacted later can govern earlier income. Distinguish publication, version validity and applicability to the operation. Read NOTA, the original modifier and transitional provisions before concluding.
+Separate the income/event period, the version date selected by `--date` and the research cutoff (law known by that date). A law enacted after the income year can govern that year's tax.
+
+- **Historical version:** inspect returned later-version entries (`next_versions` in JSON) or a bounded `versions REF --since DATE` when a later amendment could govern the requested period. Read the relevant later version's NOTA/application clause, within the research cutoff. Do not stop at the income year's closing-date version or assume the latest version applies either.
+- **Qualified NOTA:** follow the original modifier and map its named numbered amendment to the exact code subdivision and affected category. Apply its commencement only within that scope. A later NOTA about one change does not by itself reset commencement for untouched rules; use the relevant earlier version/modifier if their application remains unresolved.
+
+Match the resulting scope and income/event dates to the facts before calculating; keep unresolved applicability conditional. Reuse evidence that already establishes this mapping. This check does not require reading every version or modifier.
 
 Code articles default to today's version. A fixed identifier selects that version; inspect its interval. Conflicting explicit dates fail. `NO_VERSION_AT_DATE` can identify a published future or past version without substituting it for the requested one. Use `versions` to inspect history. Search candidates are not confirmed identities.
 

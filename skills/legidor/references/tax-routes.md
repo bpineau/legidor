@@ -37,7 +37,7 @@ point, not evidence of historical wording. Inspect its date and relevant excepti
 
 Add a source only for an unresolved material point:
 
-- **Social contributions:** identify the product, assessment category and event/income year. Inspect CSS L136-6 or L136-7 as appropriate, then L136-8 and any relevant commencement provision. Do not transfer a rate or exception between products. Use the other contribution texts only when their component rules need checking.
+- **Social contributions:** identify the product and whether its assessment falls under CSS L136-6 or L136-7; distinguish the income year from payment/accrual dates. Then inspect the applicable L136-8 branch and exceptions. For a commencement clause limited to a named amendment, use the [date checks](evidence.md#dates-and-sources). Do not transfer a rate or exception between products. Use the other contribution texts only when their component rules need checking.
 - **Exceptional-income quotient:** when asked, read CGI 163-0 A. If exceptionality or the comparison period remains unclear, consult the relevant numbered paragraphs of BOI-IR-LIQ-20-30-20. A large amount alone does not establish eligibility.
 - **Missing operational details:** an official tax notice, form or administration page can answer a point outside Legidor. Do not duplicate all statute reads on the web just to obtain another citation.
 
