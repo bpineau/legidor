@@ -37,6 +37,12 @@ func fail(out, errout io.Writer, jsonMode bool, e error) int {
 		for _, v := range m.Candidates {
 			fmt.Fprintln(errout, v)
 		}
+		for _, hint := range m.Hints {
+			fmt.Fprintln(errout, "hint:", hint)
+		}
+		for _, command := range m.Commands {
+			fmt.Fprintln(errout, "candidate command:", command)
+		}
 	}
 	return m.Exit
 }
@@ -155,15 +161,20 @@ func Run(ctx context.Context, args []string, in io.Reader, out, errout io.Writer
 		if e != nil {
 			return fail(out, errout, o.json, e)
 		}
+		s = searchHints(arg, s, o)
 		if o.json {
 			emit(out, true, s)
 		} else {
+			fmt.Fprintln(out, "corpus:", s.Corpus)
 			fmt.Fprintf(out, "source: %s | retrieved_at: %s | cached: %t | offline: %t | environment: %s\nsort: %s | total: %d %s | returned: %d\n%s\n", s.Provenance.Source, s.Provenance.RetrievedAt, s.Provenance.Cached, s.Provenance.Offline, s.Provenance.Environment, s.Sort, s.Total, s.TotalUnit, len(s.Hits), s.Stability)
 			for _, h := range s.Hits {
 				fmt.Fprintf(out, "%s | %s | %s\n%s\n", h.ID, h.Title, h.Number, h.Snippet)
 			}
 			if s.Cursor != "" {
 				fmt.Fprintln(out, "cursor:", s.Cursor)
+			}
+			for _, hint := range s.Hints {
+				fmt.Fprintln(out, "hint:", hint)
 			}
 		}
 		return 0
@@ -193,7 +204,7 @@ func Run(ctx context.Context, args []string, in io.Reader, out, errout io.Writer
 		}
 		d, e := c.Get(ctx, r)
 		if e != nil {
-			return fail(out, errout, o.json, e)
+			return fail(out, errout, o.json, recoveryError(e, r, o))
 		}
 		d = compactMetadata(d, o.full)
 		if cmd == "resolve" {
@@ -232,13 +243,28 @@ func Run(ctx context.Context, args []string, in io.Reader, out, errout io.Writer
 		if r.Part != "" {
 			d, e = selectPart(d, r.Part)
 			if e != nil {
-				return fail(out, errout, o.json, e)
+				recovery := o
+				if recovery.date == "" {
+					recovery.date = d.Date
+				}
+				return fail(out, errout, o.json, recoveryError(e, r, recovery))
 			}
 		}
 		if o.grep != "" {
 			ms := legaltext.Grep(d.Text, o.grep, d.Parts)
+			var hints []string
+			if len(ms) == 0 {
+				recovery := o
+				if recovery.date == "" {
+					recovery.date = r.Date
+				}
+				if recovery.date == "" {
+					recovery.date = d.Date
+				}
+				hints = []string{"Document retrieved, but no exact case-sensitive match in the selected text. This does not establish that the rule is absent. Inspect the outline: " + recoveryCommand("get", unselectedReference(r), recovery, "--parts")}
+			}
 			if o.json {
-				emit(out, true, map[string]any{"schema": model.Schema, "id": d.ID, "matches": ms, "complete": d.Complete, "provenance": d.Provenance, "warnings": d.Warnings})
+				emit(out, true, map[string]any{"schema": model.Schema, "id": d.ID, "matches": ms, "complete": d.Complete, "provenance": d.Provenance, "warnings": d.Warnings, "hints": hints})
 			} else {
 				fmt.Fprintf(out, "%s | %s | complete: %t | matches: %d\n%s\n", d.Title, d.ID, d.Complete, len(ms), d.Provenance.URL)
 				for _, m := range ms {
@@ -246,6 +272,9 @@ func Run(ctx context.Context, args []string, in io.Reader, out, errout io.Writer
 				}
 				for _, w := range d.Warnings {
 					fmt.Fprintln(out, "warning:", w)
+				}
+				for _, hint := range hints {
+					fmt.Fprintln(out, "hint:", hint)
 				}
 			}
 			if !d.Complete {
@@ -257,10 +286,7 @@ func Run(ctx context.Context, args []string, in io.Reader, out, errout io.Writer
 			return 0
 		}
 		if o.parts {
-			d.Text = ""
-			for i := range d.Parts {
-				d.Parts[i].Text = ""
-			}
+			d = outline(d, o.full)
 			if d.ContentKind == "table_of_contents" {
 				d, e = paginate(d, r, arg, o)
 				if e != nil {
@@ -302,11 +328,25 @@ func renderDocument(out io.Writer, jsonMode bool, d model.Document) {
 	fmt.Fprintln(out, "---")
 	fmt.Fprintln(out, d.Text)
 	if d.Text == "" || d.Omitted > 0 {
-		var labels []string
-		for _, p := range d.Parts {
-			labels = append(labels, p.Label)
+		if d.OutlineNavigationOnly {
+			fmt.Fprintln(out, "outline (source previews for navigation, not full evidence):")
+			for _, p := range d.Parts {
+				fmt.Fprintf(out, "%s | %s", p.Label, p.Preview)
+				if p.Selectable != nil && !*p.Selectable {
+					fmt.Fprint(out, " | ambiguous label")
+				}
+				fmt.Fprintln(out)
+			}
+			if d.OmittedPartPreviews > 0 {
+				fmt.Fprintf(out, "omitted_part_previews: %d; repeat with --full for remaining previews\n", d.OmittedPartPreviews)
+			}
+		} else {
+			var labels []string
+			for _, p := range d.Parts {
+				labels = append(labels, p.Label)
+			}
+			fmt.Fprintln(out, "parts:", strings.Join(labels, ", "))
 		}
-		fmt.Fprintln(out, "parts:", strings.Join(labels, ", "))
 	}
 	for _, item := range d.Items {
 		fmt.Fprintf(out, "%s | %s | %s\n", item.ID, item.Title, item.URL)

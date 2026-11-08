@@ -114,7 +114,7 @@ Quote references containing spaces. Options may appear before or after the refer
 
 `--date` means the text version in force on that calendar date. It is not the law applicable to income earned during that year: publication, version validity and applicability are different facts. Read NOTA, modifying provisions and transitional rules separately.
 
-Direct identifiers select their specific version. A date that contradicts that version is an error. Official article URLs preserve their date. Article and code numbers are never silently corrected. Recognized aliases include CGI and annexes I-IV, CIBS, LPF, CSS, CMF/CoMoFi, civil, construction, insurance, labor, enforcement, consumer, commercial, local-government, public-health and urban-planning codes.
+Direct identifiers select their specific version. A date that contradicts that version is an error. Official article URLs preserve their date. Article and code numbers are never silently corrected. Recognized aliases include CGI and annexes I-IV (also `CGI annexe 3` for CGI-III), CIBS, LPF, CSS, CMF/CoMoFi, civil, construction, insurance, labor, enforcement, consumer, commercial, local-government, public-health and urban-planning codes.
 
 Numbered laws without a date resolve their JORF publication; with a date they resolve consolidated LODA. Rectifications can create several candidates. Use a returned text identifier with `art. NUMBER` to select an article. Named LFI/LFSS references use verified entries where available, otherwise a title search with identity checks. LFR requires a specific law number because several rectifying laws can exist in one year.
 
@@ -163,7 +163,7 @@ Text is compact by default; `--json` uses the stable `legidor/1` contract descri
 
 Batch precedence is 3, then 2, then 1. Diagnostics go to stderr. JSON stdout contains results or structured errors only.
 
-The supported structural subset includes Roman numerals, uppercase letters, numbered clauses, compound degree clauses, dotted or parenthesized lowercase letters and common suffixes. Ancestor introductory text is retained. `--parts` shows recognized labels; ambiguous labels fail. `alinéa N` is a rendered paragraph position, not an authoritative legal numbering.
+The supported structural subset includes Roman numerals, uppercase letters, numbered clauses, compound degree clauses, dotted or parenthesized lowercase letters and common suffixes. Ancestor introductory text is retained. `--parts` keeps recognized labels in source order and adds short source previews for navigation, not full evidence. Duplicate labels are marked ambiguous. Preview text is limited to 120 characters per label and 6,000 characters overall by default; `omitted_part_previews` counts labels without previews and `--full` removes that overall preview budget. Source warnings and completeness remain visible. `alinéa N` is a rendered paragraph position, not an authoritative legal numbering.
 
 Rectangular HTML tables preserve captions, headers, rows, cells and formulas. Full-width notes after regular rows are labeled `Table-wide:`. Exponents and indices use `^(...)` and `_(...)` notation. Other merged/nested tables, images and unsupported embedded content remain explicit omission markers. A selection can be complete when omissions occur elsewhere: `source_complete`, when present, preserves the original document's status. Omissions in retained introductions still block verification. Completeness describes rendering, not legal applicability or the absence of relevant exceptions in other provisions.
 
@@ -172,6 +172,8 @@ Whole laws return their table of contents. Text output normally stops at 20000 c
 Modifier metadata is bounded separately: documents and JSON histories retain up to five recent links, with an explicit `omitted_modifications` count; `--full` returns all links. NOTA is preserved. `complete` describes source text, not an exhaustive modifier list. `versions` defaults to a compact text index, and `--since` includes intervals that overlap the requested period. `--grep` also defaults to readable text. Article headers expose `state` and `next_versions` when supplied by the source; the latter are later versions of the same article, not recodification successors.
 
 Browse a code with `legidor get CIBS --date 2027-01-01 --parts`, then follow a returned section URL with `--parts` to list its children without fetching article bodies. Start full-text searches with one or two distinctive words, then narrow to an article range. Search totals can count source groups while a group supplies several article hits; `total_unit` and `returned_groups` make that distinction explicit. A known article unavailable at the requested date returns `NO_VERSION_AT_DATE`; `versions` can still expose its published future history.
+
+Search output identifies its selected `corpus`. The default is LODA, not all sources; use `--in bofip` for tax doctrine. An empty page does not establish legal absence. Hints suggest explicit commands without making extra requests or changing corpus. A zero literal grep match retains the retrieved document's identity and completeness, with a same-reference outline command. Missing-version hints point to history and modifying texts; ambiguous law results retain every candidate and offer compatible article-selection commands without choosing a publication.
 
 ## Cache
 

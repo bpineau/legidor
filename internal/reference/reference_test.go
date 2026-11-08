@@ -177,3 +177,21 @@ func TestBOIParagraphRangeReference(t *testing.T) {
 		t.Fatalf("%+v %v", r, err)
 	}
 }
+
+func TestArabicAnnexAliases(t *testing.T) {
+	for _, raw := range []string{"CGI ANNEXE 3 344 A", "CGI ann. 3 344 A", "CGI annexe III 344 A", "CGI-III 344 A"} {
+		r, e := Parse(raw)
+		if e != nil || r.Code != "CGI-III" || r.Number != "344 A" || r.Part != "" {
+			t.Fatalf("%q: %+v %v", raw, r, e)
+		}
+	}
+	r, e := Parse("CGI 3")
+	if e != nil || r.Code != "CGI" || r.Number != "3" {
+		t.Fatalf("%+v %v", r, e)
+	}
+	for _, raw := range []string{"CGI annexe 5 42", "CGI ANNEXE 0 42", "CGI ANNEXE 33 42"} {
+		if _, e := Parse(raw); e == nil {
+			t.Fatalf("unsupported annex accepted: %s", raw)
+		}
+	}
+}

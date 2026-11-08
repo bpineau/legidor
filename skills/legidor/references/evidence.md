@@ -42,6 +42,8 @@ Schema is `legidor/1`; `check --json` emits JSONL. Exit 0 means complete process
 
 For text pagination, follow the returned continuation or select a subdivision. Cursors pin content; do not edit them. Requested subdivisions are returned whole, with relevant introductory context. BOFiP selections retain section headings and introductions, omit the next section's heading and avoid repeating editorial news. Full text retains the news notice.
 
+`get --parts` is a navigation outline. `preview` contains bounded source wording, not a summary or verified complete rule; `selectable=false` marks a duplicate label. All labels remain visible when the default preview budget runs out; `omitted_part_previews` counts those without previews, and `--full` restores them. No recognized labels means no usable subdivision was established. Source omissions and warnings still require inspection.
+
 On a selection, `complete` describes the returned text and context; `source_complete`, when present, describes the original document. An omission in retained context still blocks verification. This describes rendering, not legal applicability or the absence of exceptions elsewhere.
 
 Modifier lists in `get`, `resolve` and `check` show up to five recent entries by default. `omitted_modifications` counts hidden entries; repeat with `--full` for all links. The text-completeness flag does not certify metadata exhaustiveness. NOTA is never removed by this compaction. Read temporal caveats even after a successful check.

@@ -23,7 +23,9 @@ Use legidor COMMAND --help for command help.
 Read a code index/article, BOI paragraph, law table/article, decision, range or section.
 Default: today for named articles, the supplied version for direct identifiers, 20000 characters.
 Requested subdivisions are never truncated. Ancestor introductory text is retained.
---parts lists labels; on a section it lists immediate children without fetching articles.
+--parts lists source labels with bounded navigation previews, not full evidence.
+Duplicate labels are marked ambiguous; --full includes previews beyond the default budget.
+On a section it lists immediate children without fetching articles.
 --grep is literal and case-sensitive, with compact text unless --json is requested.
 --links lists explicit document-wide official source links without fetching targets.
 Rectangular tables preserve cells; complex tables and images remain explicit omissions.

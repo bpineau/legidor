@@ -205,7 +205,7 @@ func (c *Client) law(ctx context.Context, r reference.Reference) (model.Document
 	if r.Article != "" {
 		var matches []object
 		for _, a := range articles {
-			if reference.NormalizeNumber(str(a, "num")) == r.Article {
+			if publishedArticleNumber(a) == r.Article {
 				matches = append(matches, a)
 			}
 		}
@@ -218,7 +218,10 @@ func (c *Client) law(ctx context.Context, r reference.Reference) (model.Document
 		a := matches[0]
 		d.Parent = d.ID
 		d.ID = str(a, "id")
-		d.Number = str(a, "num")
+		d.Number = publishedArticleNumber(a)
+		if str(a, "num") == "" && d.Number != "" {
+			d.Warnings = append(d.Warnings, "Source article number metadata is absent; identity uses the explicit leading JORF article header.")
+		}
 		d.Title += " art. " + d.Number
 		d.HTML = str(a, "content")
 		d.Text, d.Unsupported = legaltext.HTML(d.HTML)
@@ -238,11 +241,34 @@ func (c *Client) law(ctx context.Context, r reference.Reference) (model.Document
 	}
 	for _, a := range articles {
 		id := str(a, "id")
-		d.Items = append(d.Items, model.Link{ID: id, Title: "Article " + str(a, "num"), URL: officialURL(id, r.Date)})
+		d.Items = append(d.Items, model.Link{ID: id, Title: "Article " + publishedArticleNumber(a), URL: officialURL(id, r.Date)})
 	}
 	d.ContentKind = "table_of_contents"
 	d.Text = ""
 	return d, nil
+}
+
+// Old JORF publications can omit num while retaining an explicit leading
+// article header in content. Never infer a number from a body cross-reference
+// or override supplied metadata. Consolidated texts keep their own metadata.
+var publishedHeaderRE = regexp.MustCompile(`^(?:Art\.|Article)\s+(\d+(?:-\d+)*|1er)\s*\.\s*-\s*`)
+
+func publishedArticleNumber(a object) string {
+	if n := str(a, "num"); n != "" {
+		return reference.NormalizeNumber(n)
+	}
+	if !strings.HasPrefix(str(a, "id"), "JORFARTI") {
+		return ""
+	}
+	s, _ := legaltext.HTML(str(a, "content"))
+	m := publishedHeaderRE.FindStringSubmatch(strings.TrimSpace(s))
+	if m == nil {
+		return ""
+	}
+	if m[1] == "1er" {
+		return "1"
+	}
+	return m[1]
 }
 
 // orderedArticles preserves the source's ordering, including intercalated articles.

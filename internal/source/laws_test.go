@@ -200,3 +200,54 @@ func TestLawEnactmentDateCanBeEstablishedByOfficialTitle(t *testing.T) {
 		t.Fatal("wrong title date accepted")
 	}
 }
+
+func TestPublishedArticleHeaderFallback(t *testing.T) {
+	for _, tc := range []struct{ num, id, body, want string }{
+		{"", "JORFARTI000000000001", "<p>Art. 29. - An invented rule.</p>", "29"},
+		{"", "JORFARTI000000000001", "<p>Article 1er. - An invented rule.</p>", "1"},
+		{"", "JORFARTI000000000001", "<p>See Art. 29. - in another text.</p>", ""},
+		{"", "JORFARTI000000000001", "<p>Introduction.</p><p>Art. 29. - A reference.</p>", ""},
+		{"", "JORFARTI000000000001", "<p>Art. 29 applies here.</p>", ""},
+		{"", "LEGIARTI000000000001", "<p>Art. 29. - A consolidated body.</p>", ""},
+		{"28", "JORFARTI000000000001", "<p>Art. 29. - Contradictory header.</p>", "28"},
+	} {
+		a := object{"id": tc.id, "num": tc.num, "content": tc.body}
+		if got := publishedArticleNumber(a); got != tc.want {
+			t.Fatalf("%+v: %q", tc, got)
+		}
+	}
+}
+
+func TestPublishedHeaderSelectionAndAmbiguity(t *testing.T) {
+	for _, duplicate := range []bool{false, true} {
+		calls := 0
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			if r.URL.Path == "/token" {
+				w.Write([]byte(`{"access_token":"fake","expires_in":3600}`))
+				return
+			}
+			calls++
+			extra := ""
+			if duplicate {
+				extra = `,{"id":"JORFARTI000000000002","num":null,"content":"<p>Art. 29. - Another source article.</p>"}`
+			}
+			w.Write([]byte(`{"cid":"JORFTEXT000000000001","title":"An invented publication","articles":[{"id":"JORFARTI000000000001","num":null,"content":"<p>Art. 29. - An invented rule.</p>"}` + extra + `]}`))
+		}))
+		c := NewClient(Config{ClientID: "fake", ClientSecret: "fake", Environment: "test"}, cache.New(t.TempDir()))
+		c.LFURL = server.URL
+		c.TokenURL = server.URL + "/token"
+		d, e := c.Get(context.Background(), reference.Reference{Kind: "text", ID: "JORFTEXT000000000001", Article: "29"})
+		if duplicate {
+			if e == nil || !strings.Contains(e.Error(), "AMBIGUOUS_REFERENCE") {
+				t.Fatalf("%+v %v", d, e)
+			}
+		} else if e != nil || d.Number != "29" || !d.Complete || !strings.HasPrefix(d.ID, "JORFARTI") {
+			t.Fatalf("%+v %v", d, e)
+		}
+		if calls != 1 {
+			t.Fatalf("extra source request: %d", calls)
+		}
+		server.Close()
+	}
+}

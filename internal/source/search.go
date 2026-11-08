@@ -83,6 +83,7 @@ func (c *Client) Search(ctx context.Context, query, corpus, date, cursor string,
 	if e != nil {
 		return s, e
 	}
+	s.Corpus = corpus
 	if (page+1)*limit < s.Total {
 		b, _ := json.Marshal(searchCursor{key, page + 1})
 		s.Cursor = base64.RawURLEncoding.EncodeToString(b)

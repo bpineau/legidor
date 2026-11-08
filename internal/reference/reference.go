@@ -33,10 +33,10 @@ type Code struct {
 }
 
 var Codes = []Code{
-	{"CGI-II", "Code général des impôts, annexe II", []string{"CGI ann. II", "CGI annexe II", "CGI-II"}},
-	{"CGI-III", "Code général des impôts, annexe III", []string{"CGI ann. III", "CGI annexe III", "CGI-III"}},
-	{"CGI-IV", "Code général des impôts, annexe IV", []string{"CGI ann. IV", "CGI annexe IV", "CGI-IV"}},
-	{"CGI-I", "Code général des impôts, annexe I", []string{"CGI ann. I", "CGI annexe I", "CGI-I"}},
+	{"CGI-II", "Code général des impôts, annexe II", []string{"CGI ann. II", "CGI annexe II", "CGI-II", "CGI annexe 2", "CGI ann. 2"}},
+	{"CGI-III", "Code général des impôts, annexe III", []string{"CGI ann. III", "CGI annexe III", "CGI-III", "CGI annexe 3", "CGI ann. 3"}},
+	{"CGI-IV", "Code général des impôts, annexe IV", []string{"CGI ann. IV", "CGI annexe IV", "CGI-IV", "CGI annexe 4", "CGI ann. 4"}},
+	{"CGI-I", "Code général des impôts, annexe I", []string{"CGI ann. I", "CGI annexe I", "CGI-I", "CGI annexe 1", "CGI ann. 1"}},
 	{"CGI", "Code général des impôts", []string{"CGI"}}, {"LPF", "Livre des procédures fiscales", []string{"LPF"}},
 	{"CIBS", "Code des impositions sur les biens et services", []string{"CIBS"}},
 	{"CSS", "Code de la sécurité sociale", []string{"CSS"}}, {"CMF", "Code monétaire et financier", []string{"CMF", "CoMoFi"}},

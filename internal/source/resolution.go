@@ -54,7 +54,7 @@ func (c *Client) resolveArticle(ctx context.Context, r reference.Reference) (mod
 			return d, err
 		}
 		e := model.Err("NO_VERSION_AT_DATE", 1, "article exists but no version was found at %s; available version starts %s", r.Date, d.Start)
-		e.Next = "Use legidor versions with the same reference, or get with an explicit --date."
+		e.Next = "Inspect versions, NOTA and explicit modifying links. Do not infer a successor or current applicability from an unavailable version."
 		for _, v := range d.Versions {
 			if v.Start != "" && (v.End == "" || v.End > v.Start) {
 				e.Candidates = append(e.Candidates, v.ID+" "+v.Start+" -> "+v.End+" "+v.State)

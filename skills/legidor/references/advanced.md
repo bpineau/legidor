@@ -27,6 +27,10 @@ legidor get 'ordonnance 96-50 art. 19' --date 2026-01-01
 
 A numbered law without `--date` searches its published JORF version. Rectifications can create several candidates: use the returned identifiers and titles to identify the intended publication. A dated law requests the consolidated LODA version, which can differ from the original publication. A fixed JORF identifier does not support consolidated date selection.
 
+For example, `get 'ordonnance 96-50 art. 19'` retrieves the original article,
+whereas the dated command above retrieves its consolidated wording. They are
+distinct source versions, not interchangeable evidence of the current rule.
+
 Use the short form `ordonnance 96-50 art. 19` or `loi 78-17 art. 1`, preserving
 the official number's two-digit year. Do not expand it to a four-digit year.
 An optional enactment date, as in `ordonnance 96-50 du 24 janvier 1996 art. 19`,
