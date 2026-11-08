@@ -217,9 +217,10 @@ No anti-bot bypass is attempted. A result absent from a corpus does not establis
 
 ### Agent evaluations
 
-The [Go evaluation runner](evals/README.md) compares Claude Opus 5.5, Sonnet 5.5,
-Codex Sol 6.1 and Astra 6
-with no skill, Paperasse fiscaliste, Legidor, or both. It reuses eight public
+The [Go evaluation runner](evals/README.md) defaults to Claude Sonnet 5.5
+with no skill, Paperasse fiscaliste, or Legidor. Codex Sol and the combined-skill
+configuration are opt-in. Opus and Astra are disabled unless explicitly unlocked
+with `-allow-expensive-models`, including for grading. It reuses eight public
 Paperasse scenarios in its pilot and all 50 in its reviewed full suite, with
 explicit provenance and amendments. It records fiscal
 correctness, evidence, dates, tokens, cache usage and elapsed time. No JavaScript

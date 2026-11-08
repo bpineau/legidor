@@ -21,21 +21,20 @@ is not required. Every case records its review date, amendments and category.
 The two orientation questions remain in the suite, but are identified separately
 from tax calculations; historical research has its own category too.
 
-To run the full three-model comparison and then grade it automatically:
+To compare the three individual configurations with Sonnet and then grade them:
 
 ```sh
 make build build-eval
 bin/legidor-eval campaign -corpus evals/full.json \
-  -agents claude,codex \
-  -claude-models claude-sonnet-5-5,claude-opus-5-5 \
-  -codex-model gpt-6.1-sol -arms none,paperasse,legidor,both \
-  -max-samples 600 -workers 3 -repetitions 1 \
+  -agents claude -claude-model claude-sonnet-5-5 \
+  -arms none,paperasse,legidor \
+  -max-samples 150 -workers 1 -repetitions 1 \
   -paperasse /path/to/paperasse/fiscaliste -legidor "$PWD/bin/legidor" \
   -judge-agent claude -judge-model claude-sonnet-5-5 \
   -out /tmp/legidor-full-comparison
 ```
 
-This deliberately starts 600 evaluated conversations plus one blinded grading
+This deliberately starts 150 evaluated conversations plus one blinded grading
 conversation per case. It is not a smoke test. `campaign` requires an explicit
 judge model and otherwise uses the same flags and isolation as `run`. It records
 its phase in private `campaign.json`, stops before grading if execution fails,
@@ -47,15 +46,15 @@ separate run for retries. Keep the executable and all input snapshots fixed whil
 a campaign is running. A Sonnet judge is economical but can introduce family bias;
 inspect close or surprising verdicts before drawing conclusions.
 
-For development, start with two Sol samples and an explicit size limit:
+For development, start with two Sonnet samples and an explicit size limit:
 
 ```sh
 make build build-eval
-bin/legidor-eval run -agents codex -codex-model gpt-6.1-sol \
+bin/legidor-eval run -agents claude -claude-model claude-sonnet-5-5 \
   -cases 3,13 -arms legidor -max-samples 2 -workers 1 \
-  -legidor "$PWD/bin/legidor" -out /tmp/legidor-sol-smoke
-bin/legidor-eval grade -out /tmp/legidor-sol-smoke \
-  -agent codex -model gpt-6.1-sol
+  -legidor "$PWD/bin/legidor" -out /tmp/legidor-sonnet-smoke
+bin/legidor-eval grade -out /tmp/legidor-sonnet-smoke \
+  -agent claude -model claude-sonnet-5-5
 ```
 
 The default stops scheduling new samples after the first failure, including quota
@@ -65,7 +64,7 @@ before launching any agents; zero (the default) leaves the size unrestricted.
 It counts conversations, not provider tokens or money. Grading makes separate
 model calls, one per case with successful answers.
 
-For a full comparison (64 samples with the default two models):
+For the pilot comparison (24 samples with Sonnet and the three default arms):
 
 ```sh
 make build
@@ -73,24 +72,31 @@ make build-eval
 bin/legidor-eval run \
   -paperasse /path/to/paperasse/fiscaliste \
   -legidor "$PWD/bin/legidor" \
-  -max-samples 64 \
+  -max-samples 24 \
   -out /tmp/legidor-pilot
 bin/legidor-eval grade -out /tmp/legidor-pilot
 bin/legidor-eval report -out /tmp/legidor-pilot
 ```
 
-Authenticate the two native agent CLIs beforehand. Legidor uses its usual private
+Authenticate the selected native agent CLI beforehand. Legidor uses its usual private
 PISTE configuration. No credentials are copied into the repository. The runner
 supports macOS and Linux. Model runs consume the configured account's quota.
 There are no paid API calls in `go test ./...`.
 
-Defaults: `claude-opus-5-5`, `gpt-6.1-sol`, medium effort, eight cases, four arms,
+Defaults: Claude only with `claude-sonnet-5-5`, medium effort, eight cases,
+three arms (`none,paperasse,legidor`),
 one repetition, a shuffled sequential schedule (seed 42), and eight minutes per
 sample. Model identifiers and CLI flags depend on the installed agent versions;
 use `-claude-model` and `-codex-model` to test another agent version explicitly.
+Codex is opt-in with `-agents codex` (default Codex model: `gpt-6.1-sol`).
+Opus and Astra are disabled even when named explicitly: `run`, `campaign` and
+`grade` reject them before model calls unless `-allow-expensive-models` is supplied.
+The guard includes plural model flags and the campaign judge. The standalone
+`grade` command also defaults to Sonnet; `campaign` still requires an explicit
+judge model. Old frozen runner binaries retain their original defaults.
 
 ```sh
-# One case across all eight configurations.
+# One case across the three default configurations.
 bin/legidor-eval run -cases 11 -paperasse /path/to/paperasse/fiscaliste \
   -legidor "$PWD/bin/legidor" -out /tmp/legidor-smoke
 
@@ -100,29 +106,20 @@ bin/legidor-eval run -cases 3,13 -repetitions 3 -cache cold \
   -legidor "$PWD/bin/legidor" -out /tmp/legidor-repeated
 ```
 
-`-agents claude,codex` and `-arms none,paperasse,legidor,both` select the matrix.
+`-agents` and `-arms` select the matrix. The combined `both` arm remains available
+only when requested, for example `-arms none,legidor,both`.
 `-workers 2` runs at most two agent conversations concurrently; the default is
 one. Cold/fresh cache modes keep a separate cache for every sample. The manifest
 records the worker count because concurrency can affect latency and quotas.
 
 Model IDs appear in sample directories, individual results and aggregate tables;
-tables also include CLI versions. Run additional model pairs in separate roots:
+tables also include CLI versions. To explicitly include Sol alongside Sonnet:
 
 ```sh
-bin/legidor-eval run -claude-model claude-sonnet-5-5 -codex-model gpt-6-astra \
+bin/legidor-eval run -agents claude,codex \
+  -claude-model claude-sonnet-5-5 -codex-model gpt-6.1-sol \
   -paperasse /path/to/paperasse/fiscaliste -legidor "$PWD/bin/legidor" \
-  -workers 2 -out /tmp/legidor-sonnet-astra
-```
-
-Or run all four models in one matrix with a global concurrency limit:
-
-```sh
-bin/legidor-eval run \
-  -claude-models claude-opus-5-5,claude-sonnet-5-5 \
-  -codex-models gpt-6.1-sol,gpt-6-astra -workers 4 \
-  -max-samples 128 \
-  -paperasse /path/to/paperasse/fiscaliste -legidor "$PWD/bin/legidor" \
-  -out /tmp/legidor-four-models
+  -max-samples 48 -workers 1 -out /tmp/legidor-sonnet-sol
 ```
 
 The plural model flags override their singular counterparts. Each requested model
@@ -304,8 +301,9 @@ bin/legidor-eval list -corpus /tmp/paperasse-fiscal-evals/all.json
 This copies the source license and records the commit and source hash. It does
 not apply pilot amendments and does not run models. Select a bounded subset with
 `run -corpus /tmp/paperasse-fiscal-evals/all.json -cases ... -max-samples ...`.
-Using all 50 cases with four arms means 200 conversations per model/repetition,
-plus grading; do not launch it accidentally. Paperasse's executable calculators
+Using all 50 cases with the three default arms means 150 conversations per
+model/repetition, plus grading. Adding `both` raises this to 200; do not launch
+larger matrices accidentally. Paperasse's executable calculators
 remain unavailable in every configuration: this tests its documentation/data,
 not the full executable Paperasse product.
 

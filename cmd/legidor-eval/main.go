@@ -29,6 +29,21 @@ func list(s string) []string {
 	}
 	return strings.Split(s, ",")
 }
+
+// checkModelBudget rejects costly model families unless explicitly enabled.
+// Check both solver and judge selections before invoking any native agent.
+func checkModelBudget(allow bool, models ...string) error {
+	if !allow {
+		for _, model := range models {
+			name := strings.ToLower(model)
+			if strings.Contains(name, "opus") || strings.Contains(name, "astra") {
+				return fmt.Errorf("model %q is disabled by default; deliberate use requires -allow-expensive-models", model)
+			}
+		}
+	}
+	return nil
+}
+
 func run() error {
 	if len(os.Args) < 2 {
 		return fmt.Errorf("usage: legidor-eval run|campaign|grade|report|list|convert|import-paperasse|export-anthropic|serve [options]")
@@ -119,10 +134,14 @@ func run() error {
 		out := f.String("out", "", "run directory")
 		corpus := f.String("corpus", "evals/pilot.json", "corpus")
 		agent := f.String("agent", "claude", "judge CLI: claude or codex")
-		model := f.String("model", "claude-opus-5-5", "judge model")
+		model := f.String("model", "claude-sonnet-5-5", "judge model")
+		allowExpensive := f.Bool("allow-expensive-models", false, "explicitly enable Opus/Astra (including the judge)")
 		timeout := f.Duration("timeout", 10*time.Minute, "per-case timeout")
 		if e := f.Parse(os.Args[2:]); e != nil {
 			return e
+		}
+		if err := checkModelBudget(*allowExpensive, *model); err != nil {
+			return err
 		}
 		if *out == "" {
 			return fmt.Errorf("-out is required")
@@ -146,10 +165,11 @@ func run() error {
 		f.StringVar(&o.Paperasse, "paperasse", "", "path to Paperasse fiscaliste directory")
 		f.StringVar(&o.Skill, "skill", "skills/legidor", "Legidor skill directory")
 		f.StringVar(&o.Legidor, "legidor", "legidor", "Legidor executable")
-		f.StringVar(&o.ClaudeModel, "claude-model", "claude-opus-5-5", "exact Claude model")
+		f.StringVar(&o.ClaudeModel, "claude-model", "claude-sonnet-5-5", "exact Claude model")
 		f.StringVar(&o.CodexModel, "codex-model", "gpt-6.1-sol", "exact Codex model")
 		claudeModels := f.String("claude-models", "", "comma-separated Claude model IDs (overrides -claude-model)")
 		codexModels := f.String("codex-models", "", "comma-separated Codex model IDs (overrides -codex-model)")
+		allowExpensive := f.Bool("allow-expensive-models", false, "explicitly enable Opus/Astra (including the judge)")
 		f.StringVar(&o.Effort, "effort", "medium", "reasoning effort")
 		f.StringVar(&o.CacheMode, "cache", "cold", "cold (per-sample), shared (run-local), or fresh")
 		f.IntVar(&o.Repetitions, "repetitions", 1, "fresh conversations per cell")
@@ -158,8 +178,8 @@ func run() error {
 		f.BoolVar(&o.ContinueOnError, "continue-on-error", false, "continue scheduling after failed samples (default stops)")
 		f.Int64Var(&o.Seed, "seed", 42, "schedule shuffle seed")
 		f.DurationVar(&o.Timeout, "timeout", 8*time.Minute, "per-sample deadline")
-		agents := f.String("agents", "claude,codex", "comma-separated agents")
-		arms := f.String("arms", "none,paperasse,legidor,both", "comma-separated arms")
+		agents := f.String("agents", "claude", "comma-separated agents")
+		arms := f.String("arms", "none,paperasse,legidor", "comma-separated arms")
 		ids := f.String("cases", "", "comma-separated case IDs (default all)")
 		if e := f.Parse(os.Args[2:]); e != nil {
 			return e
@@ -169,6 +189,11 @@ func run() error {
 		o.IDs = list(*ids)
 		o.ClaudeModels = list(*claudeModels)
 		o.CodexModels = list(*codexModels)
+		models := append([]string{o.ClaudeModel, o.CodexModel, judgeModel}, o.ClaudeModels...)
+		models = append(models, o.CodexModels...)
+		if err := checkModelBudget(*allowExpensive, models...); err != nil {
+			return err
+		}
 		if os.Args[1] == "campaign" {
 			return bench.Campaign(ctx, o, judgeAgent, judgeModel, gradingTimeout)
 		}
