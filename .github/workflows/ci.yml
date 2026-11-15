@@ -9,15 +9,16 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-        go: ['1.23.x', stable]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: ${{ matrix.go }}
+          # Follow the latest stable Go release; go.mod remains the language floor.
+          go-version: stable
+          check-latest: true
           cache: false
-      - run: go test -race ./...
+      - run: go test -timeout 5m -race ./...
       - run: go vet ./...
       - run: go build ./cmd/legidor
       - run: go build ./cmd/legidor-eval
